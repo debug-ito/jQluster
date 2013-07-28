@@ -10,4 +10,8 @@ jQluster ||= {};
             return v.toString(16);
         });
     };
+
+    my.clone = function(obj) {
+        return $.extend(true, {}, obj);
+    };
 })(jQluster);
