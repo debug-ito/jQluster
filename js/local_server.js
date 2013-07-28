@@ -11,8 +11,8 @@ jQluster ||= {};
         this.receive_callbacks = [];
     };
     my.ConnectionLocal.prototype = {
-        // @return: nothing
         send: function(message) {
+            // @return: nothing
             if(message.message_type === "register") {
                 this.server.register(this, message.body.remote_id);
             }else {
@@ -20,8 +20,8 @@ jQluster ||= {};
             }
         },
         
-        // @return: nothing
         onReceive: function(callback) {
+            // @return: nothing
             this.push(receive_callbacks, callback);
         },
 
@@ -29,8 +29,8 @@ jQluster ||= {};
         
         getID: function() { return this.remote_id; },
 
-        // @return: nothing
         triggerReceive: function(message) {
+            // @return: nothing
             $.each(this.receive_callbacks, function(i, callback) {
                 callback(message);
             });
@@ -41,8 +41,8 @@ jQluster ||= {};
         this.connections = {};
     };
     my.ServerLocal.prototype = {
-        // @return: nothing
         register: function(connection, remote_id) {
+            // @return: nothing
             if(!this.connections[remote_id]) {
                 this.connections[remote_id] = [];
             }
@@ -55,8 +55,8 @@ jQluster ||= {};
             });
         },
 
-        // @return: nothing
         distribute: function(message) {
+            // @return: nothing
             var conn_list = this.connections[message.to];
             if(!conn_list) return;
             $.each(conn_list, function(i, conn) {
