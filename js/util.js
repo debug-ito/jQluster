@@ -1,5 +1,6 @@
 "use strict";
 
+jQluster ||= {};
 
 (function(my) {
     my.uuid = function() {
