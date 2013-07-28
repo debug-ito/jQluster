@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Test jQluster.Transport</title>
+<link rel="stylesheet" href="./qunit.css">
+</head>
+<body>
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+<script src="./qunit.js"></script>
+<script src="../js/util.js"></script>
+<script src="../js/transport.js"></script>
+<script src="../js/local_server.js"></script>
+<script>
+"use strict";
+
+var server;
+var alice;
+var bob;
+
+module("jQluster.Transport", {
+    setup: function() {
+        server = new jQluster.ServerLocal();
+        alice = new jQluster.Transport({
+            remote_id: "alice",
+            connection_object: new jQluster.ConnectionLocal(server)
+        });
+        bob = new jQluster.Transport({
+            remote_id: "bob",
+            connection_object: new jQluster.ConnectionLocal(server)
+        });
+    },
+    teardown: function() {
+        server = undefined;
+        alice = undefined;
+        bob = undefined;
+    }
+});
+
+test("registration", function() {
+    deepEqual(server.getRegisterLog(), ["alice", "bob"], "registration OK");
+    // TODO: check alice and bob's send/receive Log.
+});
+
+</script>
+</body>
+</html>

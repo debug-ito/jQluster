@@ -36,6 +36,7 @@ jQluster ||= {};
         },
         
         _onReceive: function(message) {
+            // @return: nothing
         }
     };
     
