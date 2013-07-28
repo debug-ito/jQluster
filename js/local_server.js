@@ -1,16 +1,19 @@
 "use strict";
 
-// Local server implementation for testing.
+// Local server and connection implementation for testing.
 
 (function(my, $){
-    my.ConnectionLocal = function(remote_id, server) {
-        this.remote_id = remote_id;
+    my.ConnectionLocal = function(server) {
         this.server = server;
         this.receive_callbacks = [];
     };
     my.ConnectionLocal.prototype = {
         send: function(message) {
-            // TODO
+            if(message.message_type === "register") {
+                this.server.register(this, message.body.remote_id);
+            }else {
+                this.server.distribute(message);
+            }
         },
         onReceive: function(callback) {
             this.push(receive_callbacks, callback);
@@ -29,8 +32,7 @@
         this.connections = {};
     };
     my.ServerLocal.prototype = {
-        register: function(connection) {
-            var remote_id = connection.getID();
+        register: function(connection, remote_id) {
             if(!this.connections[remote_id]) {
                 this.connections[remote_id] = [];
             }
