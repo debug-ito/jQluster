@@ -8,6 +8,7 @@
 <body>
 <div id="qunit"></div>
 <div id="qunit-fixture"></div>
+<script src="../js/jquery.js"></script>
 <script src="./qunit.js"></script>
 <script src="../js/util.js"></script>
 <script src="../js/transport.js"></script>
@@ -17,30 +18,61 @@
 
 var server;
 var alice;
+var alice_connection;
 var bob;
+var bob_connection;
+
+var is = strictEqual;
 
 module("jQluster.Transport", {
     setup: function() {
         server = new jQluster.ServerLocal();
+        alice_connection = new jQluster.ConnectionLocal(server);
         alice = new jQluster.Transport({
             remote_id: "alice",
-            connection_object: new jQluster.ConnectionLocal(server)
+            connection_object: alice_connection
         });
+        bob_connection = new jQluster.ConnectionLocal(server);
         bob = new jQluster.Transport({
             remote_id: "bob",
-            connection_object: new jQluster.ConnectionLocal(server)
+            connection_object: bob_connection
         });
     },
     teardown: function() {
         server = undefined;
         alice = undefined;
+        alice_connection = undefined;
         bob = undefined;
+        bob_connection = undefined;
     }
 });
 
 test("registration", function() {
     deepEqual(server.getRegisterLog(), ["alice", "bob"], "registration OK");
-    // TODO: check alice and bob's send/receive Log.
+    $.each([
+        {id: "alice", log: alice_connection.getLog()},
+        {id: "bob",   log: bob_connection.getLog()}
+    ], function(i, params) {
+        var id = params.id;
+        var log = params.log;
+        is(log.length, 2, "2 communication logs");
+        is(log[0].direction, "send", "log 0 : send");
+        is(log[0].message.message_type, "register", "log 0 : register");
+        is(log[0].message.from, id, "log 0 from");
+        is(log[0].message.to, null, "log 0 to");
+        deepEqual(log[0].message.body, {remote_id: id}, "log 0 body");
+        
+        is(log[1].direction, "receive", "log 1 : receive");
+        is(log[1].message.message_type, "register_reply", "log 1 : register_reply");
+        is(log[1].message.from, null, "log 1 from");
+        is(log[1].message.to, id, "log 1 to");
+        deepEqual(log[1].message.body, {status: "OK"}, "log 1 body");
+    });
+});
+
+test("selectAndGet", function() {
+    alice_connection.clearLog();
+    bob_connection.clearLog();
 });
 
 </script>

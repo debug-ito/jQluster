@@ -3,7 +3,8 @@
 // jQluster Transport object
 // requires: util.js
 
-jQluster ||= {};
+if(!jQluster) { var jQluster = {}; }
+
 
 (function(my, $) {
     my.Transport = function(args) {
@@ -15,8 +16,8 @@ jQluster ||= {};
         if(!args.connection_object) {
             throw "connection_object param is mandatory";
         }
-        self.remote_id = remote_id;
-        self.connection_object = connection_object;
+        self.remote_id = args.remote_id;
+        self.connection_object = args.connection_object;
         self.connection_object.onReceive(function(message) { self._onReceive(message); });
         self.connection_object.send({
             message_id: my.uuid(), message_type: "register",

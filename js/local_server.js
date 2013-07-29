@@ -3,19 +3,18 @@
 // Local server and connection implementation for testing.
 // requires: util.js
 
-jQluster ||= {};
+if(!jQluster) { var jQluster = {}; }
 
 (function(my, $){
     my.ConnectionLocal = function(server) {
         this.server = server;
         this.receive_callbacks = [];
-        this.send_log = [];
-        this.receive_log = [];
+        this.log = [];
     };
     my.ConnectionLocal.prototype = {
         send: function(message) {
             // @return: nothing
-            this.send_log.push(my.clone(message));
+            this.log.push({ direction: "send",  message: my.clone(message)});
             if(message.message_type === "register") {
                 this.server.register(this, message.body.remote_id);
             }else {
@@ -25,7 +24,7 @@ jQluster ||= {};
         
         onReceive: function(callback) {
             // @return: nothing
-            this.push(receive_callbacks, callback);
+            this.receive_callbacks.push(callback);
         },
 
         // below are ConnectionLocal specific functions
@@ -34,14 +33,14 @@ jQluster ||= {};
 
         triggerReceive: function(message) {
             // @return: nothing
-            this.receive_log.push(my.clone(message));
+            this.log.push({ direction: "receive", message: my.clone(message)});
             $.each(this.receive_callbacks, function(i, callback) {
                 callback(message);
             });
         },
 
-        getSendLog: function() { return this.send_log; },
-        getReceiveLog: function() { return this.receive_log; }
+        getLog: function() { return this.log; },
+        clearLog: function() { this.log = [] }
     };
     
     my.ServerLocal = function() {
@@ -74,6 +73,6 @@ jQluster ||= {};
             });
         },
 
-        getRegisterLog: function() { return this.register_log; };
+        getRegisterLog: function() { return this.register_log; }
     };
 })(jQluster, jQuery);
