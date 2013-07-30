@@ -8,6 +8,13 @@
 <body>
 <div id="qunit"></div>
 <div id="qunit-fixture"></div>
+<div id="test">
+  <ul>
+    <li>1</li>
+    <li class="two">2</li>
+    <li>3</li>
+  </ul>
+</div>
 <script src="../js/jquery.js"></script>
 <script src="./qunit.js"></script>
 <script src="../js/util.js"></script>
@@ -70,9 +77,53 @@ test("registration", function() {
     });
 });
 
-test("selectAndGet", function() {
+asyncTest("selectAndGet", function() {
     alice_connection.clearLog();
     bob_connection.clearLog();
+
+    alice.selectAndGet({
+        eval_code: "$(\"#test\").find(\".two\").text()",
+        remote_id: "bob"
+    }).then(function(data) {
+        var alog = alice_connection.getLog();
+        var blog = bob_connection.getLog();
+        is(data, "two", "obtained data OK");
+        is(alog.length, 2);
+        is(blog.length, 2);
+        is(alog[0].direction, "send");
+        is(alog[0].message.message_type, "select_and_get");
+        is(alog[0].message.from, "alice");
+        is(alog[0].message.to, "bob");
+        deepEqual(alog[0].message.body, {
+            eval_code: "$(\"#test\").find(\".two\").text()",
+            remote_id: "bob"
+        });
+        is(blog[0].direction, "receive");
+        is(blog[0].message.message_type, "select_and_get");
+        is(blog[0].message.from, "alice");
+        is(blog[0].message.to, "bob");
+        is(blog[0].message.message_id, alog[0].message.message_id);
+        deepEqual(blog[0].message.body, {
+            eval_code: "$(\"#test\").find(\".two\").text()",
+            remote_id: "bob"
+        });
+
+        is(blog[1].direction, "send");
+        is(blog[1].message.message_type, "select_and_get_reply");
+        is(blog[1].message.from, "bob");
+        is(blog[1].message.to, "alice");
+        deepEqual(blog[1].message.body, { error: null, result: "two", in_reply_to: alog[0].message.message_id });
+        is(alog[1].direction, "receive");
+        is(alog[1].message.message_type, "select_and_get_reply");
+        is(alog[1].message.from, "bob");
+        is(alog[1].message.to, "alice");
+        is(alog[1].message.message_id, blog[1].message.message_id);
+        deepEqual(alog[1].message.body, { error: null, result: "two", in_reply_to: alog[0].message.message_id });
+    }, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
 });
 
 </script>
