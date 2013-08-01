@@ -14,4 +14,8 @@ if(!jQluster) { var jQluster = {}; }
     my.clone = function(obj) {
         return $.extend(true, {}, obj);
     };
+
+    my.defined = function(val) {
+        return (val !== null && typeof(val) !== 'undefined');
+    };
 })(jQluster);

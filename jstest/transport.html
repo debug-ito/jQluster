@@ -73,7 +73,7 @@ test("registration", function() {
         is(log[1].message.message_type, "register_reply", "log 1 : register_reply");
         is(log[1].message.from, null, "log 1 from");
         is(log[1].message.to, id, "log 1 to");
-        deepEqual(log[1].message.body, {status: "OK"}, "log 1 body");
+        deepEqual(log[1].message.body, {error: null, in_reply_to: log[0].message.message_id}, "log 1 body");
     });
 });
 

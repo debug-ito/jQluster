@@ -16,7 +16,7 @@ if(!jQluster) { var jQluster = {}; }
             // @return: nothing
             this.log.push({ direction: "send",  message: my.clone(message)});
             if(message.message_type === "register") {
-                this.server.register(this, message.body.remote_id);
+                this.server.register(this, message.body.remote_id, message.message_id);
             }else {
                 this.server.distribute(message);
             }
@@ -48,7 +48,7 @@ if(!jQluster) { var jQluster = {}; }
         this.register_log = [];
     };
     my.ServerLocal.prototype = {
-        register: function(connection, remote_id) {
+        register: function(connection, remote_id, register_message_id) {
             // @return: nothing
             if(!this.connections[remote_id]) {
                 this.connections[remote_id] = [];
@@ -59,7 +59,7 @@ if(!jQluster) { var jQluster = {}; }
                 message_id: my.uuid(),
                 message_type: "register_reply",
                 from: null, to: remote_id,
-                body: { status: "OK" }
+                body: { error: null, in_reply_to: register_message_id }
             });
         },
 
