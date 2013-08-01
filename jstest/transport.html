@@ -87,7 +87,7 @@ asyncTest("selectAndGet", function() {
     }).then(function(data) {
         var alog = alice_connection.getLog();
         var blog = bob_connection.getLog();
-        is(data, "two", "obtained data OK");
+        is(data, "2", "obtained data OK");
         is(alog.length, 2);
         is(blog.length, 2);
         is(alog[0].direction, "send");
@@ -112,19 +112,25 @@ asyncTest("selectAndGet", function() {
         is(blog[1].message.message_type, "select_and_get_reply");
         is(blog[1].message.from, "bob");
         is(blog[1].message.to, "alice");
-        deepEqual(blog[1].message.body, { error: null, result: "two", in_reply_to: alog[0].message.message_id });
+        deepEqual(blog[1].message.body, { error: null, result: "2", in_reply_to: alog[0].message.message_id });
         is(alog[1].direction, "receive");
         is(alog[1].message.message_type, "select_and_get_reply");
         is(alog[1].message.from, "bob");
         is(alog[1].message.to, "alice");
         is(alog[1].message.message_id, blog[1].message.message_id);
-        deepEqual(alog[1].message.body, { error: null, result: "two", in_reply_to: alog[0].message.message_id });
+        deepEqual(alog[1].message.body, { error: null, result: "2", in_reply_to: alog[0].message.message_id });
     }, function(error) {
         ok(false, "error: " + error);
     }).always(function() {
         start();
     });
 });
+
+// TODO:
+// - selectAndGet with multiple targets.
+// - selectAndGet with no target.
+// - selectAndListen
+
 
 </script>
 </body>
