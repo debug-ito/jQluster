@@ -31,19 +31,25 @@ var bob_connection;
 
 var is = strictEqual;
 
+var setupAlice = function() {
+    alice_connection = new jQluster.ConnectionLocal(server);
+    alice = new jQluster.Transport({
+        remote_id: "alice",
+        connection_object: alice_connection
+    });
+};
+
+var setupBob = function() {
+    bob_connection = new jQluster.ConnectionLocal(server);
+    bob = new jQluster.Transport({
+        remote_id: "bob",
+        connection_object: bob_connection
+    });
+}
+
 module("jQluster.Transport", {
     setup: function() {
         server = new jQluster.ServerLocal();
-        alice_connection = new jQluster.ConnectionLocal(server);
-        alice = new jQluster.Transport({
-            remote_id: "alice",
-            connection_object: alice_connection
-        });
-        bob_connection = new jQluster.ConnectionLocal(server);
-        bob = new jQluster.Transport({
-            remote_id: "bob",
-            connection_object: bob_connection
-        });
     },
     teardown: function() {
         server = undefined;
@@ -55,6 +61,8 @@ module("jQluster.Transport", {
 });
 
 test("registration", function() {
+    setupAlice();
+    setupBob();
     deepEqual(server.getRegisterLog(), ["alice", "bob"], "registration OK");
     $.each([
         {id: "alice", log: alice_connection.getLog()},
@@ -78,6 +86,8 @@ test("registration", function() {
 });
 
 asyncTest("selectAndGet", function() {
+    setupAlice();
+    setupBob();
     alice_connection.clearLog();
     bob_connection.clearLog();
 
