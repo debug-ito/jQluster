@@ -15,7 +15,7 @@ if(!jQluster) { var jQluster = {}; }
         send: function(message) {
             // @return: nothing
             this.log.push({ direction: "send",  message: my.clone(message)});
-            console.log("send: type: " + message.message_type + ", from: " + message.from);
+            // console.log("send: type: " + message.message_type + ", from: " + message.from);
             if(message.message_type === "register") {
                 this.server.register(this, message.body.remote_id, message.message_id);
             }else {
@@ -35,7 +35,7 @@ if(!jQluster) { var jQluster = {}; }
         triggerReceive: function(message) {
             // @return: nothing
             this.log.push({ direction: "receive", message: my.clone(message)});
-            console.log("receive: type: " + message.message_type + ", to: " + message.to);
+            // console.log("receive: type: " + message.message_type + ", to: " + message.to);
             $.each(this.receive_callbacks, function(i, callback) {
                 callback(message);
             });

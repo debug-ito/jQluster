@@ -31,21 +31,26 @@ var bob_connection;
 
 var is = strictEqual;
 
-var setupAlice = function() {
-    alice_connection = new jQluster.ConnectionLocal(server);
-    alice = new jQluster.Transport({
-        remote_id: "alice",
-        connection_object: alice_connection
+var createTransport = function(remote_id) {
+    var conn = new jQluster.ConnectionLocal(server);
+    var trans = new jQluster.Transport({
+        remote_id: remote_id,
+        connection_object: conn
     });
+    return [conn, trans];
+};
+
+var setupAlice = function() {
+    var ret = createTransport("alice");
+    alice_connection = ret[0];
+    alice = ret[1];
 };
 
 var setupBob = function() {
-    bob_connection = new jQluster.ConnectionLocal(server);
-    bob = new jQluster.Transport({
-        remote_id: "bob",
-        connection_object: bob_connection
-    });
-}
+    var ret = createTransport("bob");
+    bob_connection = ret[0];
+    bob = ret[1];
+};
 
 module("jQluster.Transport", {
     setup: function() {
@@ -138,10 +143,16 @@ asyncTest("selectAndGet - single target", function() {
 
 asyncTest("selectAndGet - no target: messages should be pending.", function() {
     setupAlice();
-    alice.selectAndGet({
+    var promise_select = alice.selectAndGet({
         eval_code: "$('#test li').eq(2).text()",
         remote_id: "bob"
-    }).then(function(data) {
+    });
+    var deferred_bob = $.Deferred();
+    setTimeout(function() {
+        setupBob();
+        deferred_bob.resolve();
+    }, 0.001);
+    $.when(promise_select, deferred_bob.promise()).then(function(data) {
         var alog = alice_connection.getLog();
         var blog = bob_connection.getLog();
         is(data, "3", "data OK");
@@ -181,7 +192,6 @@ asyncTest("selectAndGet - no target: messages should be pending.", function() {
     }).always(function() {
         start();
     });
-    setTimeout(setupBob, 0);
 });
 
 // TODO:
