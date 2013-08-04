@@ -499,7 +499,61 @@ asyncTest("selectAndListen - event delegation", function() {
     });
 });
 
-// TODO: selectAndListen: multiple listen calls with the same signature to one target.
+asyncTest("selectAndListen - multiple listen calls with the same signature to one target", function() {
+    setupAlice();
+    setupBob();
+    var event_deferred = $.Deferred();
+    var request_base = {
+        remote_id: "bob",
+        eval_code: "$('#test').find('input#test_button')",
+        method: "on",
+        options: ["click"],
+    };
+    alice.selectAndListen($.extend({}, request_base, {callback: function() {
+        if(event_deferred.state() !== "pending") {
+            ok(false, "unexpected callback");
+            return;
+        }
+        event_deferred.resolve("callback1", this, jQluster.argsToArray(arguments));
+    }})).then(function() {
+        is(event_deferred.state(), "pending");
+        $('#test_button').trigger('click');
+        return event_deferred.promise();
+    }).then(function(callback_type, callback_this, callback_args) {
+        is(callback_type, "callback1");
+        deepEqual(callback_this, {
+            remote_type: "xpath", remote_id: "bob",
+            remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
+        });
+        ok(jQluster.defined(callback_args));
+
+        event_deferred = $.Deferred();
+        return alice.selectAndListen($.extend({}, request_base, {callback: function() {
+            if(event_deferred.state() !== "pending") {
+                ok(false, "unexpected callback");
+                return;
+            }
+            event_deferred.resolve("callback2", this, jQluster.argsToArray(arguments));
+        }}));
+    }).then(function() {
+        is(event_deferred.state(), "pending");
+        $('#test_button').trigger('click');
+        return event_deferred.promise();
+    }).then(function(callback_type, callback_this, callback_args) {
+        is(callback_type, "callback1", "callback1 is still valid. callback2 is discarded.");
+        deepEqual(callback_this, {
+            remote_type: "xpath", remote_id: "bob",
+            remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
+        });
+        ok(jQluster.defined(callback_args));
+    }).then(null, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
+// TODO: selectAndListen() on different elements individually
 
 </script>
 </body>
