@@ -13,6 +13,10 @@ if(!jQluster) { var jQluster = {}; }
         });
     };
 
+    my.argsToArray = function(arguments_object) {
+        return Array.prototype.slice.call(arguments_object, 0);
+    };
+
     my.clone = function(obj) {
         return $.extend(true, {}, obj);
     };

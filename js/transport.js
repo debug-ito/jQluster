@@ -195,7 +195,7 @@ if(!jQluster) { var jQluster = {}; }
                         remote_type: "xpath", remote_xpath: my.xpathFor($(this)),
                         remote_id: self.remote_id
                     };
-                    var callback_args = Array.prototype.slice.call(arguments, 0);
+                    var callback_args = my.argsToArray(arguments);
                     self.connection_object.send({
                         message_id: my.uuid(), message_type: "signal",
                         from: self.remote_id, to: request_from,

@@ -286,8 +286,8 @@ asyncTest("selectAndListen - single target", function() {
         var blog = bob_connection.getLog();
         deepEqual(event_this, {remote_type: "xpath", remote_id: "bob", remote_xpath: "//html[1]/body[1]/div[@id='test']/input[@id='test_button']"});
         ok(jQluster.defined(event));
-        console.log("delivered event in selectAndListen (single target):");
-        console.log(event);
+        // console.log("delivered event in selectAndListen (single target):");
+        // console.log(event);
         is(alog.length, 2);
         is(alog[1].direction, "receive");
         is(alog[1].message.message_type, "signal");
@@ -308,8 +308,71 @@ asyncTest("selectAndListen - single target", function() {
     });
 });
 
+asyncTest("selectAndListen - no target: listen request should be pending", function() {
+    setupAlice();
+    alice_connection.clearLog();
+    var event_deferred = $.Deferred();
+    alice.selectAndListen({
+        remote_id: "bob",
+        eval_code: "$('#test_button')",
+        method: 'dblclick',
+        callback: function() {
+            var args_array = jQluster.argsToArray(arguments);
+            if(event_deferred.state() !== 'pending') {
+                ok(false, "callback is called more than once");
+                return;
+            }
+            event_deferred.resolve(this, args_array);
+        }
+    }).then(function() {
+        var alog = alice_connection.getLog();
+        is(alog.length, 1);
+        is(alog[0].direction, "send");
+        is(alog[0].message.message_type, "select_and_listen");
+        is(alog[0].message.from, "alice");
+        is(alog[0].message.to, "bob");
+        deepEqual(alog[0].message.body, {
+            remote_id: "bob", eval_code: "$('#test_button')",
+            method: "dblclick", options: []
+        });
+        $('#test_button').trigger('dblclick');
+        return delay(0);
+    }).then(function() {
+        is(event_deferred.state(), "pending", "event does not occur because there is no 'bob' node yet.");
+        setupBob();
+        $('#test_button').trigger("dblclick");
+        return event_deferred.promise();
+    }).then(function(callback_this, callback_args) {
+        deepEqual(callback_this, {remote_type: "xpath", remote_id: "bob", remote_xpath: "//html[1]/body[1]/div[@id='test']/input[@id='test_button']"});
+        var alog = alice_connection.getLog();
+        var blog = bob_connection.getLog();
+        is(alog.length, 2);
+        is(alog[1].direction, "receive");
+        is(alog[1].message.message_type, "signal");
+        is(alog[1].message.from, "bob");
+        is(alog[1].message.to, "alice");
+        deepEqual(alog[1].message.body, {
+            error: null, in_reply_to: alog[0].message.message_id,
+            callback_this: callback_this,
+            callback_args: callback_args
+        });
+        is(blog.length, 4);
+        is(blog[0].direction, "send");
+        is(blog[0].message.message_type, "register");
+        is(blog[1].direction, "receive");
+        is(blog[1].message.message_type, "register_reply");
+        is(blog[2].direction, "receive");
+        deepEqual(blog[2].message, alog[0].message);
+        is(blog[3].direction, "send");
+        deepEqual(jQluster.cloneViaJSON(blog[3].message), alog[1].message);
+    }).then(null, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
 // TODO: selectAndListen: event delegation
-// TODO: selectAndListen: no target
 // TODO: selectAndListen: multiple target
 // TODO: selectAndListen: multiple listen calls with the same signature to one target.
 
