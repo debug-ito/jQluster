@@ -15,6 +15,7 @@ if(!jQluster) { var jQluster = {}; }
         send: function(message) {
             // @return: nothing
             this.log.push({ direction: "send",  message: my.clone(message)});
+            console.log("send: type: " + message.message_type + ", from: " + message.from);
             if(message.message_type === "register") {
                 this.server.register(this, message.body.remote_id, message.message_id);
             }else {
@@ -34,6 +35,7 @@ if(!jQluster) { var jQluster = {}; }
         triggerReceive: function(message) {
             // @return: nothing
             this.log.push({ direction: "receive", message: my.clone(message)});
+            console.log("receive: type: " + message.message_type + ", to: " + message.to);
             $.each(this.receive_callbacks, function(i, callback) {
                 callback(message);
             });
@@ -46,27 +48,41 @@ if(!jQluster) { var jQluster = {}; }
     my.ServerLocal = function() {
         this.connections = {};
         this.register_log = [];
+        this.pending_messages_to = {};
     };
     my.ServerLocal.prototype = {
         register: function(connection, remote_id, register_message_id) {
             // @return: nothing
-            if(!this.connections[remote_id]) {
-                this.connections[remote_id] = [];
+            var self = this;
+            if(!self.connections[remote_id]) {
+                self.connections[remote_id] = [];
             }
-            this.register_log.push(remote_id);
-            this.connections[remote_id].push(connection);
-            this.distribute({
+            self.register_log.push(remote_id);
+            self.connections[remote_id].push(connection);
+            self.distribute({
                 message_id: my.uuid(),
                 message_type: "register_reply",
                 from: null, to: remote_id,
                 body: { error: null, in_reply_to: register_message_id }
             });
+            if(self.pending_messages_to[remote_id] && self.pending_messages_to[remote_id].length > 0) {
+                $.each(self.pending_messages_to[remote_id], function(i, message) {
+                    self.distribute(message);
+                });
+                self.pending_messages_to.length = 0;
+            }
         },
 
         distribute: function(message) {
             // @return: nothing
             var conn_list = this.connections[message.to];
-            if(!conn_list) return;
+            if(!conn_list) {
+                if(!this.pending_messages_to[message.to]) {
+                    this.pending_messages_to[message.to] = [];
+                }
+                this.pending_messages_to[message.to].push(my.clone(message));
+                return;
+            }
             $.each(conn_list, function(i, conn) {
                 var dup_message = my.clone(message);
                 conn.triggerReceive(dup_message);
