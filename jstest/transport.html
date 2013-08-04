@@ -454,7 +454,51 @@ asyncTest("selectAndListen - multiple targets", function() {
     });
 });
 
-// TODO: selectAndListen: event delegation
+asyncTest("selectAndListen - event delegation", function() {
+    setupAlice();
+    setupBob();
+    var event_deferred = $.Deferred();
+    alice.selectAndListen({
+        remote_id: "bob",
+        eval_code: "$('#test')",
+        method: "on",
+        options: ["click", "li"],
+        callback: function() {
+            if(event_deferred.state() !== 'pending') {
+                ok(false, "unexpected event");
+                return;
+            }
+            event_deferred.resolve(this, jQluster.argsToArray(arguments));
+        }
+    }).then(function() {
+        is(event_deferred.state(), "pending");
+        $('#test_button').trigger("click");
+        return delay(0.001);
+    }).then(function() {
+        is(event_deferred.state(), "pending");
+        $('#test').find('li').first().trigger('click');
+        return event_deferred.promise();
+    }).then(function(callback_this, callback_args) {
+        deepEqual(callback_this, {
+            remote_type: "xpath", remote_id: "bob", remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li[1]"
+        });
+        ok(jQluster.defined(callback_args));
+        
+        event_deferred = $.Deferred();
+        $('#test li.two').trigger('click');
+        return event_deferred.promise();
+    }).then(function(callback_this, callback_args) {
+        deepEqual(callback_this, {
+            remote_type: "xpath", remote_id: "bob", remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li[2]"
+        });
+        ok(jQluster.defined(callback_args));
+    }).then(null, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
 // TODO: selectAndListen: multiple listen calls with the same signature to one target.
 
 </script>
