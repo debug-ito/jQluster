@@ -1,5 +1,7 @@
 "use strict";
 
+// requires: jquery, jquery.ellocate
+
 if(!jQluster) { var jQluster = {}; }
 
 (function(my) {
@@ -17,5 +19,10 @@ if(!jQluster) { var jQluster = {}; }
 
     my.defined = function(val) {
         return (val !== null && typeof(val) !== 'undefined');
+    };
+
+    my.xpathFor = function(jquery_object) {
+        // https://github.com/bimech/ellocate.js
+        return jquery_object.ellocate().xpath;
     };
 })(jQluster);

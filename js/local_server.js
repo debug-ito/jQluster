@@ -1,7 +1,7 @@
 "use strict";
 
 // Local server and connection implementation for testing.
-// requires: util.js
+// requires: jquery, util.js
 
 if(!jQluster) { var jQluster = {}; }
 

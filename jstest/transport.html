@@ -14,8 +14,10 @@
     <li class="two">2</li>
     <li>3</li>
   </ul>
+  <input id="test_button" type="button" value="Test Button" />
 </div>
 <script src="../js/jquery.js"></script>
+<script src="../js/lib/jquery.ellocate.js"></script>
 <script src="./qunit.js"></script>
 <script src="../js/util.js"></script>
 <script src="../js/transport.js"></script>
@@ -50,6 +52,15 @@ var setupBob = function() {
     var ret = createTransport("bob");
     bob_connection = ret[0];
     bob = ret[1];
+};
+
+var delay = function(delay_sec, routine) {
+    var deferred = $.Deferred();
+    setTimeout(function() {
+        if(routine) routine();
+        deferred.resolve();
+    }, delay_sec);
+    return deferred.promise();
 };
 
 module("jQluster.Transport", {
@@ -147,12 +158,8 @@ asyncTest("selectAndGet - no target: messages should be pending.", function() {
         eval_code: "$('#test li').eq(2).text()",
         remote_id: "bob"
     });
-    var deferred_bob = $.Deferred();
-    setTimeout(function() {
-        setupBob();
-        deferred_bob.resolve();
-    }, 0.001);
-    $.when(promise_select, deferred_bob.promise()).then(function(data) {
+    var promise_bob = delay(0.001, setupBob);
+    $.when(promise_select, promise_bob).then(function(data) {
         var alog = alice_connection.getLog();
         var blog = bob_connection.getLog();
         is(data, "3", "data OK");
@@ -237,10 +244,74 @@ asyncTest("selectAndGet - multiple targets: the result is returned from any one 
     });
 });
 
-// TODO:
-// - selectAndGet with multiple targets.
-// - selectAndListen
+asyncTest("selectAndListen - single target", function() {
+    setupAlice();
+    setupBob();
+    alice_connection.clearLog();
+    bob_connection.clearLog();
+    var event_deferred = $.Deferred();
+    alice.selectAndListen({
+        remote_id: "bob",
+        eval_code: "$('#test input#test_button')",
+        method: "on",
+        options: ["click"],
+        callback: function(event) {
+            if(event_deferred.state() !== "pending") {
+                ok(false, "event callback called multiple times");
+            }
+            event_deferred.resolve(this, event);
+        }
+    }).then(function() {
+        var alog = alice_connection.getLog();
+        var blog = bob_connection.getLog();
+        is(alog.length, 1);
+        is(alog[0].direction, "send");
+        is(alog[0].message.message_type, "select_and_listen");
+        is(alog[0].message.from, "alice");
+        is(alog[0].message.to, "bob");
+        deepEqual(alog[0].message.body, {
+            remote_id: "bob", eval_code: "$('#test input#test_button')",
+            method: "on",
+            options: ["click"]
+        });
+        is(blog.length, 1);
+        is(blog[0].direction, "receive");
+        deepEqual(blog[0].message, alog[0].message);
+        
+        is(event_deferred.state(), "pending");
+        $('#test_button').trigger('click');
+        return event_deferred.promise();
+    }).then(function(event_this, event) {
+        var alog = alice_connection.getLog();
+        var blog = bob_connection.getLog();
+        deepEqual(event_this, {remote_type: "xpath", remote_id: "bob", remote_xpath: "//html[1]/body[1]/div[@id='test']/input[@id='test_button']"});
+        ok(jQluster.defined(event));
+        console.log("delivered event in selectAndListen (single target):");
+        console.log(event);
+        is(alog.length, 2);
+        is(alog[1].direction, "receive");
+        is(alog[1].message.message_type, "signal");
+        is(alog[1].message.from, "bob");
+        is(alog[1].message.to, "alice");
+        deepEqual(alog[1].message.body, {
+            error: null, in_reply_to: alog[0].message.message_id,
+            callback_this: event_this,
+            callback_args: [event]
+        });
+        is(blog.length, 2);
+        is(blog[1].direction, "send");
+        deepEqual(blog[1].message, alog[1].message);
+    }).then(null, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
 
+// TODO: selectAndListen: event delegation
+// TODO: selectAndListen: no target
+// TODO: selectAndListen: multiple target
+// TODO: selectAndListen: multiple listen calls with the same signature to one target.
 
 </script>
 </body>
