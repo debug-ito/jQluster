@@ -300,7 +300,7 @@ asyncTest("selectAndListen - single target", function() {
         });
         is(blog.length, 2);
         is(blog[1].direction, "send");
-        deepEqual(blog[1].message, alog[1].message);
+        deepEqual(jQluster.cloneViaJSON(blog[1].message), alog[1].message);
     }).then(null, function(error) {
         ok(false, "error: " + error);
     }).always(function() {

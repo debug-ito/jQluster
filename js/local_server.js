@@ -73,18 +73,20 @@ if(!jQluster) { var jQluster = {}; }
             }
         },
 
+
         distribute: function(message) {
             // @return: nothing
-            var conn_list = this.connections[message.to];
+            var self = this;
+            var conn_list = self.connections[message.to];
             if(!conn_list) {
-                if(!this.pending_messages_to[message.to]) {
-                    this.pending_messages_to[message.to] = [];
+                if(!self.pending_messages_to[message.to]) {
+                    self.pending_messages_to[message.to] = [];
                 }
-                this.pending_messages_to[message.to].push(my.clone(message));
+                self.pending_messages_to[message.to].push(my.clone(message));
                 return;
             }
             $.each(conn_list, function(i, conn) {
-                var dup_message = my.clone(message);
+                var dup_message = my.cloneViaJSON(message);
                 conn.triggerReceive(dup_message);
             });
         },

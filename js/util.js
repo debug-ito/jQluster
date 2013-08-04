@@ -17,6 +17,10 @@ if(!jQluster) { var jQluster = {}; }
         return $.extend(true, {}, obj);
     };
 
+    my.cloneViaJSON = function(obj) {
+        return JSON.parse(JSON.stringify(obj));
+    };
+
     my.defined = function(val) {
         return (val !== null && typeof(val) !== 'undefined');
     };
