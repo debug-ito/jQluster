@@ -194,9 +194,51 @@ asyncTest("selectAndGet - no target: messages should be pending.", function() {
     });
 });
 
+asyncTest("selectAndGet - multiple targets: the result is returned from any one of the receivers.", function() {
+    setupAlice();
+    setupBob();
+    var bob2_set = createTransport("bob");
+    var bob2_connection = bob2_set[0];
+    alice_connection.clearLog();
+    bob_connection.clearLog();
+    bob2_connection.clearLog();
+    alice.selectAndGet({
+        eval_code: "$('#test > ul').eq(0).children().eq(1).text()",
+        remote_id: "bob"
+    }).then(function(data) {
+        var alog = alice_connection.getLog();
+        var blog = bob_connection.getLog();
+        var b2log = bob_connection.getLog();
+        is(data, "2");
+        ok(alog.length >= 2, "alog should include 1 send and at least 1 receive.");
+        is(alog[0].direction, "send");
+        is(alog[0].message.message_type, "select_and_get");
+        is(alog[0].message.from, "alice");
+        is(alog[0].message.to, "bob");
+        deepEqual(alog[0].message.body, {eval_code: "$('#test > ul').eq(0).children().eq(1).text()", remote_id: "bob"});
+        is(alog[1].direction, "receive");
+        is(alog[1].message.message_type, "select_and_get_reply");
+        is(alog[1].message.to, "alice");
+        is(alog[1].message.from, "bob");
+        deepEqual(alog[1].message.body, {error: null, result: "2", in_reply_to: alog[0].message.message_id});
+
+        $.each([{label: "bob", log: blog}, {label: "bob2", log: b2log}], function(i, e) {
+            ok(e.log.length >= 1, e.log.label + " should at least have 'receive' log from alice");
+            is(e.log[0].direction, "receive", e.log.label + " [0] receive");
+            is(e.log[0].message.message_type, "select_and_get", e.log.label + " [0] type = select_and_get");
+            is(e.log[0].message.from, "alice", e.log.label + " [0] from = alice");
+            is(e.log[0].message.to, "bob", e.log.label + " [0] to = bob");
+            deepEqual(e.log[0].message.body, {eval_code: "$('#test > ul').eq(0).children().eq(1).text()", remote_id: "bob"}, e.log.label + " [0] body OK");
+        });
+    }, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
 // TODO:
 // - selectAndGet with multiple targets.
-// - selectAndGet with no target.
 // - selectAndListen
 
 
