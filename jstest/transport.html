@@ -499,26 +499,44 @@ asyncTest("selectAndListen - event delegation", function() {
     });
 });
 
-asyncTest("selectAndListen - multiple listen calls with the same signature to one target", function() {
+asyncTest("selectAndListen - multiple listen calls to a single remote DOM, remote off() method to remove the listeners", function() {
     setupAlice();
     setupBob();
-    var event_deferred = $.Deferred();
+    var event_deferreds;
+    var next_deferred_index;
     var request_base = {
         remote_id: "bob",
         eval_code: "$('#test').find('input#test_button')",
         method: "on",
         options: ["click"],
     };
-    alice.selectAndListen($.extend({}, request_base, {callback: function() {
-        if(event_deferred.state() !== "pending") {
-            ok(false, "unexpected callback");
-            return;
+    var initDeferreds = function(num) {
+        var i;
+        event_deferreds = [];
+        for(i = 0 ; i < num ; i++) {
+            event_deferreds.push($.Deferred());
         }
-        event_deferred.resolve("callback1", this, jQluster.argsToArray(arguments));
-    }})).then(function() {
-        is(event_deferred.state(), "pending");
+        next_deferred_index = 0;
+    };
+    var createCallback = function(label) {
+        return function() {
+            var d = event_deferreds[next_deferred_index];
+            if(!jQluster.defined(d) || d.state() !== "pending") {
+                ok(false, "unexpected callback");
+                return;
+            }
+            next_deferred_index++;
+            d.resolve(label, this, jQluster.argsToArray(arguments));
+        }
+    };
+    var waitDeferreds = function() {
+        return $.when.apply($, event_deferreds);
+    };
+    initDeferreds(1);
+    alice.selectAndListen($.extend({}, request_base, {callback: createCallback("callback1")})).then(function() {
+        is(event_deferreds[0].state(), "pending");
         $('#test_button').trigger('click');
-        return event_deferred.promise();
+        return waitDeferreds();
     }).then(function(callback_type, callback_this, callback_args) {
         is(callback_type, "callback1");
         deepEqual(callback_this, {
@@ -527,25 +545,37 @@ asyncTest("selectAndListen - multiple listen calls with the same signature to on
         });
         ok(jQluster.defined(callback_args));
 
-        event_deferred = $.Deferred();
-        return alice.selectAndListen($.extend({}, request_base, {callback: function() {
-            if(event_deferred.state() !== "pending") {
-                ok(false, "unexpected callback");
-                return;
-            }
-            event_deferred.resolve("callback2", this, jQluster.argsToArray(arguments));
-        }}));
+        initDeferreds(2);
+        return alice.selectAndListen($.extend({}, request_base, {callback: createCallback("callback2")}));
     }).then(function() {
-        is(event_deferred.state(), "pending");
+        is(event_deferreds[0].state(), "pending");
+        is(event_deferreds[1].state(), "pending");
         $('#test_button').trigger('click');
-        return event_deferred.promise();
-    }).then(function(callback_type, callback_this, callback_args) {
-        is(callback_type, "callback1", "callback1 is still valid. callback2 is discarded.");
-        deepEqual(callback_this, {
+        return waitDeferreds();
+    }).then(function(result1, result2) {
+        is(result1[0], "callback1", "callback1 fired");
+        deepEqual(result1[1], {
             remote_type: "xpath", remote_id: "bob",
             remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
         });
-        ok(jQluster.defined(callback_args));
+        ok(jQluster.defined(result1[2]));
+        is(result2[0], "callback2", "callback2 fired");
+        deepEqual(result2[1], {
+            remote_type: "xpath", remote_id: "bob",
+            remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
+        });
+        ok(jQluster.defined(result2[2]));
+
+        initDeferreds(0);
+        return alice.selectAndGet({
+            remote_id: "bob",
+            eval_code: "$('#test_button').off('click')"
+        });
+    }).then(function() {
+        $('#test_button').trigger('click');
+        return delay(0.001);
+    }).then(function() {
+        ok(true, 'If there is no "unexpected callback" error, the callback is removed as expected.');
     }).then(null, function(error) {
         ok(false, "error: " + error);
     }).always(function() {
@@ -553,7 +583,10 @@ asyncTest("selectAndListen - multiple listen calls with the same signature to on
     });
 });
 
+
+// TODO: selectAndListen() with jQuery.each
 // TODO: selectAndListen() on different elements individually
+// TODO: selectAndGet() for remote animation. detect finish of the remote animation.
 
 </script>
 </body>

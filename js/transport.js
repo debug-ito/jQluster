@@ -20,7 +20,6 @@ if(!jQluster) { var jQluster = {}; }
         self.connection_object = args.connection_object;
         self.pending_request_for = {};
         self.signal_callback_for = {};
-        self.listen_signatures = {};
         
         self.connection_object.onReceive(function(message) { self._onReceive(message); });
         self.connection_object.send({
@@ -72,11 +71,6 @@ if(!jQluster) { var jQluster = {}; }
             // is deferred and delivered to the remote node when it
             // appears. If there are multiple remote nodes, all of
             // them receive the listen request.
-            //
-            // A node keeps only one callback for one "listen"
-            // request. If a node receives multiple listen requests
-            // with the same signature, only the first received one
-            // is valid. Callbacks for newer requests are discarded.
             //
             // args.callback is called when the event occurs in the
             // remote node. Arguments for the args.callback is exact
@@ -182,20 +176,12 @@ if(!jQluster) { var jQluster = {}; }
             callback(message.body.callback_this, message.body.callback_args);
         },
 
-        _createSignatureForListenRequest: function(listen_request_body) {
-            return JSON.stringify(listen_request_body);
-        },
-
         _processSelectAndListen: function(message) {
             var self = this;
             var jq_node;
             var args_for_method;
             var request_id = message.message_id;
             var request_from = message.from;
-            var request_signature = self._createSignatureForListenRequest(message.body);
-            if(self.listen_signatures[request_signature]) {
-                return;
-            }
             try {
                 jq_node = eval(message.body.eval_code);
                 args_for_method = message.body.options;
@@ -212,7 +198,6 @@ if(!jQluster) { var jQluster = {}; }
                                 callback_this: callback_this, callback_args: callback_args}
                     });
                 });
-                self.listen_signatures[request_signature] = true;
                 jq_node[message.body.method].apply(jq_node, args_for_method);
             }catch(e) {
                 console.error("_processSelectAndListen error: ");
