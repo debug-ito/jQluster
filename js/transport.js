@@ -7,7 +7,8 @@ if(!jQluster) { var jQluster = {}; }
 
 
 (function(my, $) {
-    my.Transport = function(args) {
+    var myclass;
+    myclass = my.Transport = function(args) {
         var self = this;
         // @params: args.remote_id, args.connection_object
         if(!my.defined(args.remote_id)) {
@@ -28,7 +29,7 @@ if(!jQluster) { var jQluster = {}; }
             body: { remote_id: self.remote_id }
         });
     };
-    my.Transport.prototype = {
+    myclass.prototype = {
         selectAndGet: function(args) {
             // @params: args.eval_code, args.remote_id
             // @return: Deferred that contains the obtained data
@@ -74,11 +75,13 @@ if(!jQluster) { var jQluster = {}; }
             //
             // args.callback is called when the event occurs in the
             // remote node. Arguments for the args.callback is exact
-            // copy of the arguments for the remote callback. 'this'
-            // object in the args.callback is an object representing
-            // the 'this' DOM object in the remote callback. The
-            // structure of 'this' object is: {"remote_type": "xpath",
-            // "remote_id": REMOTE_ID, "remote_xpath": XPATH_STR}.
+            // copy of the arguments for the remote callback, except
+            // that DOM elements are converted to 'Pointer
+            // objects'. The structure of a Pointer object is:
+            // {"remote_type": "xpath", "remote_id": REMOTE_ID,
+            // "remote_xpath": XPATH_STR}. 'this' object for
+            // args.callback is the copy of 'this' object for the
+            // remote callback. It may be a Pointer object, too.
             
             var self = this;
             var result_d = $.Deferred();
@@ -176,6 +179,18 @@ if(!jQluster) { var jQluster = {}; }
             callback(message.body.callback_this, message.body.callback_args);
         },
 
+        _createRemoteDOMPointerIfDOM: function(obj) {
+            if(my.isHTMLElement(obj)) {
+               return {
+                   remote_id: this.remote_id,
+                   remote_type: "xpath",
+                   remote_xpath: my.xpathFor($(obj))
+               };
+            }else {
+                return obj;
+            }
+        },
+
         _processSelectAndListen: function(message) {
             var self = this;
             var jq_node;
@@ -186,11 +201,12 @@ if(!jQluster) { var jQluster = {}; }
                 jq_node = eval(message.body.eval_code);
                 args_for_method = message.body.options;
                 args_for_method.push(function() {
-                    var callback_this = {
-                        remote_type: "xpath", remote_xpath: my.xpathFor($(this)),
-                        remote_id: self.remote_id
-                    };
-                    var callback_args = my.argsToArray(arguments);
+                    var callback_this = self._createRemoteDOMPointerIfDOM(this);
+                    var callback_args = [];
+                    var i;
+                    for(i = 0 ; i < arguments.length ; i++) {
+                        callback_args.push(self._createRemoteDOMPointerIfDOM(arguments[i]));
+                    }
                     self.connection_object.send({
                         message_id: my.uuid(), message_type: "signal",
                         from: self.remote_id, to: request_from,

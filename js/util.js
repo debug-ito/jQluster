@@ -29,8 +29,15 @@ if(!jQluster) { var jQluster = {}; }
         return (val !== null && typeof(val) !== 'undefined');
     };
 
-    my.xpathFor = function(jquery_object) {
+    my.xpathFor = function($jquery_object) {
         // https://github.com/bimech/ellocate.js
-        return jquery_object.ellocate().xpath;
+        return $jquery_object.ellocate().xpath;
+    };
+
+    my.isHTMLElement = function(obj) {
+        // ** http://stackoverflow.com/questions/384286/javascript-isdom-how-do-you-check-if-a-javascript-object-is-a-dom-object
+        return (typeof HTMLElement === "object"
+                ? obj instanceof HTMLElement
+                : obj && typeof obj === "object" && obj !== null && obj.nodeType === 1 && typeof obj.nodeName==="string");
     };
 })(jQluster);
