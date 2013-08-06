@@ -10,6 +10,7 @@
 <div id="qunit-fixture"></div>
 <script src="../js/lib/jquery.js"></script>
 <script src="../js/lib/jquery.ellocate.js"></script>
+<script src="../js/lib/jquery.xpath.js"></script>
 <script src="./qunit.js"></script>
 <script src="../js/util.js"></script>
 <script src="../js/transport.js"></script>
@@ -583,8 +584,46 @@ asyncTest("selectAndListen - multiple listen calls to a single remote DOM, remot
     });
 });
 
+asyncTest("selectAndListen - remote each() method", function() {
+    setupAlice();
+    setupBob();
+    var each_results = [];
+    alice.selectAndListen({
+        remote_id: "bob",
+        eval_code: "$('#test').find('li')",
+        method: 'each',
+        callback: function() {
+            each_results.push({callback_this: this,
+                               callback_args: jQluster.argsToArray(arguments)});
+        }
+    }).then(function() {
+        return delay(0.001);
+    }).then(function() {
+        var i;
+        var exp_pointer;
+        is(each_results.length, 3, "callbacks called 3 times");
+        for(i = 0 ; i < each_results.length ; i++) {
+            exp_pointer = {
+                remote_type: "xpath", remote_id: "bob",
+                remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li["+(i+1)+"]"
+            };
+            deepEqual(each_results[i].callback_this, exp_pointer, "results "+i+", callback_this");
+            deepEqual(each_results[i].callback_args, [i, exp_pointer], "results "+i+", callback_args");
+        }
+        return alice.selectAndGet({
+            remote_id: "bob",
+            eval_code: '$(document).xpath("'+ each_results[1].callback_this.remote_xpath +'").attr("class")',
+        });
+    }).then(function(result) {
+        is(result, "two", "selectAndGet with xpath OK");
+    }).then(null, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
 
-// TODO: selectAndListen() with jQuery.each
+
 // TODO: selectAndListen() on different elements individually
 // TODO: selectAndGet() for remote animation. detect finish of the remote animation.
 
