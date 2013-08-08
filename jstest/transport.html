@@ -247,6 +247,26 @@ asyncTest("selectAndGet - multiple targets: the result is returned from any one 
     });
 });
 
+asyncTest("selectAndGet - get promise to wait animation", function() {
+    setupAlice();
+    setupBob();
+    alice.selectAndGet({
+        remote_id: "bob",
+        eval_code: '$("#test").find("li").eq(1).fadeOut()'
+    });
+    is($("li.two").css("display"), "list-item", "the element is still visible");
+    alice.selectAndGet({
+        remote_id: "bob",
+        eval_code: '$("li.two")',
+    }).then(function() {
+        is($("li.two").css("display"), "none", "the element is invisible now");
+    }).then(null, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
 asyncTest("selectAndListen - single target", function() {
     setupAlice();
     setupBob();
@@ -623,9 +643,7 @@ asyncTest("selectAndListen - remote each() method", function() {
     });
 });
 
-
-// TODO: selectAndListen() on different elements individually
-// TODO: selectAndGet() for remote animation. detect finish of the remote animation.
+// TODO: erroneous cases, like syntax error in eval_code (not necessary in prototype phase)
 
 </script>
 </body>

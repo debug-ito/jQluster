@@ -150,19 +150,25 @@ if(!jQluster) { var jQluster = {}; }
 
         _processSelectAndGet: function(request_message) {
             var self = this;
-            var result = null;
-            var error = null;
+            var result_p = null;
             try {
-                result = eval(request_message.body.eval_code);
+                result_p = $.when(eval(request_message.body.eval_code));
             }catch(e) {
-                error = e;
+                result_p = $.Deferred();
+                result_p.reject(e);
             }
             var reply = {
                 message_id: my.uuid(), message_type: "select_and_get_reply",
                 from: self.remote_id, to: request_message.from,
-                body: { "error": error,  "result": result, "in_reply_to": request_message.message_id}
+                body: { "error": null,  "result": null, "in_reply_to": request_message.message_id}
             };
-            self.connection_object.send(reply);
+            result_p.then(function(result) {
+                reply.body.result = result;
+            }, function(error) {
+                reply.body.error = error;
+            }).always(function() {
+                self.connection_object.send(reply);
+            });
         },
 
         _processSignal: function(message) {
