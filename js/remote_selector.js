@@ -64,6 +64,27 @@ if(!jQluster) { var jQluster = {}; }
             console.log(transport_args);
             self.transport.selectAndListen(transport_args);
             return self;
+        },
+        each: function(handler) {
+            var self = this;
+            if(!my.defined(handler)) {
+                throw "handler parameter is mandatory";
+            }
+            var loop_enabled = true;
+            self.transport.selectAndListen({
+                eval_code: self._getEvalCode(),
+                method: "each", remote_id: self.remote_id,
+                callback: function(index, remote_elem) {
+                    var callback_result;
+                    if(loop_enabled) {
+                        callback_result = handler.call(this, index, remote_elem);
+                        if(callback_result === false) {
+                            loop_enabled = false;
+                        }
+                    }
+                }
+            });
+            return self;
         }
     };
 
@@ -111,10 +132,6 @@ if(!jQluster) { var jQluster = {}; }
     });
 
 })(jQluster, jQuery);
-
-// TODO: Implement .filter(func) and .map(func). Not so trivial.
-
-// TODO: Implement off().
 
 // We need another front-end library like "jQluster functional" or something??
 // or, it is rather "RemoteSelectorFactory".

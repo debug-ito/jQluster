@@ -802,12 +802,13 @@ module("jQluster.RemoteSelector - callbacks", {
     teardown: teardownTest,
 });
 
-asyncTest("on() (direct)", function() {
+asyncTest("on() - direct", function() {
     var remote = new jQluster.RemoteSelector({
         transport: alice, remote_id: "bob", selector: "#test"
     });
     var timelimit = setTimeLimit();
-    remote.find("#test_button").on("click", function(event) {
+    var button_remote = remote.find("#test_button");
+    var on_ret = button_remote.on("click", function(event) {
         clearTimeout(timelimit);
         is(event.type, "click");
         deepEqual(this, {
@@ -816,15 +817,16 @@ asyncTest("on() (direct)", function() {
         });
         start();
     });
+    is(on_ret, button_remote);
     $('#test_button').trigger('click');
 });
 
-asyncTest("on() (delegated)", function() {
+asyncTest("on() - delegated", function() {
     var remote = new jQluster.RemoteSelector({
         transport: alice, remote_id: "bob", selector: "#test"
     });
     var timelimit = setTimeLimit();
-    remote.on("click", "input", function(event) {
+    var on_ret = remote.on("click", "input", function(event) {
         clearTimeout(timelimit);
         is(event.type, "click");
         deepEqual(this, {
@@ -833,15 +835,16 @@ asyncTest("on() (delegated)", function() {
         });
         start();
     });
+    is(on_ret, remote);
     $('#test_button').trigger('click');
 });
 
-asyncTest("on() (with data)", function() {
+asyncTest("on() - with data", function() {
     var remote = new jQluster.RemoteSelector({
         transport: alice, remote_id: "bob", selector: "#test_button"
     });
     var timelimit = setTimeLimit();
-    remote.on("click", null, {some: "data"}, function(event) {
+    var on_ret = remote.on("click", null, {some: "data"}, function(event) {
         clearTimeout(timelimit);
         is(event.type, "click");
         deepEqual(event.data, {some: "data"});
@@ -851,10 +854,11 @@ asyncTest("on() (with data)", function() {
         });
         start();
     });
+    is(on_ret, remote);
     $('#test_button').trigger('click');
 });
 
-asyncTest("on() (Object as events)", function() {
+asyncTest("on() - Object as events", function() {
     var remote = new jQluster.RemoteSelector({
         transport: alice, remote_id: "bob", selector: "#test_button"
     });
@@ -864,7 +868,7 @@ asyncTest("on() (Object as events)", function() {
         remote_type: "xpath", remote_id: "bob",
         remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
     };
-    remote.on({
+    var on_ret = remote.on({
         click: function(event) {
             is(event.type, "click");
             deepEqual(this, exp_remote_dom);
@@ -876,6 +880,7 @@ asyncTest("on() (Object as events)", function() {
             events.mouseenter.resolve();
         }
     });
+    is(on_ret, remote);
     $.when(events.click.promise(), events.mouseenter.promise()).then(null, function(error) {
         ok(false, "error: " + error);
     }).always(function() {
@@ -886,12 +891,74 @@ asyncTest("on() (Object as events)", function() {
     $("#test_button").trigger("mouseenter");
 });
 
-// asyncTest("each()", function() {
-//     ok(false, "todo");
-//     start();
-// });
+asyncTest("each() - full loop", function() {
+    var remote = new jQluster.RemoteSelector({
+        transport: alice, remote_id: "bob", selector: "#test li"
+    });
+    var results = [];
+    var each_ret = remote.each(function(i, elem) {
+        results.push([this, i, elem]);
+    });
+    is(each_ret, remote, "return value of each()");
+    var exp_elems = [
+        {remote_type: "xpath", remote_id: "bob",
+         remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li[1]"},
+        {remote_type: "xpath", remote_id: "bob",
+         remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li[2]"},
+        {remote_type: "xpath", remote_id: "bob",
+         remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li[3]"},
+    ];
+    delay(0.05).then(function() {
+        deepEqual(
+            results,
+            [[exp_elems[0], 0, exp_elems[0]],
+             [exp_elems[1], 1, exp_elems[1]],
+             [exp_elems[2], 2, exp_elems[2]]]
+        );
+    }, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
+asyncTest("each() - breaking loop", function() {
+    var remote = new jQluster.RemoteSelector({
+        transport: alice, remote_id: "bob", selector: "#test li"
+    });
+    var results = [];
+    var each_ret = remote.each(function(i, elem) {
+        results.push([this, i, elem]);
+        if(i === 1) {
+            return false;
+        }
+    });
+    is(each_ret, remote);
+    var exp_elems = [
+        {remote_type: "xpath", remote_id: "bob",
+         remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li[1]"},
+        {remote_type: "xpath", remote_id: "bob",
+         remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li[2]"},
+    ];
+    delay(0.05).then(function() {
+        deepEqual(
+            results,
+            [[exp_elems[0], 0, exp_elems[0]],
+             [exp_elems[1], 1, exp_elems[1]]]
+        );
+    }, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
 
 
+// TODO: Implement .filter(func) and .map(func). Not so trivial.
+
+// TODO: check return value of on() and each()
+
+// TODO: Implement off().
 // TODO: remote equivalent of $(document) and $(window).
 // TODO: wrapping a remote object {remote_type: ...} with jQluster function $$()
 //       should return a RemoteSelector.
