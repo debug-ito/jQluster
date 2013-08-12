@@ -42,6 +42,7 @@ if(!jQluster) { var jQluster = {}; }
     };
 
     my.quoteString = function(str) {
+        str = "" + str;
         return '"' + str.replace('"', '\\"')  + '"';
     };
 })(jQluster);

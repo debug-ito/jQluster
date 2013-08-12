@@ -683,6 +683,51 @@ test("constructor: xpath", function() {
     is(remote._getEvalCode(), "$(document).xpath(\"//html[1]/body[1]/div[@id='#test']\")");
 });
 
+module("jQluster.RemoteSelector - selection", {
+    setup: function() {
+        setupTest();
+        setupAlice();
+        setupBob();
+    },
+    teardown: teardownTest,
+});
+
+
+$.each([
+    {method: "children", args: [".hoge"], exp: '$("#top").children(".hoge")'},
+    {method: "closest", args: [".hoge"], exp: '$("#top").closest(".hoge")'},
+    {method: "contents", args: [], exp: '$("#top").contents()'},
+    {method: "eq", args: [4], exp: '$("#top").eq(4)'},
+    {method: "end", args: [], exp: '$("#top").end()'},
+    {method: "filter", args: [".hoge"], exp: '$("#top").filter(".hoge")'},
+    {method: "find", args: [".hoge"], exp: '$("#top").find(".hoge")'},
+    {method: "first", args: [], exp: '$("#top").first()'},
+    {method: "has", args: [".hoge"], exp: '$("#top").has(".hoge")'},
+    {method: "is", args: [".hoge"], exp: '$("#top").is(".hoge")'},
+    {method: "last", args: [], exp: '$("#top").last()'},
+    {method: "next", args: [".hoge"], exp: '$("#top").next(".hoge")'},
+    {method: "nextAll", args: [".hoge"], exp: '$("#top").nextAll(".hoge")'},
+    {method: "nextUntil", args: [".hoge", ".foobar"], exp: '$("#top").nextUntil(".hoge",".foobar")'},
+    {method: "not", args: [".hoge"], exp: '$("#top").not(".hoge")'},
+    {method: "offsetParent", args: [], exp: '$("#top").offsetParent()'},
+    {method: "parent", args: [".hoge"], exp: '$("#top").parent(".hoge")'},
+    {method: "parents", args: [".hoge"], exp: '$("#top").parents(".hoge")'},
+    {method: "parentsUntil", args: [".hoge", ".foobar"], exp: '$("#top").parentsUntil(".hoge",".foobar")'},
+    {method: "prev", args: [".hoge"], exp: '$("#top").prev(".hoge")'},
+    {method: "prevAll", args: [], exp: '$("#top").prevAll()'},
+    {method: "prevUntil", args: [".hoge", ".foobar"], exp: '$("#top").prevUntil(".hoge",".foobar")'},
+    {method: "siblings", args: [".hoge"], exp: '$("#top").siblings(".hoge")'},
+    {method: "slice", args: [4, 9], exp: '$("#top").slice(4,9)'}
+], function(i, testcase) {
+    test(testcase.method + "()", function() {
+        var remote = new jQluster.RemoteSelector({
+            transport: alice, remote_id: "bob",
+            selector: '#top'
+        });
+        is(remote[testcase.method].apply(remote, testcase.args)._getEvalCode(), testcase.exp);
+    });
+});
+
 </script>
 </body>
 </html>

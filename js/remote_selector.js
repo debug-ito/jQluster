@@ -17,6 +17,7 @@ if(!jQluster) { var jQluster = {}; }
             throw "remote_id parameter is mandatory";
         }
         this.transport = args.transport;
+        this.remote_id = args.remote_id;
         if(my.defined(args.xpath)) {
             this.eval_code = myclass._getEvalCodeFromXPath(args.xpath);
         }else if(my.defined(args.selector)) {
@@ -36,9 +37,43 @@ if(!jQluster) { var jQluster = {}; }
     myclass.prototype = {
         _getEvalCode: function() { return this.eval_code; }
     };
+
+    var selectionMethod = function(method_name) {
+        myclass.prototype[method_name] = function() {
+            var i;
+            var arg;
+            var quoted_args = [];
+            for(i = 0 ; i < arguments.length ; i++) {
+                arg = arguments[i];
+                quoted_args.push(
+                                     arg === null ? "null"
+                              : arg === undefined ? "undefined"
+                        : typeof arg === "number" ? arg
+                                                  : my.quoteString(arg)
+                );
+            }
+            return new myclass({
+                transport: this.transport, remote_id: this.remote_id,
+                eval_code: this.eval_code + "." + method_name + "("+ quoted_args.join(",") +")"
+            });
+        };
+    };
+    $.each([
+        "children", "closest", "contents", "eq",
+        "end", "filter", "find", "first", "has", "is", "last",
+        "next", "nextAll", "nextUntil", "not", "offsetParent",
+        "parent", "parents", "parentsUntil",
+        "prev", "prevAll", "prevUntil", "siblings", "slice",
+    ], function(i, method_name) {
+        selectionMethod(method_name);
+    });
+
+
+
     
 })(jQluster, jQuery);
 
+// TODO: Implement .filter(func) and .map(func). Not so trivial.
 
 // We need another front-end library like "jQluster functional" or something??
 // or, it is rather "RemoteSelectorFactory".
