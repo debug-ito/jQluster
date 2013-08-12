@@ -15,6 +15,7 @@
 <script src="../js/util.js"></script>
 <script src="../js/transport.js"></script>
 <script src="../js/local_server.js"></script>
+<script src="../js/remote_selector.js"></script>
 <script>
 "use strict";
 
@@ -56,11 +57,10 @@ var delay = function(delay_sec, routine) {
     return deferred.promise();
 };
 
-module("jQluster.Transport", {
-    setup: function() {
-        server = new jQluster.ServerLocal();
-        $('#qunit-fixture').append(
-              '<div id="test">'
+var setupTest = function() {
+    server = new jQluster.ServerLocal();
+    $('#qunit-fixture').append(
+        '<div id="test">'
             +   '<ul>'
             +     '<li>1</li>'
             +     '<li class="two">2</li>'
@@ -68,15 +68,20 @@ module("jQluster.Transport", {
             +   '</ul>'
             +   '<input id="test_button" type="button" value="Test Button" />'
             + '</div>'
-        );
-    },
-    teardown: function() {
-        server = undefined;
-        alice = undefined;
-        alice_connection = undefined;
-        bob = undefined;
-        bob_connection = undefined;
-    }
+    );
+};
+
+var teardownTest = function() {
+    server = undefined;
+    alice = undefined;
+    alice_connection = undefined;
+    bob = undefined;
+    bob_connection = undefined;
+};
+
+module("jQluster.Transport", {
+    setup: setupTest,
+    teardown: teardownTest,
 });
 
 test("registration", function() {
@@ -644,6 +649,39 @@ asyncTest("selectAndListen - remote each() method", function() {
 });
 
 // TODO: erroneous cases, like syntax error in eval_code (not necessary in prototype phase)
+
+module("jQluster.RemoteSelector", {
+    setup: function() {
+        setupTest();
+        setupAlice();
+        setupBob();
+    },
+    teardown: teardownTest,
+});
+
+test("constructor: eval_code", function() {
+    var remote = new jQluster.RemoteSelector({
+        transport: alice,
+        eval_code: "$('#test').children('.hoge')"
+    });
+    is(remote._getEvalCode(), "$('#test').children('.hoge')");
+});
+
+test("constructor: selector", function() {
+    var remote = new jQluster.RemoteSelector({
+        transport: alice,
+        selector: '#test .hoge'
+    });
+    is(remote._getEvalCode(), '$("#test .hoge")');
+});
+
+test("constructor: xpath", function() {
+   var remote = new jQluster.RemoteSelector({
+       transport: alice,
+       xpath: "//html[1]/body[1]/div[@id='#test']"
+   }) ;
+    is(remote._getEvalCode(), "$(document).xpath(\"//html[1]/body[1]/div[@id='#test']\")");
+});
 
 </script>
 </body>
