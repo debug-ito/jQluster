@@ -97,6 +97,15 @@ var teardownTest = function() {
     bob_connection = undefined;
 };
 
+var TIMEOUT_MSEC = 3000;
+
+var setTimeLimit = function() {
+    return setTimeout(function() {
+        ok(false, "It tooks too long.");
+        start();
+    }, TIMEOUT_MSEC);
+};
+
 module("jQluster.Transport", {
     setup: setupTest,
     teardown: teardownTest,
@@ -787,7 +796,105 @@ test("chained selections", function() {
 });
 
 
+////////////////////////////////////////////////////////////////////////
+module("jQluster.RemoteSelector - callbacks", {
+    setup: setupAll,
+    teardown: teardownTest,
+});
+
+asyncTest("on() (direct)", function() {
+    var remote = new jQluster.RemoteSelector({
+        transport: alice, remote_id: "bob", selector: "#test"
+    });
+    var timelimit = setTimeLimit();
+    remote.find("#test_button").on("click", function(event) {
+        clearTimeout(timelimit);
+        is(event.type, "click");
+        deepEqual(this, {
+            remote_type: "xpath", remote_id: "bob",
+            remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
+        });
+        start();
+    });
+    $('#test_button').trigger('click');
+});
+
+asyncTest("on() (delegated)", function() {
+    var remote = new jQluster.RemoteSelector({
+        transport: alice, remote_id: "bob", selector: "#test"
+    });
+    var timelimit = setTimeLimit();
+    remote.on("click", "input", function(event) {
+        clearTimeout(timelimit);
+        is(event.type, "click");
+        deepEqual(this, {
+            remote_type: "xpath", remote_id: "bob",
+            remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
+        });
+        start();
+    });
+    $('#test_button').trigger('click');
+});
+
+asyncTest("on() (with data)", function() {
+    var remote = new jQluster.RemoteSelector({
+        transport: alice, remote_id: "bob", selector: "#test_button"
+    });
+    var timelimit = setTimeLimit();
+    remote.on("click", null, {some: "data"}, function(event) {
+        clearTimeout(timelimit);
+        is(event.type, "click");
+        deepEqual(event.data, {some: "data"});
+        deepEqual(this, {
+            remote_type: "xpath", remote_id: "bob",
+            remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
+        });
+        start();
+    });
+    $('#test_button').trigger('click');
+});
+
+asyncTest("on() (Object as events)", function() {
+    var remote = new jQluster.RemoteSelector({
+        transport: alice, remote_id: "bob", selector: "#test_button"
+    });
+    var timelimit = setTimeLimit();
+    var events = {click: $.Deferred(), mouseenter: $.Deferred()};
+    var exp_remote_dom = {
+        remote_type: "xpath", remote_id: "bob",
+        remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
+    };
+    remote.on({
+        click: function(event) {
+            is(event.type, "click");
+            deepEqual(this, exp_remote_dom);
+            events.click.resolve();
+        },
+        mouseenter: function(event) {
+            is(event.type, "mouseenter");
+            deepEqual(this, exp_remote_dom);
+            events.mouseenter.resolve();
+        }
+    });
+    $.when(events.click.promise(), events.mouseenter.promise()).then(null, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        clearTimeout(timelimit);
+        start();
+    });
+    $("#test_button").trigger("click");
+    $("#test_button").trigger("mouseenter");
+});
+
+// asyncTest("each()", function() {
+//     ok(false, "todo");
+//     start();
+// });
+
+
 // TODO: remote equivalent of $(document) and $(window).
+// TODO: wrapping a remote object {remote_type: ...} with jQluster function $$()
+//       should return a RemoteSelector.
 
 </script>
 </body>

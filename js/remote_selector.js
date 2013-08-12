@@ -36,6 +36,35 @@ if(!jQluster) { var jQluster = {}; }
     };
     myclass.prototype = {
         _getEvalCode: function() { return this.eval_code; },
+        on: function() {
+            var self = this;
+            var args = my.argsToArray(arguments);
+            var events = args.shift();
+            if(!my.defined(events)) {
+                throw "events parameter is mandatory";
+            }
+            if($.isPlainObject(events)) {
+                $.each(events, function(event_name, handler) {
+                    var args_for_next = [event_name].concat(args);
+                    args_for_next.push(handler);
+                    self.on.apply(self, args_for_next);
+                });
+                return self;
+            }
+            var handler = args.pop();
+            if(!my.defined(handler)) {
+                throw "handler parameter is mandatory";
+            }
+            var options = [events].concat(args);
+            var transport_args = {
+                eval_code: self._getEvalCode(),
+                method: "on", options: options,
+                remote_id: self.remote_id, callback: handler
+            };
+            console.log(transport_args);
+            self.transport.selectAndListen(transport_args);
+            return self;
+        }
     };
 
     var selectionMethod = function(method_name) {
@@ -84,6 +113,8 @@ if(!jQluster) { var jQluster = {}; }
 })(jQluster, jQuery);
 
 // TODO: Implement .filter(func) and .map(func). Not so trivial.
+
+// TODO: Implement off().
 
 // We need another front-end library like "jQluster functional" or something??
 // or, it is rather "RemoteSelectorFactory".
