@@ -954,11 +954,35 @@ asyncTest("each() - breaking loop", function() {
 });
 
 
+////////////////////////////////////////////////////////////////////////
+module("jQluster.RemoteSelector - setters", {
+    setup: setupAll,
+    teardown: teardownTest,
+});
+
+asyncTest("off() - only plain events calling convention is supported for now", function() {
+    var remote = new jQluster.RemoteSelector({
+        transport: alice, remote_id: "bob", selector: "#test_button"
+    });
+    remote.on("click", function() {
+        ok(false, "this callback must be cancelled");
+    });
+    var off_ret = remote.off("click");
+    is(off_ret, remote);
+    delay(0.05).then(function() {
+        $("#test_button").trigger("click");
+        return delay(0.05);
+    }).then(null, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
 // TODO: Implement .filter(func) and .map(func). Not so trivial.
 
-// TODO: check return value of on() and each()
+// TODO: Implement animation functions.
 
-// TODO: Implement off().
 // TODO: remote equivalent of $(document) and $(window).
 // TODO: wrapping a remote object {remote_type: ...} with jQluster function $$()
 //       should return a RemoteSelector.

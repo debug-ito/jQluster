@@ -85,6 +85,15 @@ if(!jQluster) { var jQluster = {}; }
                 }
             });
             return self;
+        },
+        off: function(events, selector) {
+            var args_str = my.defined(selector) ? my.argumentsStringFor([events, selector])
+                                                : my.argumentsStringFor([events]);
+            this.transport.selectAndGet({
+                eval_code: this._getEvalCode() + ".off("+ args_str +")",
+                remote_id: this.remote_id
+            });
+            return this;
         }
     };
 

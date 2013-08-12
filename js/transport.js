@@ -102,6 +102,11 @@ if(!jQluster) { var jQluster = {}; }
                         method: args.method, options: args.options
                     }
                 };
+                // ** TODO: for now there is no way to REMOVE
+                // ** signal_callbacks. So, calling selectAndListen()
+                // ** can cause serious memory leak. We have to take
+                // ** care of releasing callbacks if we are serious to
+                // ** do remote callbacks.
                 self.signal_callback_for[message.message_id] = function(callback_this, callback_args) {
                     callback.apply(callback_this, callback_args);
                 };
