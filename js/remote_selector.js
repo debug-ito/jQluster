@@ -8,10 +8,13 @@ if(!jQluster) { var jQluster = {}; }
 (function(my, $) {
     var myclass;
     myclass = my.RemoteSelector = function(args) {
-        // @params: args.transport,
+        // @params: args.transport, remote_id,
         //          args.eval_code || args.selector || args.xpath
         if(!my.defined(args.transport)) {
             throw "transport parameter is mandatory";
+        }
+        if(!my.defined(args.remote_id)) {
+            throw "remote_id parameter is mandatory";
         }
         this.transport = args.transport;
         if(my.defined(args.xpath)) {

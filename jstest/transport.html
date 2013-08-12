@@ -661,7 +661,7 @@ module("jQluster.RemoteSelector", {
 
 test("constructor: eval_code", function() {
     var remote = new jQluster.RemoteSelector({
-        transport: alice,
+        transport: alice, remote_id: "bob",
         eval_code: "$('#test').children('.hoge')"
     });
     is(remote._getEvalCode(), "$('#test').children('.hoge')");
@@ -669,7 +669,7 @@ test("constructor: eval_code", function() {
 
 test("constructor: selector", function() {
     var remote = new jQluster.RemoteSelector({
-        transport: alice,
+        transport: alice, remote_id: "bob",
         selector: '#test .hoge'
     });
     is(remote._getEvalCode(), '$("#test .hoge")');
@@ -677,7 +677,7 @@ test("constructor: selector", function() {
 
 test("constructor: xpath", function() {
    var remote = new jQluster.RemoteSelector({
-       transport: alice,
+       transport: alice, remote_id: "bob",
        xpath: "//html[1]/body[1]/div[@id='#test']"
    }) ;
     is(remote._getEvalCode(), "$(document).xpath(\"//html[1]/body[1]/div[@id='#test']\")");
