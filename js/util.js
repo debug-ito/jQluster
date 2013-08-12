@@ -45,4 +45,15 @@ if(!jQluster) { var jQluster = {}; }
         str = "" + str;
         return '"' + str.replace('"', '\\"')  + '"';
     };
+
+    my.argumentsStringFor = function(args) {
+        return $.map(my.argsToArray(args), function(arg) {
+            return arg === null ? "null"
+                : arg === undefined ? "undefined"
+                : arg === true ? "true"
+                : arg === false ? "false"
+                : typeof arg === "number" ? arg
+                : my.quoteString(arg)
+        }).join(",");
+    };
 })(jQluster);

@@ -4,6 +4,16 @@
 <meta charset="utf-8">
 <title>Test jQluster.Transport</title>
 <link rel="stylesheet" href="./qunit.css">
+<style type="text/css">
+#sized-box {
+    background-color: red;
+    width: 200px;
+    height: 50px;
+    padding: 5px;
+    margin: 5px;
+    border-width: 0;
+}
+</style>
 </head>
 <body>
 <div id="qunit"></div>
@@ -67,8 +77,16 @@ var setupTest = function() {
             +     '<li>3</li>'
             +   '</ul>'
             +   '<input id="test_button" type="button" value="Test Button" />'
+            +   '<div id="sized-box">hoge</div>'
+            +   '<div id="with-data" data-some-data="100"></div>'
             + '</div>'
     );
+};
+
+var setupAll = function() {
+    setupTest();
+    setupAlice();
+    setupBob();
 };
 
 var teardownTest = function() {
@@ -650,12 +668,9 @@ asyncTest("selectAndListen - remote each() method", function() {
 
 // TODO: erroneous cases, like syntax error in eval_code (not necessary in prototype phase)
 
+////////////////////////////////////////////////////////////////////////
 module("jQluster.RemoteSelector", {
-    setup: function() {
-        setupTest();
-        setupAlice();
-        setupBob();
-    },
+    setup: setupAll,
     teardown: teardownTest,
 });
 
@@ -683,12 +698,45 @@ test("constructor: xpath", function() {
     is(remote._getEvalCode(), "$(document).xpath(\"//html[1]/body[1]/div[@id='#test']\")");
 });
 
+////////////////////////////////////////////////////////////////////////
+module("jQluster.RemoteSelector - getter", {setup: setupAll, teardown: teardownTest});
+
+$.each([
+    {method: "attr", selector: "#test_button", args: ["type"], exp: "button"},
+    {method: "hasClass", selector: "#test_button", args: ["hoge-class"], exp: false},
+    {method: "val", selector: "#test_button", args: [], exp: "Test Button"},
+    {method: "css", selector: "#sized-box", args: ["background-color"], exp: "rgb(255, 0, 0)"},
+    {method: "height", selector: "#sized-box", args: [], exp: 50},
+    {method: "innerHeight", selector: "#sized-box", args: [], exp: 60},
+    {method: "innerWidth", selector: "#sized-box", args: [], exp: 210},
+    {method: "outerHeight", selector: "#sized-box", args: [true], exp: 70},
+    {method: "outerWidth", selector: "#sized-box", args: [false], exp: 210},
+    {method: "width", selector: "#sized-box", args: [], exp: 200},
+    {method: "data", selector: "#with-data", args: ["some-data"], exp: 100},
+    {method: "text", selector: "#test li.two", args: [], exp: "2"},
+    {method: "index", selector: "#test li.two", args: [], exp: 1},
+    {method: "index", selector: "#test li.two", args: ["#test li.two"], exp: 0},
+    {method: "size", selector: "#test li", args: [], exp: 3},
+], function(i, testcase) {
+    asyncTest(testcase.method + "()", function() {
+        var remote = new jQluster.RemoteSelector({
+            transport: alice, remote_id: "bob",
+            selector: testcase.selector
+        });
+        remote[testcase.method].apply(remote, testcase.args).then(function(got_value) {
+            deepEqual(got_value, testcase.exp);
+        }, function(error) {
+            ok(false, "error: " + error);
+        }).always(function() {
+            start();
+        });
+    });
+});
+
+
+////////////////////////////////////////////////////////////////////////
 module("jQluster.RemoteSelector - selection", {
-    setup: function() {
-        setupTest();
-        setupAlice();
-        setupBob();
-    },
+    setup: setupAll,
     teardown: teardownTest,
 });
 
@@ -737,6 +785,9 @@ test("chained selections", function() {
         '$("#top").find(".hoge").eq(10).parentsUntil(".foo",".bar")'
     );
 });
+
+
+// TODO: remote equivalent of $(document) and $(window).
 
 </script>
 </body>

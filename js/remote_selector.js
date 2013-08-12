@@ -35,26 +35,14 @@ if(!jQluster) { var jQluster = {}; }
         return "$("+ my.quoteString(selector) +")";
     };
     myclass.prototype = {
-        _getEvalCode: function() { return this.eval_code; }
+        _getEvalCode: function() { return this.eval_code; },
     };
 
     var selectionMethod = function(method_name) {
         myclass.prototype[method_name] = function() {
-            var i;
-            var arg;
-            var quoted_args = [];
-            for(i = 0 ; i < arguments.length ; i++) {
-                arg = arguments[i];
-                quoted_args.push(
-                                     arg === null ? "null"
-                              : arg === undefined ? "undefined"
-                        : typeof arg === "number" ? arg
-                                                  : my.quoteString(arg)
-                );
-            }
             return new myclass({
                 transport: this.transport, remote_id: this.remote_id,
-                eval_code: this.eval_code + "." + method_name + "("+ quoted_args.join(",") +")"
+                eval_code: this.eval_code + "." + method_name + "("+ my.argumentsStringFor(arguments) +")"
             });
         };
     };
@@ -68,9 +56,31 @@ if(!jQluster) { var jQluster = {}; }
         selectionMethod(method_name);
     });
 
+    var accessorMethod = function(method_name, min_arg, max_arg_get) {
+        myclass.prototype[method_name] = function() {
+            if(arguments.length < min_arg) {
+                throw method_name + " needs at least" + min_arg + " arguments";
+            }
+            var eval_code = this.eval_code + "."+ method_name +"("+ my.argumentsStringFor(arguments) +")";
+            var select_result = this.transport.selectAndGet({
+                remote_id: this.remote_id, eval_code: eval_code
+            });
+            if(arguments.length <= max_arg_get) {
+                return select_result;
+            }else {
+                return this;
+            }
+        };
+    };
+    $.each([
+        ["attr", 1, 1], ["hasClass", 1, 1], ["val", 0, 0], ["css", 1, 1],
+        ["height", 0, 0], ["innerHeight", 0, 0], ["innerWidth", 0, 0], ["outerHeight", 0, 1],
+        ["outerWidth", 0, 1], ["width", 0, 0], ["data", 1, 1], ["text", 0, 0],
+        ["index", 0, 1], ["size", 0, 0],
+    ], function(i, method_spec) {
+        accessorMethod.apply(null, method_spec);
+    });
 
-
-    
 })(jQluster, jQuery);
 
 // TODO: Implement .filter(func) and .map(func). Not so trivial.
