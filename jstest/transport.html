@@ -728,6 +728,16 @@ $.each([
     });
 });
 
+test("chained selections", function() {
+    var remote = new jQluster.RemoteSelector({
+        transport: alice, remote_id: "bob", selector: '#top'
+    });
+    is(
+        remote.find(".hoge").eq(10).parentsUntil(".foo", ".bar")._getEvalCode(),
+        '$("#top").find(".hoge").eq(10).parentsUntil(".foo",".bar")'
+    );
+});
+
 </script>
 </body>
 </html>
