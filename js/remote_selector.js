@@ -61,7 +61,6 @@ if(!jQluster) { var jQluster = {}; }
                 method: "on", options: options,
                 remote_id: self.remote_id, callback: handler
             };
-            console.log(transport_args);
             self.transport.selectAndListen(transport_args);
             return self;
         },
@@ -94,7 +93,7 @@ if(!jQluster) { var jQluster = {}; }
                 remote_id: this.remote_id
             });
             return this;
-        }
+        },
     };
 
     var selectionMethod = function(method_name) {
@@ -138,6 +137,37 @@ if(!jQluster) { var jQluster = {}; }
         ["index", 0, 1], ["size", 0, 0],
     ], function(i, method_spec) {
         accessorMethod.apply(null, method_spec);
+    });
+
+    var animationMethod = function(method_name) {
+        myclass.prototype[method_name] = function() {
+            var self = this;
+            var args = my.argsToArray(arguments);
+            var callback = null;
+            var eval_code = self._getEvalCode();
+            if(args.length > 0 && $.isFunction(args[args.length-1])) {
+                callback = args.pop();
+            }
+            if(my.defined(callback)) {
+                self.transport.selectAndListen({
+                    eval_code: eval_code,
+                    remote_id: self.remote_id,
+                    method: method_name,
+                    options: args,
+                    callback: callback
+                });
+            }else {
+                eval_code += "."+ method_name +"("+ my.argumentsStringFor(args) +")";
+                self.transport.selectAndGet({
+                    eval_code: eval_code,
+                    remote_id: self.remote_id
+                });
+            }
+            return self;
+        };
+    };
+    $.each(["animate", "fadeIn", "fadeTo", "fadeOut", "hide", "show"], function(i, method_name) {
+        animationMethod(method_name);
     });
 
 })(jQluster, jQuery);

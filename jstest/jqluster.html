@@ -13,6 +13,16 @@
     margin: 5px;
     border-width: 0;
 }
+
+#hidden-box {
+    opacity: 0;
+    display: none;
+}
+
+#visible-box {
+    opacity: 1;
+}
+
 </style>
 </head>
 <body>
@@ -79,6 +89,8 @@ var setupTest = function() {
             +   '<input id="test_button" type="button" value="Test Button" />'
             +   '<div id="sized-box">hoge</div>'
             +   '<div id="with-data" data-some-data="100"></div>'
+            +   '<div id="hidden-box">hidden</div>'
+            +   '<div id="visible-box">visible</div>'
             + '</div>'
     );
 };
@@ -979,9 +991,64 @@ asyncTest("off() - only plain events calling convention is supported for now", f
     });
 });
 
-// TODO: Implement .filter(func) and .map(func). Not so trivial.
+////////////////////////////////////////////////////////////////////////
+module("jQluster.RemoteSelector - effects", {
+    setup: setupAll,
+    teardown: teardownTest,
+});
 
-// TODO: Implement animation functions.
+(function() {
+    var ANIMATION_DURATION = 20;
+    var WAIT_TIME = 40;
+    $.each([
+        {label: "animate() - simple form", target_box_id: "hidden-box", method: "animate", args: [{opacity: 1}, ANIMATION_DURATION],
+         exp_style: "opacity", exp_value: "1" },
+        {label: "fadeIn()", target_box_id: "hidden-box", method: "fadeIn", args: [ANIMATION_DURATION],
+         exp_style: "display", exp_value: "block" },
+        {label: "fadeTo()", target_box_id: "visible-box", method: "fadeTo", args: [ANIMATION_DURATION, 0.7],
+         exp_style: "opacity", exp_value: "0.7"},
+        {label: "fadeOut()", target_box_id: "visible-box", method: "fadeOut", args: [ANIMATION_DURATION],
+         exp_style: "display", exp_value: "none"},
+        {label: "hide()", target_box_id: "visible-box", method: "hide", args: [],
+         exp_style: "display", exp_value: "none"},
+        {label: "show()", target_box_id: "hidden-box", method: "show", args: [],
+         exp_style: "display", exp_value: "block"}
+    ], function(i, testcase) {
+        asyncTest(testcase.label + " with callback", function() {
+            var remote = new jQluster.RemoteSelector({
+                transport: alice, remote_id: "bob", selector: "#" + testcase.target_box_id
+            });
+            var timelimit = setTimeLimit();
+            var ret_val = remote[testcase.method].apply(remote, testcase.args.concat([function() {
+                var remote = this;
+                clearTimeout(timelimit);
+                deepEqual(remote, {remote_type: "xpath", remote_id: "bob",
+                                   remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/div[@id='"
+                                   + testcase.target_box_id +"']"}, "remote DOM pointer OK");
+                is($("#" + testcase.target_box_id).css(testcase.exp_style), testcase.exp_value, "css result OK");
+                start();
+            }]));
+            is(ret_val, remote, "ret_val from " + testcase.method + "() is the invocant.");
+        });
+        
+        asyncTest(testcase.label + " without callback", function() {
+            var remote = new jQluster.RemoteSelector({
+                transport: alice, remote_id: "bob", selector: "#" + testcase.target_box_id
+            });
+            var ret_val = remote[testcase.method].apply(remote, testcase.args);
+            is(ret_val, remote, "rev_val from " + testcase.method + "() is the invocant");
+            setTimeout(function() {
+                is($("#" + testcase.target_box_id).css(testcase.exp_style), testcase.exp_value, "css result OK");
+                start();
+            }, WAIT_TIME);
+        });
+    });
+})();
+
+
+
+
+// TODO: Implement .filter(func) and .map(func). Not so trivial.
 
 // TODO: remote equivalent of $(document) and $(window).
 // TODO: wrapping a remote object {remote_type: ...} with jQluster function $$()

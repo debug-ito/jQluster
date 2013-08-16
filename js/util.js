@@ -53,6 +53,7 @@ if(!jQluster) { var jQluster = {}; }
                 : arg === true ? "true"
                 : arg === false ? "false"
                 : typeof arg === "number" ? arg
+                : ($.isPlainObject(arg) || $.isArray(arg)) ? JSON.stringify(arg)
                 : my.quoteString(arg)
         }).join(",");
     };
