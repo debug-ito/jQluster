@@ -1,7 +1,7 @@
 "use strict";
 
 // jQluster remote selector representation
-// requires: jquery, util.js
+// requires: jquery, util.js, (transport.js)
 
 if(!jQluster) { var jQluster = {}; }
 

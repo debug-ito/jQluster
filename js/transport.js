@@ -1,7 +1,7 @@
 "use strict";
 
 // jQluster Transport object
-// requires: jquery, util.js
+// requires: jquery, jquery.xpath, util.js
 
 if(!jQluster) { var jQluster = {}; }
 

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Test jQluster.RemoteSelectorFactory</title>
+<link rel="stylesheet" href="./qunit.css">
+</head>
+<body>
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+<script src="../js/lib/jquery.js"></script>
+<script src="../js/lib/jquery.ellocate.js"></script>
+<script src="../js/lib/jquery.xpath.js"></script>
+<script src="./qunit.js"></script>
+<script src="../js/util.js"></script>
+<script src="../js/transport.js"></script>
+<script src="../js/local_server.js"></script>
+<script src="../js/remote_selector.js"></script>
+<script src="../js/remote_selector_factory.js"></script>
+<script>
+"use strict";
+
+var is = strictEqual;
+
+var alice;
+var bob;
+
+module("RemoteSelectorFactory", {
+    setup: function() {
+        alice = new jQluster.RemoteSelectorFactory({
+            my_remote_id: "alice",
+            transport_id: "local",
+        });
+        bob = new jQluster.RemoteSelectorFactory({
+            my_remote_id: "bob",
+            transport_id: "local"
+        });
+    },
+    teardown: function() {
+        alice = undefined;
+        bob = undefined;
+    }
+});
+
+$.each([
+    {label: "selector", target: "#hoge", exp_eval_code: '$("#hoge")'}
+], function(i, testcase) {
+    var checker = function(remote) {
+        is(remote.remote_id, "bob", "remote object to bob");
+        is(remote._getEvalCode(), testcase.exp_eval_code, "eval code OK");
+    };
+    test(test.label + ", function interface", function() {
+        var factory = alice.forRemote("bob");
+        var remote = factory(testcase.target);
+        checker(remote);
+    });
+    test(test.label + ", direct interface", function() {
+        var remote = alice.forRemote("bob", testcase.target);
+        checker(remote);
+    });
+});
+
+</script>
+</body>
+</html>
