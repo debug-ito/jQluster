@@ -33,14 +33,34 @@ if(!jQluster) { var jQluster = {}; }
         throw "Unknown transport_id: " + transport_id;
     };
     myclass.prototype = {
+        _createRemoteSelector: function(remote_id, target) {
+            var self = this;
+            var args = {
+                transport: self.transport,
+                remote_id: remote_id,
+            };
+            if(target === window) {
+                args.eval_code = "$(window)";
+            }else if(target === document) {
+                args.eval_code = "$(document)";
+            }else if($.isPlainObject(target) && my.defined(target.remote_type)) {
+                if(target.remote_type === "xpath") {
+                    args.xpath = target.remote_xpath;
+                    if(my.defined(target.remote_id)) {
+                        args.remote_id = target.remote_id;
+                    }
+                }else {
+                    throw "Unknown remote pointer type: " + target.remote_type;
+                }
+            }else {
+                args.selector = "" + target;
+            }
+            return new my.RemoteSelector(args);
+        },
         forRemote: function(remote_id, selector) {
             var self = this;
             var factory = function(target) {
-                return new my.RemoteSelector({
-                    transport: self.transport,
-                    remote_id: remote_id,
-                    selector: target
-                });
+                return self._createRemoteSelector(remote_id, target);
             };
             if(my.defined(selector)) {
                 return factory(selector);

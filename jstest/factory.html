@@ -43,10 +43,21 @@ module("RemoteSelectorFactory", {
 });
 
 $.each([
-    {label: "selector", target: "#hoge", exp_eval_code: '$("#hoge")'}
+    {label: "selector", target: "#hoge",  exp_eval_code: '$("#hoge")'},
+    {label: "document", target: document, exp_eval_code: '$(document)'},
+    {label: 'window', target: window, exp_eval_code: '$(window)'},
+    {label: 'XPath remote pointer (same node)',
+     target: {remote_type: "xpath", remote_id: "bob", remote_xpath: "//html[1]/body[1]/div[@id='hoge']"},
+     exp_eval_code: "$(document).xpath(\"//html[1]/body[1]/div[@id='hoge']\")"},
+    {label: 'XPath remote pointer (different node)',
+     target: {remote_type: "xpath", remote_id: "carol", remote_xpath: "//html[1]/body[1]/div[@id='foobar']"},
+     exp_remote_id: 'carol', exp_eval_code: "$(document).xpath(\"//html[1]/body[1]/div[@id='foobar']\")"}
 ], function(i, testcase) {
+    if(!testcase.exp_remote_id) {
+        testcase.exp_remote_id = "bob";
+    }
     var checker = function(remote) {
-        is(remote.remote_id, "bob", "remote object to bob");
+        is(remote.remote_id, testcase.exp_remote_id, "remote object to bob");
         is(remote._getEvalCode(), testcase.exp_eval_code, "eval code OK");
     };
     test(test.label + ", function interface", function() {
