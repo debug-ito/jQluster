@@ -36,6 +36,18 @@ if(!jQluster) { var jQluster = {}; }
     };
     myclass.prototype = {
         _getEvalCode: function() { return this.eval_code; },
+
+        // TODO: on() method: For now, the return value from
+        // user-given handler function is ignored. This means we
+        // cannot control whether the specified event should propagate
+        // to the upper elements or not. It is possible in theory to
+        // send the user-generated return value back to the remote
+        // node, but in this case the process of the remote node must
+        // be blocked waiting for the return value to come. If we
+        // could use a co-routine mechanism like task.js, waiting for
+        // the return value from the network would not block the
+        // entire process, but that's not a feature every browser
+        // supports now.
         on: function() {
             var self = this;
             var args = my.argsToArray(arguments);
@@ -64,6 +76,15 @@ if(!jQluster) { var jQluster = {}; }
             self.transport.selectAndListen(transport_args);
             return self;
         },
+        
+        // TODO: each() method: For now, there is no way to detect the
+        // end of the "each" loop. The end of the loop should be
+        // reported to the caller in some form of Promise. In
+        // addition, the remote signal handler should be removed from
+        // the Transport object at the end of the loop. This problem
+        // is more serious when we implement ".map()" method, because
+        // it would make no sense if it could not return any value at
+        // the end of the loop.
         each: function(handler) {
             var self = this;
             if(!my.defined(handler)) {
@@ -85,6 +106,12 @@ if(!jQluster) { var jQluster = {}; }
             });
             return self;
         },
+
+        // TODO: off() method: this method removes the event handler
+        // attached to the DOM nodes in the remote page, but not the
+        // remote signal handler attached to the local Transport
+        // object. We must figure out how to release the remote signal
+        // handler.
         off: function(events, selector) {
             var args_str = my.defined(selector) ? my.argumentsStringFor([events, selector])
                                                 : my.argumentsStringFor([events]);
@@ -132,6 +159,15 @@ if(!jQluster) { var jQluster = {}; }
         selectionMethod(method_name);
     });
 
+    // TODO: getter methods: getter methods return their results as
+    // Promises, which is not the same way as the original jQuery
+    // returns values. This is inevitable because getting values from
+    // remote nodes involves communication over the network, with
+    // potential delay and communication error. If we could use a
+    // co-routine mechanism like task.js, we could provide a
+    // synchronous API just as the original jQuery does and still
+    // prevent blocking the entire process during network
+    // communication.
     var accessorMethod = function(method_name, min_arg, max_arg_get) {
         myclass.prototype[method_name] = function() {
             if(arguments.length < min_arg) {
