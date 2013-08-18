@@ -1,17 +1,21 @@
 "use strict";
 
 // Local server and connection implementation for testing.
-// requires: jquery, util.js
+// requires: jquery, util.js, connection.js
 
 if(!jQluster) { var jQluster = {}; }
 
 (function(my, $){
+    var superclass = my.Connection;
+
+    // jQluster Connection implementation specifically to the ServerLocal object.
+    // This implementation is for testing purposes.
     my.ConnectionLocal = function(server) {
+        superclass.apply(this);
         this.server = server;
-        this.receive_callbacks = [];
         this.log = [];
     };
-    my.ConnectionLocal.prototype = {
+    my.ConnectionLocal.prototype = $.extend(new superclass(), {
         send: function(message) {
             // @return: nothing
             this.log.push({ direction: "send",  message: my.clone(message)});
@@ -22,29 +26,19 @@ if(!jQluster) { var jQluster = {}; }
                 this.server.distribute(message);
             }
         },
-        
-        onReceive: function(callback) {
-            // @return: nothing
-            this.receive_callbacks.push(callback);
+        triggerReceive: function(message) {
+            this.log.push({ direction: "receive", message: my.clone(message)});
+            return superclass.prototype.triggerReceive.call(this, message);
         },
 
         // below are ConnectionLocal specific functions
-        
         getID: function() { return this.remote_id; },
-
-        triggerReceive: function(message) {
-            // @return: nothing
-            this.log.push({ direction: "receive", message: my.clone(message)});
-            // console.log("receive: type: " + message.message_type + ", to: " + message.to);
-            $.each(this.receive_callbacks, function(i, callback) {
-                callback(message);
-            });
-        },
-
         getLog: function() { return this.log; },
         clearLog: function() { this.log = [] }
-    };
-    
+    });
+})(jQluster, jQuery);
+
+(function(my, $) {
     my.ServerLocal = function() {
         this.connections = {};
         this.register_log = [];
@@ -72,7 +66,6 @@ if(!jQluster) { var jQluster = {}; }
                 self.pending_messages_to.length = 0;
             }
         },
-
 
         distribute: function(message) {
             // @return: nothing
