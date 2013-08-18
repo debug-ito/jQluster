@@ -32,6 +32,9 @@ if(!jQluster) { var jQluster = {}; }
         }
         throw "Unknown transport_id: " + transport_id;
     };
+    myclass.releaseLocalServer = function() {
+        local_server = undefined;
+    };
     myclass.prototype = {
         _createRemoteSelector: function(remote_id, target) {
             var self = this;

@@ -17,6 +17,7 @@
 <script src="../js/local_server.js"></script>
 <script src="../js/remote_selector.js"></script>
 <script src="../js/remote_selector_factory.js"></script>
+<script src="../js/jquery_adaptor.js"></script>
 <script>
 "use strict";
 
@@ -24,6 +25,22 @@ var is = strictEqual;
 
 var alice;
 var bob;
+
+var setupHTML = function() {
+    var html =
+          '<ul class="list">'
+        +   '<li>1</li>'
+        +   '<li>2</li>'
+        +   '<li>3</li>'
+        + '</ul>';
+    $("#qunit-fixture").append(html);
+};
+
+var teardownjQluster = function() {
+    alice = undefined;
+    bob = undefined;
+    jQluster.RemoteSelectorFactory.releaseLocalServer();
+};
 
 module("RemoteSelectorFactory", {
     setup: function() {
@@ -36,10 +53,7 @@ module("RemoteSelectorFactory", {
             transport_id: "local"
         });
     },
-    teardown: function() {
-        alice = undefined;
-        bob = undefined;
-    }
+    teardown: teardownjQluster
 });
 
 $.each([
@@ -60,15 +74,58 @@ $.each([
         is(remote.remote_id, testcase.exp_remote_id, "remote object to bob");
         is(remote._getEvalCode(), testcase.exp_eval_code, "eval code OK");
     };
-    test(test.label + ", function interface", function() {
+    test(testcase.label + ", function interface", function() {
         var factory = alice.forRemote("bob");
         var remote = factory(testcase.target);
         checker(remote);
     });
-    test(test.label + ", direct interface", function() {
+    test(testcase.label + ", direct interface", function() {
         var remote = alice.forRemote("bob", testcase.target);
         checker(remote);
     });
+});
+
+module("jQuery plugin adaptor", {
+    setup: function() {
+        setupHTML();
+        $.jqluster.init("carol", "local");
+        bob = new jQluster.RemoteSelectorFactory({
+            my_remote_id: "bob",
+            transport_id: "local"
+        });
+    },
+    teardown: teardownjQluster
+});
+
+asyncTest("animation", function() {
+    var $b = $.jqluster("bob");
+    var list = $b("#qunit-fixture").find(".list");
+    list.fadeOut(50);
+    list.promise().then(function() {
+        return this.css("display");
+    }).then(function(css_display) {
+        is(css_display, "none");
+    }, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
+asyncTest("each", function() {
+    var $b = $.jqluster("bob");
+    var results = [];
+    var list_elems = $b("#qunit-fixture .list").children();
+    console.log(list_elems);
+    list_elems.each(function(i) {
+        $b(this).text().then(function(text) {
+            results.push([i, text]);
+        });
+    });
+    setTimeout(function() {
+        deepEqual(results, [[0, "1"], [1, "2"], [2, "3"]]);
+        start();
+    }, 100);
 });
 
 </script>
