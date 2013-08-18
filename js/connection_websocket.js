@@ -28,6 +28,7 @@ if(!jQluster) { var jQluster = {}; }
                 $.each(self.send_buffer, function(i, msg) {
                     self._doSend(msg);
                 });
+                self.send_buffer.length = 0;
             };
             ws.onmessage = function(message) {
                 try {
@@ -46,7 +47,7 @@ if(!jQluster) { var jQluster = {}; }
             };
         },
         send: function(message) {
-            if(!self.is_socket_ready) {
+            if(!my.defined(self.websocket) || !self.is_socket_ready) {
                 self.send_buffer.push(message);
                 return;
             }
