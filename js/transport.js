@@ -32,7 +32,7 @@ if(!jQluster) { var jQluster = {}; }
     myclass.prototype = {
         selectAndGet: function(args) {
             // @params: args.eval_code, args.remote_id
-            // @return: Deferred that contains the obtained data
+            // @return: Promise that contains the obtained data
             // 
             // If the remote node does not exist, the request is
             // deferred and delivered to the remote node when it
@@ -66,7 +66,7 @@ if(!jQluster) { var jQluster = {}; }
             // @params: args.eval_code (must return a jQuery object),
             //          args.method, args.options = [],
             //          args.callback, args.remote_id
-            // @return: Deferred, whose content is meaningless.
+            // @return: Promise, whose content is meaningless.
             // 
             // If the remote node does not exist, the 'listen' request
             // is deferred and delivered to the remote node when it

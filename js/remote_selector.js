@@ -94,6 +94,24 @@ if(!jQluster) { var jQluster = {}; }
             });
             return this;
         },
+        promise: function(type, target) {
+            var self = this;
+            if (typeof type !== "string") {
+		target = type;
+		type = undefined;
+	    }
+            var args_str = (type === undefined) ? "" : my.argumentsStringFor([type]);
+            var result_deferred = $.Deferred();
+            self.transport.selectAndGet({
+                eval_code: self._getEvalCode() + ".promise("+ args_str +")",
+                remote_id: self.remote_id
+            }).then(function() {
+                result_deferred.resolveWith(self, [self]);
+            }, function() {
+                result_deferred.rejectWith(self, [self]);
+            });
+            return result_deferred.promise(target);
+        }
     };
 
     var selectionMethod = function(method_name) {

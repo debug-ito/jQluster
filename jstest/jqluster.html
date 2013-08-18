@@ -754,6 +754,24 @@ $.each([
     });
 });
 
+asyncTest("promise() with animation", function() {
+    var remote = new jQluster.RemoteSelector({
+        transport: alice, remote_id: "bob",
+        selector: "#test li.two"
+    });
+    remote.fadeOut(20);
+    var promise = remote.promise("fx", {type: "my_target"});
+    is(promise.type, "my_target");
+    promise.then(function(arg) {
+        is(arg, remote, "arg of the promise is the remote object itself");
+        is(this, remote, "this in the promise handler is the remote object itself");
+        is($("#test li.two").css("display"), "none", "fadeOut animation is complete");
+    }, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
 
 ////////////////////////////////////////////////////////////////////////
 module("jQluster.RemoteSelector - selection", {
