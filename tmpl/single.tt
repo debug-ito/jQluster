@@ -4,15 +4,27 @@
   <title>Conventional Single Page Application</title>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
   <style type="text/css">
-canvas {
+body {
+    padding: 10px;
+}
+
+#canvas-container {
     border-width: 5px;
     border-color: #222;
     border-style: solid;
+    display: inline-block;
+}
+
+#canvas-main {
+    border-width: 0;
+    margin: 0;
 }
   </style>
 </head>
 <body>
-  <canvas id="canvas_main" width="800" height="600"></canvas>
+  <div id="canvas-container">
+    <canvas id="canvas-main" width="800" height="600"></canvas>
+  </div>
   <script src="/lib/jquery.js"></script>
   <script src="/lib/jquery.ellocate.js"></script>
   <script src="/lib/jquery.xpath.js"></script>
@@ -62,19 +74,37 @@ var CanvasPainter = (function() {
         context.stroke();
         context.closePath();
     };
-    myclass._getCanvasCoordinatesFromEvent = function(event) {
-        return {x: event.clientX, y: event.clientY}; // CAUTION: not so universal across all browsers!
-    };
     myclass.prototype = {
+        _getCanvasOffsetToWindow: function() {
+            return $(this.selector).get(0).getBoundingClientRect();
+
+            // ** getBoundingClientRect() may behave differently
+            // ** across browsers. In that case, the following code
+            // ** might be useful.
+            
+            // var offset_to_doc = $(this.selector).offset();
+            // var $window = $(window);
+            // return {
+            //     left: offset_to_doc.left - $window.scrollLeft(),
+            //     top: offset_to_doc.top - $window.scrollTop()
+            // };
+        },
+        _getCanvasCoordinatesFromEvent: function(event) {
+            var canvas_offset = this._getCanvasOffsetToWindow();
+
+            // ** CAUTION: clientX and clientY are not so universal across all browsers!
+            return {x: event.clientX - canvas_offset.left,
+                    y: event.clientY - canvas_offset.top};
+        },
         _initEventHandlers: function() {
             var self = this;
             var $canvas = $(self.selector);
             $canvas.on("mousemove", function(event) {
-                var pos = myclass._getCanvasCoordinatesFromEvent(event);
+                var pos = self._getCanvasCoordinatesFromEvent(event);
                 self._moveCursor(pos.x, pos.y);
             });
             $canvas.on("mousedown", function(event) {
-                var pos = myclass._getCanvasCoordinatesFromEvent(event);
+                var pos = self._getCanvasCoordinatesFromEvent(event);
                 self._moveCursor(pos.x, pos.y);
                 self.enable_draw = true;
             });
@@ -102,7 +132,7 @@ var CanvasPainter = (function() {
 })();
 
 $(function() {
-    var painter = new CanvasPainter("#canvas_main", 0, 0);
+    var painter = new CanvasPainter("#canvas-main", 0, 0);
 });
 
 </script>
