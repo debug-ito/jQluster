@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Conventional Single Page Application</title>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+  <style type="text/css">
+canvas {
+    border-width: 5px;
+    border-color: #222;
+    border-style: solid;
+}
+  </style>
+</head>
+<body>
+  <canvas id="canvas_main" width="800" height="600"></canvas>
+  <script src="/lib/jquery.js"></script>
+  <script src="/lib/jquery.ellocate.js"></script>
+  <script src="/lib/jquery.xpath.js"></script>
+<script>
+"use strict";
+
+var defined = function(val) {
+    return (val !== null && val !== undefined);
+};
+
+// http://ascii.jp/elem/000/000/513/513377/index-4.html
+var CanvasPainter = (function() {
+    var myclass = function(selector, init_x, init_y) {
+        this.selector = selector;
+        this.cursor_x = init_x;
+        this.cursor_y = init_y;
+        this.enable_draw = false;
+        this.color = [0,0,0];
+        this.width = 1;
+        this._initEventHandlers();
+    };
+    myclass._rgbaString = function(r, g, b, a) {
+        if(!defined(a)) {
+            a = 1;
+        }
+        return "rgba(" + [r,g,b,a].join(",") + ")";
+    };
+    myclass._drawLine = function(args) {
+        // @params: canvas_selector, start_x, start_y, end_x, end_y, color = [0,0,0], width = 1
+        $.each(["canvas_selector", "start_x", "start_y", "end_x", "end_y"], function(i, key) {
+            if(!defined(args[key])) {
+                throw(key + " parameter is mandatory");
+            }
+        });
+        if(!defined(args.color)) {
+            args.color = [0,0,0];
+        }
+        if(!defined(args.width) || args.width <= 0) {
+            args.width = 1;
+        }
+        var context = $(args.canvas_selector).get(0).getContext("2d");
+        context.strokeStyle = myclass._rgbaString.apply(null, args.color);
+        context.lineWidth = args.width;
+        context.beginPath();
+        context.moveTo(args.start_x, args.start_y);
+        context.lineTo(args.end_x, args.end_y);
+        context.stroke();
+        context.closePath();
+    };
+    myclass._getCanvasCoordinatesFromEvent = function(event) {
+        return {x: event.clientX, y: event.clientY}; // CAUTION: not so universal across all browsers!
+    };
+    myclass.prototype = {
+        _initEventHandlers: function() {
+            var self = this;
+            var $canvas = $(self.selector);
+            $canvas.on("mousemove", function(event) {
+                var pos = myclass._getCanvasCoordinatesFromEvent(event);
+                self._moveCursor(pos.x, pos.y);
+            });
+            $canvas.on("mousedown", function(event) {
+                var pos = myclass._getCanvasCoordinatesFromEvent(event);
+                self._moveCursor(pos.x, pos.y);
+                self.enable_draw = true;
+            });
+            $canvas.on("mouseup", function() {
+                self.enable_draw = false;
+            });
+        },
+        _moveCursor: function(next_x, next_y) {
+            // @params: options: color, width
+            var self = this;
+            if(self.enable_draw) {
+                myclass._drawLine({
+                    canvas_selector: self.selector,
+                    start_x: self.cursor_x, start_y: self.cursor_y,
+                    end_x: next_x, end_y: next_y,
+                    color: self.color, width: self.width
+                });
+            }
+            self.cursor_x = next_x;
+            self.cursor_y = next_y;
+        }
+    };
+
+    return myclass;
+})();
+
+$(function() {
+    var painter = new CanvasPainter("#canvas_main", 0, 0);
+});
+
+</script>
+</body>
+</html>

@@ -21,6 +21,11 @@ get '/' => sub {
     return $c->render('index.tt');
 };
 
+get '/single.html' => sub {
+    my ($c) = @_;
+    return $c->render('single.tt');
+};
+
 get '/jqluster.js' => sub {
     my ($c) = @_;
     my $total = "";
