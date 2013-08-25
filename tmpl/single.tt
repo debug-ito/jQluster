@@ -19,15 +19,23 @@ body {
     border-width: 0;
     margin: 0;
 }
+
+.current-color {
+    width: 80px;
+    height: 50px;
+    display: inline-block;
+}
+
   </style>
 </head>
 <body>
   <div id="canvas-container">
     <canvas id="canvas-main" width="800" height="600"></canvas>
   </div>
+  <div id="canvas-display">
+  </div>
   <div>
     <input id="painter-width" type="range" min="1" max="30" step="1" value="0" />
-    <span id="painter-width-display">0</span>
   </div>
   <script src="/lib/jquery.js"></script>
   <script src="/lib/jquery.ellocate.js"></script>
@@ -39,20 +47,39 @@ var defined = function(val) {
     return (val !== null && val !== undefined);
 };
 
+var checkKeys = function(args, mandatory_key_list) {
+    $.each(mandatory_key_list, function(i, key) {
+        if(!defined(args[key])) {
+            throw(key + " parameter is mandatory");
+        }
+    });
+};
+
 // ** Reference Sites about HTML5 canvas painter
 // ** http://ascii.jp/elem/000/000/513/513377/index-4.html
 // ** http://wing.w-museum.com/201201251538.html
 
 var CanvasPainter = (function() {
-    var myclass = function(selector, init_x, init_y) {
-        this.selector = selector;
-        this.cursor_x = init_x;
-        this.cursor_y = init_y;
+    var myclass = function(args) {
+        // @params: args.canvas_selector, display_selector
+        checkKeys(args, ["canvas_selector", "display_selector"]);
+        this.canvas_selector = args.canvas_selector;
+        this.display_selector = args.display_selector;
+        this.cursor_x = 0;
+        this.cursor_y = 0;
         this.enable_draw = false;
         this.color = [0,0,0];
         this.width = 1;
         this._initEventHandlers();
+        this._updateDisplay();
     };
+    myclass._rgbPercentString = function(r, g, b) {
+        var percent_values = [];
+        percent_values[0] = (r / 255.0) * 100 + "%";
+        percent_values[1] = (g / 255.0) * 100 + "%";
+        percent_values[2] = (b / 255.0) * 100 + "%";
+        return "rgb("+ percent_values.join(",") +")";
+    },
     myclass._rgbaString = function(r, g, b, a) {
         if(!defined(a)) {
             a = 1;
@@ -61,11 +88,7 @@ var CanvasPainter = (function() {
     };
     myclass._drawLine = function(args) {
         // @params: canvas_selector, start_x, start_y, end_x, end_y, color = [0,0,0], width = 1
-        $.each(["canvas_selector", "start_x", "start_y", "end_x", "end_y"], function(i, key) {
-            if(!defined(args[key])) {
-                throw(key + " parameter is mandatory");
-            }
-        });
+        checkKeys(args, ["canvas_selector", "start_x", "start_y", "end_x", "end_y"]);
         if(!defined(args.color)) {
             args.color = [0,0,0];
         }
@@ -86,7 +109,7 @@ var CanvasPainter = (function() {
     };
     myclass.prototype = {
         _getCanvasOffsetToWindow: function() {
-            return $(this.selector).get(0).getBoundingClientRect();
+            return $(this.canvas_selector).get(0).getBoundingClientRect();
 
             // ** getBoundingClientRect() may behave differently
             // ** across browsers. In that case, the following code
@@ -108,7 +131,7 @@ var CanvasPainter = (function() {
         },
         _initEventHandlers: function() {
             var self = this;
-            var $canvas = $(self.selector);
+            var $canvas = $(self.canvas_selector);
             $canvas.on("mousemove", function(event) {
                 var pos = self._getCanvasCoordinatesFromEvent(event);
                 self._moveCursor(pos.x, pos.y);
@@ -130,7 +153,7 @@ var CanvasPainter = (function() {
             var self = this;
             if(self.enable_draw) {
                 myclass._drawLine({
-                    canvas_selector: self.selector,
+                    canvas_selector: self.canvas_selector,
                     start_x: self.cursor_x, start_y: self.cursor_y,
                     end_x: next_x, end_y: next_y,
                     color: self.color, width: self.width
@@ -144,46 +167,42 @@ var CanvasPainter = (function() {
             if(!g) g = 0;
             if(!b) b = 0;
             this.color = [r, g, b];
+            this._updateDisplay();
         },
         setWidth: function(width) {
             if(!width || width <= 0) {
                 width = 1;
             }
             this.width = width;
+            this._updateDisplay();
+        },
+        _updateDisplay: function() {
+            var self = this;
+            var $display = $(self.display_selector);
+            var $param_list = $("<ul></ul>");
+            $("<li></li>").text("Width: " + self.width).appendTo($param_list);
+            $("<li></li>")
+                .text("Color: ")
+                .append('<span class="current-color" style="background-color: '+ myclass._rgbPercentString.apply(myclass, self.color) +'"></span>')
+                .appendTo($param_list);
+            $display.empty();
+            $display.append($param_list);
         },
     };
 
-    return myclass;
-})();
-
-var WidthSlider = (function() {
-    var myclass = function(canvas_painter, slider_selector, display_selector) {
-        this.canvas_painter = canvas_painter;
-        this.slider_selector = slider_selector;
-        this.display_selector = display_selector;
-        this._initEventHandlers();
-        this._update();
-    };
-    myclass.prototype = {
-        _initEventHandlers: function() {
-            var self = this;
-            $(self.slider_selector).on("change", function() {
-                self._update();
-            });
-        },
-        _update: function() {
-            var self = this;
-            var got_width = $(self.slider_selector).val();
-            $(self.display_selector).text(got_width);
-            self.canvas_painter.setWidth(got_width);
-        }
-    };
     return myclass;
 })();
 
 $(function() {
-    var painter = new CanvasPainter("#canvas-main", 0, 0);
-    var width_slider = new WidthSlider(painter, "#painter-width", "#painter-width-display");
+    var painter = new CanvasPainter({canvas_selector: "#canvas-main", display_selector: "#canvas-display"});
+
+    var updateWidth = function() {
+        painter.setWidth($("#painter-width").val());
+    }
+    $("#painter-width").on("change", updateWidth);
+    updateWidth();
+
+    
 });
 
 </script>
