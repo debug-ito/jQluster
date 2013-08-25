@@ -37,6 +37,9 @@ body {
   <div>
     <input id="painter-width" type="range" min="1" max="30" step="1" value="0" />
   </div>
+  <div>
+    <input id="painter-button-clear" type="button" value="Clear" />
+  </div>
   <script src="/lib/jquery.js"></script>
   <script src="/lib/jquery.ellocate.js"></script>
   <script src="/lib/jquery.xpath.js"></script>
@@ -188,6 +191,12 @@ var CanvasPainter = (function() {
             $display.empty();
             $display.append($param_list);
         },
+        clear: function() {
+            var self = this;
+            var canvas = $(self.canvas_selector).get(0);
+            var context = canvas.getContext("2d");
+            context.clearRect(0, 0, canvas.width, canvas.height);
+        },
     };
 
     return myclass;
@@ -202,7 +211,9 @@ $(function() {
     $("#painter-width").on("change", updateWidth);
     updateWidth();
 
-    
+    $("#painter-button-clear").on("click", function() {
+        painter.clear();
+    });
 });
 
 </script>
