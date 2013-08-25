@@ -25,6 +25,10 @@ body {
   <div id="canvas-container">
     <canvas id="canvas-main" width="800" height="600"></canvas>
   </div>
+  <div>
+    <input id="painter-width" type="range" min="1" max="30" step="1" value="0" />
+    <span id="painter-width-display">0</span>
+  </div>
   <script src="/lib/jquery.js"></script>
   <script src="/lib/jquery.ellocate.js"></script>
   <script src="/lib/jquery.xpath.js"></script>
@@ -35,7 +39,10 @@ var defined = function(val) {
     return (val !== null && val !== undefined);
 };
 
-// http://ascii.jp/elem/000/000/513/513377/index-4.html
+// ** Reference Sites about HTML5 canvas painter
+// ** http://ascii.jp/elem/000/000/513/513377/index-4.html
+// ** http://wing.w-museum.com/201201251538.html
+
 var CanvasPainter = (function() {
     var myclass = function(selector, init_x, init_y) {
         this.selector = selector;
@@ -66,13 +73,16 @@ var CanvasPainter = (function() {
             args.width = 1;
         }
         var context = $(args.canvas_selector).get(0).getContext("2d");
+        context.save();
         context.strokeStyle = myclass._rgbaString.apply(null, args.color);
         context.lineWidth = args.width;
+        context.lineCap = "round";
         context.beginPath();
         context.moveTo(args.start_x, args.start_y);
         context.lineTo(args.end_x, args.end_y);
         context.stroke();
         context.closePath();
+        context.restore();
     };
     myclass.prototype = {
         _getCanvasOffsetToWindow: function() {
@@ -128,14 +138,52 @@ var CanvasPainter = (function() {
             }
             self.cursor_x = next_x;
             self.cursor_y = next_y;
-        }
+        },
+        setColor: function(r, g, b) {
+            if(!r) r = 0;
+            if(!g) g = 0;
+            if(!b) b = 0;
+            this.color = [r, g, b];
+        },
+        setWidth: function(width) {
+            if(!width || width <= 0) {
+                width = 1;
+            }
+            this.width = width;
+        },
     };
 
     return myclass;
 })();
 
+var WidthSlider = (function() {
+    var myclass = function(canvas_painter, slider_selector, display_selector) {
+        this.canvas_painter = canvas_painter;
+        this.slider_selector = slider_selector;
+        this.display_selector = display_selector;
+        this._initEventHandlers();
+        this._update();
+    };
+    myclass.prototype = {
+        _initEventHandlers: function() {
+            var self = this;
+            $(self.slider_selector).on("change", function() {
+                self._update();
+            });
+        },
+        _update: function() {
+            var self = this;
+            var got_width = $(self.slider_selector).val();
+            $(self.display_selector).text(got_width);
+            self.canvas_painter.setWidth(got_width);
+        }
+    };
+    return myclass;
+})();
+
 $(function() {
     var painter = new CanvasPainter("#canvas-main", 0, 0);
+    var width_slider = new WidthSlider(painter, "#painter-width", "#painter-width-display");
 });
 
 </script>
