@@ -111,6 +111,9 @@ var CanvasPainter = (function() {
             $canvas.on("mouseup", function() {
                 self.enable_draw = false;
             });
+            $canvas.on("mouseout", function() {
+                self.enable_draw = false;
+            });
         },
         _moveCursor: function(next_x, next_y) {
             // @params: options: color, width
