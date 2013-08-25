@@ -3,7 +3,8 @@
 <head>
   <title>Conventional Single Page Application</title>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
-  <style type="text/css">
+  <link rel="stylesheet" media="screen" type="text/css" href="/lib/colorpicker/css/colorpicker.css" />
+<style type="text/css">
 body {
     padding: 10px;
 }
@@ -35,14 +36,18 @@ body {
   <div id="canvas-display">
   </div>
   <div>
-    <input id="painter-width" type="range" min="1" max="30" step="1" value="0" />
+    Width: <input id="painter-width" type="range" min="1" max="30" step="1" value="0" />
   </div>
   <div>
     <input id="painter-button-clear" type="button" value="Clear" />
   </div>
+  <div id="painter-colorpicker-container">
+  </div>
   <script src="/lib/jquery.js"></script>
   <script src="/lib/jquery.ellocate.js"></script>
   <script src="/lib/jquery.xpath.js"></script>
+  <script type="text/javascript" src="/lib/colorpicker/js/colorpicker.js"></script>
+  
 <script>
 "use strict";
 
@@ -213,6 +218,19 @@ $(function() {
 
     $("#painter-button-clear").on("click", function() {
         painter.clear();
+    });
+
+    var setupColorPicker = function() {
+        $("#painter-colorpicker-container").ColorPicker({
+            flat: true, color: "000000", onSubmit: function(hsb, hex, rgb, el) {
+                $("#painter-colorpicker-container").trigger("color-changed", [hsb, hex, rgb, el]);
+            }
+        });
+    };
+
+    setupColorPicker();
+    $("#painter-colorpicker-container").on("color-changed", function(event, hsb, hex, rgb, el) {
+        painter.setColor(rgb.r, rgb.g, rgb.b);
     });
 });
 
