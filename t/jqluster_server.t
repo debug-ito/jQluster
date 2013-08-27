@@ -22,13 +22,23 @@ sub clear_log {
     }
 }
 
+sub register_message {
+    my ($message_id, $from) = @_;
+    return {
+        message_id => $message_id, message_type => "register",
+        from => $from, to => undef,
+        body => { remote_id => $from }
+    };
+}
+
 {
     note("--- registration");
     my $s = new_ok("jQluster::Server");
     my $alice = create_fake_connection();
     $s->register(
-        unique_id => 1, remote_id => "alice",
-        message_id => "hoge", sender => $alice->{sender}
+        unique_id => 1,
+        message => register_message("hoge", "alice"),
+        sender => $alice->{sender}
     );
     is(scalar(@{$alice->{log}}), 1, "1 message received after registration");
     my $msg = $alice->{log}[0];
@@ -45,12 +55,14 @@ sub clear_log {
     my $alice = create_fake_connection();
     my $bob = create_fake_connection();
     $s->register(
-        unique_id => "$alice", remote_id => "alice",
-        message_id => "alice_register", sender => $alice->{sender}
+        unique_id => "$alice",
+        message => register_message("alice_register", "alice"),
+        sender => $alice->{sender}
     );
     $s->register(
-        unique_id => "$bob", remote_id => "bob",
-        message_id => "bob_register", sender => $bob->{sender}
+        unique_id => "$bob",
+        message => register_message("bob_register", "bob"),
+        sender => $bob->{sender}
     );
     clear_log $alice, $bob;
     my $message = {
@@ -68,8 +80,8 @@ sub clear_log {
     my @connections = map { create_fake_connection() } 1..2;
     foreach my $c (@connections) {
         $s->register(
-            unique_id => "$c", remote_id => "carol",
-            message_id => "$c", sender => $c->{sender}
+            unique_id => "$c", message => register_message("$c", "carol"),
+            sender => $c->{sender}
         );
     }
     clear_log @connections;
@@ -89,12 +101,14 @@ sub clear_log {
     my $s = jQluster::Server->new();
     my $alice = create_fake_connection();
     $s->register(
-        unique_id => "$alice", remote_id => "alice", message_id => "hoge",
+        unique_id => "$alice",
+        message => register_message("hoge", "alice"),
         sender => $alice->{sender}
     );
     my $bob = create_fake_connection();
     $s->register(
-        unique_id => "$bob", remote_id => "bob", message_id => "foobar",
+        unique_id => "$bob",
+        message => register_message("foobar", "bob"),
         sender => $bob->{sender}
     );
     clear_log $alice, $bob;
@@ -113,7 +127,8 @@ sub clear_log {
     my @cs = map { create_fake_connection() } 1..2;
     foreach my $c (@cs) {
         $s->register(
-            unique_id => "$c", remote_id => "carol", message_id => "$c",
+            unique_id => "$c",
+            message => register_message("$c", "carol"),
             sender => $c->{sender}
         );
     }

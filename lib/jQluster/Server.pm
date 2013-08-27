@@ -19,23 +19,32 @@ sub _generate_message_id {
     return $self->{id_generator}->create_str();
 }
 
-my @REG_KEYS = qw(unique_id remote_id message_id sender);
-
 sub register {
     my ($self, %args) = @_;
-    foreach my $key (@REG_KEYS) {
-        croak "$key parameter is mandaotry" if not defined $args{$key};
+    foreach my $key (qw(unique_id message sender)) {
+        croak "$key parameter is mandatory" if not defined $args{$key};
     }
-    my %reg_entry = ();
-    @reg_entry{@REG_KEYS} = @args{@REG_KEYS};
+    foreach my $msg_key (qw(message_id from message_type)) {
+        if(!defined($args{message}{$msg_key})) {
+            croak "The register message does not have $msg_key field. Something is wrong.";
+        }
+    }
+    if($args{message}{message_type} ne "register") {
+        croak "Message type is $args{message}{message_type}, not 'register'. Something is wrong.";
+    }
+    my %reg_entry = (
+        unique_id => $args{unique_id},
+        sender => $args{sender},
+        remote_id => $args{message}{from}
+    );
     $self->{registry}{$reg_entry{unique_id}} = \%reg_entry;
     $self->{uids_for_remote_id}{$reg_entry{remote_id}}{$reg_entry{unique_id}} = 1;
 
     $self->distribute({
         message_id => $self->_generate_message_id(),
         message_type => "register_reply",
-        from => undef, to => $args{remote_id},
-        body => { error => undef, in_reply_to => $args{message_id} }
+        from => undef, to => $reg_entry{remote_id},
+        body => { error => undef, in_reply_to => $args{message}{message_id} }
     });
 }
 
@@ -73,8 +82,7 @@ jQluster::Server - jQluster tranport server independent of underlying connection
     
     $server->register(
         unique_id => "global unique ID for the connection",
-        remote_id => "remote ID for the connection",
-        message_id => "regsitration message ID",
+        message => $registration_message,
         sender => sub {
             my ($message) = @_;
             $some_transport->send($message);
@@ -102,10 +110,4 @@ TBW. See the L</SYNOPSIS>.
 =head1 AUTHOR
 
 Toshio Ito C<< toshio9.ito [at] toshiba.co.jp >>
-
-
-
-
-
-
 
