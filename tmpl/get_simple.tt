@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+
+%% ## args: items, my_remote_id, target_remote_id, websocket_url
+
+<html>
+  <head>
+    <title>Simple remote "get" test</title>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
+  </head>
+  <body>
+    <table id="items">
+      [% FOREACH item IN items %]
+      <tr><td class="item-mine">[% item %]</td><td><input type="button" value="GET" /></td><td class="item-yours"></td></tr>
+      [% END %]
+    </table>
+    <script src="/lib/jquery.js"></script>
+    <script src="/lib/jquery.ellocate.js"></script>
+    <script src="/lib/jquery.xpath.js"></script>
+    <script src="/jqluster.js"></script>
+    <script>
+"use strict";
+
+$(function() {
+    $.jqluster.init("[% my_remote_id | js %]", "[% websocket_url | js %]");
+    $("#items").on("click", "input", function() {
+        var $row = $(this).closest("tr");
+        var $_ = $.jqluster("[% target_remote_id | js %]");
+        $_("#items").find("tr").eq($row.index()).find(".item-mine").text().then(function(your_item) {
+            $row.find(".item-yours").text(your_item);
+        });
+    });
+});
+
+    </script>
+  </body>
+</html>
+

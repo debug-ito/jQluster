@@ -29,6 +29,8 @@ if(!jQluster) { var jQluster = {}; }
                 local_server = new my.ServerLocal();
             }
             return new my.ConnectionLocal(local_server);
+        }else if(transport_id.match(/^wss?:\/\//)) {
+            return new my.ConnectionWebSocket(transport_id);
         }
         throw "Unknown transport_id: " + transport_id;
     };

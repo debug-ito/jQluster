@@ -12,17 +12,21 @@ if(!jQluster) { var jQluster = {}; }
         superclass.apply(this);
         this.url = websocket_url;
         this.websocket = null;
-        this._initWebSocket();
         this.send_buffer = [];
         this.is_socket_ready = false;
+        this._initWebSocket();
     };
     $.each(["log", "error"], function(i, log_func) {
-        myclass[log_func] = console[log_func]("WebSocketConnection: " + message);
+        myclass[log_func] = function(message) {
+            console[log_func]("WebSocketConnection: " + message);
+        };
     });
     myclass.prototype = $.extend(new superclass(), {
         _initWebSocket: function() {
             var self = this;
-            var ws = self.websocket = new WebSocket(self.url);
+            var ws = new WebSocket(self.url);
+            self.websocket = ws;
+            myclass.log("WebSocket connect to " + self.url);
             ws.onopen = function() {
                 self.is_socket_ready = true;
                 $.each(self.send_buffer, function(i, msg) {
@@ -47,6 +51,7 @@ if(!jQluster) { var jQluster = {}; }
             };
         },
         send: function(message) {
+            var self = this;
             if(!my.defined(self.websocket) || !self.is_socket_ready) {
                 self.send_buffer.push(message);
                 return;
@@ -54,7 +59,7 @@ if(!jQluster) { var jQluster = {}; }
             self._doSend(message);
         },
         _doSend: function(message) {
-            self.websocket.send(JSON.stringify(message));
+            this.websocket.send(JSON.stringify(message));
         }
     });
 })(jQluster, jQuery);
