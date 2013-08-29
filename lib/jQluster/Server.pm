@@ -19,6 +19,11 @@ sub _generate_message_id {
     return $self->{id_generator}->create_str();
 }
 
+sub _log {
+    my ($level, $msg) = @_;
+    warn(__PACKAGE__ . ": $level: $msg\n");
+}
+
 sub register {
     my ($self, %args) = @_;
     foreach my $key (qw(unique_id message sender)) {
@@ -39,6 +44,7 @@ sub register {
     );
     $self->{registry}{$reg_entry{unique_id}} = \%reg_entry;
     $self->{uids_for_remote_id}{$reg_entry{remote_id}}{$reg_entry{unique_id}} = 1;
+    _log(info => "Accept registration: unique_id = $reg_entry{unique_id}, remote_id = $reg_entry{remote_id}");
 
     $self->distribute({
         message_id => $self->_generate_message_id(),
@@ -53,6 +59,7 @@ sub unregister {
     my $entry = delete $self->{registry}{$unique_id};
     return if !defined($entry);
     delete $self->{uids_for_remote_id}{$entry->{remote_id}}{$entry->{unique_id}};
+    _log(info => "Unregister: unique_id = $unique_id");
 }
 
 sub distribute {
