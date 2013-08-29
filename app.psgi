@@ -7,7 +7,7 @@ use Plack::Builder;
 use JavaScript::Value::Escape;
 use jQluster::Server;
 use JSON qw(decode_json encode_json);
-use Scalar::Util qw(weaken);
+use Scalar::Util qw(weaken refaddr);
 use Try::Tiny;
 
 my $JQLUSTER_DIR = "$FindBin::RealBin/js";
@@ -76,7 +76,7 @@ any $WEBSOCKET_ENDPOINT => sub {
             }else {
                 $registered = 1;
                 $jqluster_server->register(
-                    unique_id => "$ws",
+                    unique_id => refaddr($ws),
                     message => $message_obj,
                     sender => sub {
                         my ($my_message_obj) = @_;
