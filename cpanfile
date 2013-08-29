@@ -10,6 +10,7 @@ requires "Twiggy";
 requires "JavaScript::Value::Escape";
 requires "JSON";
 requires "Scalar::Util";
+requires "Try::Tiny";
 
 on test => sub {
     requires "Test::More";

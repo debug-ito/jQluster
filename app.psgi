@@ -8,6 +8,7 @@ use JavaScript::Value::Escape;
 use jQluster::Server;
 use JSON qw(decode_json encode_json);
 use Scalar::Util qw(weaken);
+use Try::Tiny;
 
 my $JQLUSTER_DIR = "$FindBin::RealBin/js";
 
@@ -63,7 +64,13 @@ any $WEBSOCKET_ENDPOINT => sub {
         $ws->on_receive_message(sub {
             my ($c, $message) = @_;
             return if !$ws;
-            my $message_obj = decode_json($message);
+            my $message_obj = try {
+                decode_json($message);
+            }catch {
+                undef;
+            };
+            return if !$message_obj;
+
             if($registered) {
                 $jqluster_server->distribute($message_obj);
             }else {
