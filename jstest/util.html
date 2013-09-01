@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Test jQluster utility functions</title>
+<link rel="stylesheet" href="./qunit.css">
+</head>
+<body>
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+<script src="../js/lib/jquery.js"></script>
+<script src="../js/lib/jquery.ellocate.js"></script>
+<script src="./qunit.js"></script>
+<script src="../js/util.js"></script>
+<script>
+"use strict";
+
+var is = strictEqual;
+
+(function() {
+    module("argumentsStringFor");
+    var t = function(input, exp_output) {
+        return function() {
+            is(jQluster.argumentsStringFor(input), exp_output);
+        };
+    };
+
+    test("empty", t([], ''));
+    test("numbers", t([1,2,3], '1,2,3'));
+    test("string", t(["hoge"], '"hoge"'));
+    test("boolean true", t([true], 'true'));
+    test("boolean false", t([false], 'false'));
+    test("null", t([null], 'null'));
+    test('undefined', t([undefined], 'undefined'));
+    test("mixed arguments", t([true, "foobar", 10.54, null], 'true,"foobar",10.54,null'));
+    test("special characters", t(["\t\r\n\"'\\"], "\"\\t\\r\\n\\\"'\\\\\""));
+    test("object", t([{foo: 1, bar: 2}], '{"foo":1,"bar":2}'));
+    test("array", t([["a","b","c"]], '["a","b","c"]'));
+})();
+
+
+</script>
+</body>
+</html>
