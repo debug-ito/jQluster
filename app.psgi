@@ -88,7 +88,7 @@ any $WEBSOCKET_ENDPOINT => sub {
         });
         my $unregister = sub {
             return if !$ws || !$registered;
-            $jqluster_server->unregister("$ws");
+            $jqluster_server->unregister(refaddr($ws));
         };
         $ws->on_eof($unregister);
         $ws->on_error($unregister);

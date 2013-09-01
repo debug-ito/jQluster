@@ -63,7 +63,7 @@ sub unregister {
     my $entry = delete $self->{registry}{$unique_id};
     return if !defined($entry);
     delete $self->{uids_for_remote_id}{$entry->{remote_id}}{$entry->{unique_id}};
-    $self->_log(info => "Unregister: unique_id = $unique_id");
+    $self->_log(info => "Unregister: unique_id = $unique_id, remote_id = $entry->{remote_id}");
 }
 
 my %REPLY_MESSAGE_TYPE_FOR = (

@@ -27,6 +27,8 @@ $(function() {
         var $_ = $.jqluster("[% target_remote_id | js %]");
         $_("#items").find("tr").eq($row.index()).find(".item-mine").text().then(function(your_item) {
             $row.find(".item-yours").text(your_item);
+        }, function(error) {
+            console.error("Simple get error: " + error);
         });
     });
 });
