@@ -31,6 +31,8 @@ sub register_message {
     };
 }
 
+local $SIG{__WARN__} = sub { };
+
 {
     note("--- registration");
     my $s = new_ok("jQluster::Server");
@@ -94,6 +96,31 @@ sub register_message {
         my $c = $connections[$i];
         is_deeply($c->{log}, [$message], "connection $i received the message");
     }
+}
+
+{
+    note("--- no destination");
+    my $s = jQluster::Server->new();
+    my $alice = create_fake_connection();
+    $s->register(
+        unique_id => "$alice", message => register_message("alice_register", "alice"),
+        sender => $alice->{sender}
+    );
+    clear_log $alice;
+
+    my $message = { message_id => "to_bob",
+                    message_type => "select_and_get",
+                    from => "alice", to => "bob", body => {
+                        remote_id => "alice", eval_code => "hoge()",
+                    } };
+    $s->distribute($message);
+    is(scalar(@{$alice->{log}}), 1, "alice received 1 message");
+    my $alice_message = $alice->{log}[0];
+    is($alice_message->{message_type}, "select_and_get_reply");
+    is($alice_message->{from}, undef, "the message is from the server");
+    is($alice_message->{to}, "alice");
+    is($alice_message->{body}{in_reply_to}, "to_bob");
+    ok(defined($alice_message->{body}{error}), "the message indicates error");
 }
 
 {
