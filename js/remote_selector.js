@@ -34,6 +34,12 @@ if(!jQluster) { var jQluster = {}; }
     myclass._getEvalCodeFromSelector = function(selector) {
         return "$("+ my.quoteString(selector) +")";
     };
+    myclass._logPromiseError = function(promise) {
+        promise.then(null, function(error) {
+            console.error(error);
+        });
+        return promise;
+    };
     myclass.prototype = {
         _getEvalCode: function() { return this.eval_code; },
 
@@ -73,7 +79,7 @@ if(!jQluster) { var jQluster = {}; }
                 method: "on", options: options,
                 remote_id: self.remote_id, callback: handler
             };
-            self.transport.selectAndListen(transport_args);
+            myclass._logPromiseError(self.transport.selectAndListen(transport_args));
             return self;
         },
         
@@ -91,7 +97,7 @@ if(!jQluster) { var jQluster = {}; }
                 throw "handler parameter is mandatory";
             }
             var loop_enabled = true;
-            self.transport.selectAndListen({
+            var result = self.transport.selectAndListen({
                 eval_code: self._getEvalCode(),
                 method: "each", remote_id: self.remote_id,
                 callback: function(index, remote_elem) {
@@ -104,6 +110,7 @@ if(!jQluster) { var jQluster = {}; }
                     }
                 }
             });
+            myclass._logPromiseError(result);
             return self;
         },
 
@@ -115,10 +122,11 @@ if(!jQluster) { var jQluster = {}; }
         off: function(events, selector) {
             var args_str = my.defined(selector) ? my.argumentsStringFor([events, selector])
                                                 : my.argumentsStringFor([events]);
-            this.transport.selectAndGet({
+            var result = this.transport.selectAndGet({
                 eval_code: this._getEvalCode() + ".off("+ args_str +")",
                 remote_id: this.remote_id
             });
+            myclass._logPromiseError(result);
             return this;
         },
         promise: function(type, target) {
@@ -180,6 +188,7 @@ if(!jQluster) { var jQluster = {}; }
             if(arguments.length <= max_arg_get) {
                 return select_result;
             }else {
+                myclass._logPromiseError(select_result);
                 return this;
             }
         };
@@ -199,11 +208,12 @@ if(!jQluster) { var jQluster = {}; }
             var args = my.argsToArray(arguments);
             var callback = null;
             var eval_code = self._getEvalCode();
+            var select_result;
             if(args.length > 0 && $.isFunction(args[args.length-1])) {
                 callback = args.pop();
             }
             if(my.defined(callback)) {
-                self.transport.selectAndListen({
+                select_result = self.transport.selectAndListen({
                     eval_code: eval_code,
                     remote_id: self.remote_id,
                     method: method_name,
@@ -212,11 +222,12 @@ if(!jQluster) { var jQluster = {}; }
                 });
             }else {
                 eval_code += "."+ method_name +"("+ my.argumentsStringFor(args) +")";
-                self.transport.selectAndGet({
+                select_result = self.transport.selectAndGet({
                     eval_code: eval_code,
                     remote_id: self.remote_id
                 });
             }
+            myclass._logPromiseError(select_result);
             return self;
         };
     };
