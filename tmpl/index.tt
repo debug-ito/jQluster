@@ -11,6 +11,7 @@
         <li><a href="get_simple.html?my_id=alice&target_id=bob">Alice</a></li>
         <li><a href="get_simple.html?my_id=bob&target_id=alice">Bob</a></li>
       </ul>
+      <li><a href="chat.html">Chat</a></li>
     </ul>
   </body>
 </html>

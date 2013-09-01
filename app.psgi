@@ -129,6 +129,10 @@ get '/get_simple.html' => sub {
     );
 };
 
+get '/chat.html' => sub {
+    my ($c) = @_;
+    return $c->render("chat.tt", { websocket_url => jqluster_endpoint_url($c->req->env) });
+};
  
 return builder {
     mount "/lib" => Plack::App::File->new(root => "$FindBin::RealBin/js/lib")->to_app;
