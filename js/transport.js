@@ -70,12 +70,20 @@ if(!jQluster) { var jQluster = {}; }
             // @params: args.eval_code (must return a jQuery object),
             //          args.method, args.options = [],
             //          args.callback, args.remote_id
-            // @return: Promise, whose content is meaningless.
             // 
-            // If the remote node does not exist, the 'listen' request
-            // is deferred and delivered to the remote node when it
-            // appears. If there are multiple remote nodes, all of
-            // them receive the listen request.
+            // @return: Promise. It will be resolved if the request is
+            // accepted by the remote node. The content of the promise
+            // is meaningless in this case. In failure, it will be
+            // rejected and it contains the cause of the error.
+            // 
+            // If the remote node does not exist, the resulting
+            // Promise will be rejected.
+            // 
+            // If there are multiple remote nodes, all of them receive
+            // the listen request. In this case, the resulting Promise
+            // reflects one of the responses from those remote nodes,
+            // but there is no guarantee on exactly which response is
+            // used to affect the Promise.
             //
             // args.callback is called when the event occurs in the
             // remote node. Arguments for the args.callback is exact
@@ -106,16 +114,18 @@ if(!jQluster) { var jQluster = {}; }
                         method: args.method, options: args.options
                     }
                 };
-                // TODO: about remote signal handler: For now there is
-                // no way to REMOVE signal_callbacks. So, calling
-                // selectAndListen() can cause serious memory leak. We
-                // have to take care of releasing callbacks if we are
-                // serious to do remote callbacks.
-                self.signal_callback_for[message.message_id] = function(callback_this, callback_args) {
-                    callback.apply(callback_this, callback_args);
-                };
+                result_d.promise().then(function() {
+                    // TODO: about remote signal handler: For now there is
+                    // no way to REMOVE signal_callbacks. So, calling
+                    // selectAndListen() can cause serious memory leak. We
+                    // have to take care of releasing callbacks if we are
+                    // serious to do remote callbacks.
+                    self.signal_callback_for[message.message_id] = function(callback_this, callback_args) {
+                        callback.apply(callback_this, callback_args);
+                    };
+                });
+                self.pending_request_for[message.message_id] = result_d;
                 self.connection_object.send(message);
-                result_d.resolve();
             }catch(e) {
                 result_d.reject(e);
             }
@@ -139,6 +149,10 @@ if(!jQluster) { var jQluster = {}; }
             }
         },
 
+        _KNOWN_REPLY_MESSAGE_TYPE: {
+            select_and_get_reply: 1,
+            select_and_listen_reply: 1
+        },
         _onReply: function(in_reply_to, message) {
             var self = this;
             var pending_d = self.pending_request_for[in_reply_to];
@@ -146,9 +160,9 @@ if(!jQluster) { var jQluster = {}; }
                 return;
             }
             delete self.pending_request_for[in_reply_to];
-            if(message.message_type === "select_and_get_reply") {
+            if(my.defined(self._KNOWN_REPLY_MESSAGE_TYPE[message.message_type])) {
                 if(my.defined(message.body.error)) {
-                    pending_d.reject("select_and_get error: " + message.body.error);
+                    pending_d.reject(message.message_type + " error: " + message.body.error);
                 }else {
                     pending_d.resolve(message.body.result);
                 }
@@ -212,6 +226,16 @@ if(!jQluster) { var jQluster = {}; }
             var args_for_method;
             var request_id = message.message_id;
             var request_from = message.from;
+            var reply_sent = false;
+            var try_send_reply = function(error) {
+                if(reply_sent) return;
+                reply_sent = true;
+                self.connection_object.send({
+                    message_id: my.uuid(), message_type: "select_and_listen_reply",
+                    from: self.remote_id, to: request_from,
+                    body: {error: error, result: (my.defined(error) ? "NG" : "OK"), in_reply_to: request_id}
+                });
+            };
             try {
                 jq_node = eval(message.body.eval_code);
                 args_for_method = message.body.options;
@@ -222,6 +246,7 @@ if(!jQluster) { var jQluster = {}; }
                     for(i = 0 ; i < arguments.length ; i++) {
                         callback_args.push(self._createRemoteDOMPointerIfDOM(arguments[i]));
                     }
+                    try_send_reply(null);
                     self.connection_object.send({
                         message_id: my.uuid(), message_type: "signal",
                         from: self.remote_id, to: request_from,
@@ -230,10 +255,9 @@ if(!jQluster) { var jQluster = {}; }
                     });
                 });
                 jq_node[message.body.method].apply(jq_node, args_for_method);
+                try_send_reply(null);
             }catch(e) {
-                console.error("_processSelectAndListen error: ");
-                console.error(e);
-                console.log("TODO: handles and reports selectAndListen error in a better way");
+                try_send_reply("_processSelectAndListen error: " + e);
             }
         }
     };

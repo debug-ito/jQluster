@@ -41,7 +41,7 @@ if(!jQluster) { var jQluster = {}; }
 (function(my, $) {
     var REPLY_MESSAGE_TYPE_FOR = {
         select_and_get: "select_and_get_reply",
-        // select_and_listen: "select_and_listen_reply"
+        select_and_listen: "select_and_listen_reply"
     };
     my.ServerLocal = function() {
         this.connections = {};

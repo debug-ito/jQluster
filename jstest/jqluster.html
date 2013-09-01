@@ -315,7 +315,7 @@ asyncTest("selectAndListen - single target", function() {
     }).then(function() {
         var alog = alice_connection.getLog();
         var blog = bob_connection.getLog();
-        is(alog.length, 1);
+        is(alog.length, 2);
         is(alog[0].direction, "send");
         is(alog[0].message.message_type, "select_and_listen");
         is(alog[0].message.from, "alice");
@@ -325,10 +325,19 @@ asyncTest("selectAndListen - single target", function() {
             method: "on",
             options: ["click"]
         });
-        is(blog.length, 1);
+        is(alog[1].direction, "receive");
+        is(alog[1].message.message_type, "select_and_listen_reply");
+        is(alog[1].message.from, "bob");
+        is(alog[1].message.to, "alice");
+        is(alog[1].message.body.error, null);
+        is(alog[1].message.body.in_reply_to, alog[0].message.message_id);
+        
+        is(blog.length, 2);
         is(blog[0].direction, "receive");
         deepEqual(blog[0].message, alog[0].message);
-        
+        is(blog[1].direction, "send");
+        deepEqual(blog[1].message, alog[1].message);
+
         is(event_deferred.state(), "pending");
         $('#test_button').trigger('click');
         return event_deferred.promise();
@@ -342,19 +351,19 @@ asyncTest("selectAndListen - single target", function() {
         ok(jQluster.defined(event));
         // console.log("delivered event in selectAndListen (single target):");
         // console.log(event);
-        is(alog.length, 2);
-        is(alog[1].direction, "receive");
-        is(alog[1].message.message_type, "signal");
-        is(alog[1].message.from, "bob");
-        is(alog[1].message.to, "alice");
-        deepEqual(alog[1].message.body, {
+        is(alog.length, 3);
+        is(alog[2].direction, "receive");
+        is(alog[2].message.message_type, "signal");
+        is(alog[2].message.from, "bob");
+        is(alog[2].message.to, "alice");
+        deepEqual(alog[2].message.body, {
             error: null, in_reply_to: alog[0].message.message_id,
             callback_this: event_this,
             callback_args: [event]
         });
-        is(blog.length, 2);
-        is(blog[1].direction, "send");
-        deepEqual(jQluster.cloneViaJSON(blog[1].message), alog[1].message);
+        is(blog.length, 3);
+        is(blog[2].direction, "send");
+        deepEqual(jQluster.cloneViaJSON(blog[2].message), alog[2].message);
     }).then(null, function(error) {
         ok(false, "error: " + error);
     }).always(function() {
@@ -379,8 +388,11 @@ asyncTest("selectAndListen - no target: the server should return an error messag
             event_deferred.resolve(this, args_array);
         }
     }).then(function() {
+        ok(false, "the promise should not be resolved.");
+    }, function(error) {
+        ok(jQluster.defined(error));
         var alog = alice_connection.getLog();
-        is(alog.length, 1);
+        is(alog.length, 2);
         is(alog[0].direction, "send");
         is(alog[0].message.message_type, "select_and_listen");
         is(alog[0].message.from, "alice");
@@ -389,41 +401,12 @@ asyncTest("selectAndListen - no target: the server should return an error messag
             remote_id: "bob", eval_code: "$('#test_button')",
             method: "dblclick", options: []
         });
-        $('#test_button').trigger('dblclick');
-        return delay(0);
-    }).then(function() {
-        is(event_deferred.state(), "pending", "event does not occur because there is no 'bob' node yet.");
-        setupBob();
-        $('#test_button').trigger("dblclick");
-        return event_deferred.promise();
-    }).then(function(callback_this, callback_args) {
-        deepEqual(callback_this, {
-            remote_type: "xpath", remote_id: "bob",
-            remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
-        });
-        var alog = alice_connection.getLog();
-        var blog = bob_connection.getLog();
-        is(alog.length, 2);
         is(alog[1].direction, "receive");
-        is(alog[1].message.message_type, "signal");
-        is(alog[1].message.from, "bob");
+        is(alog[1].message.message_type, "select_and_listen_reply");
+        is(alog[1].message.from, null);
         is(alog[1].message.to, "alice");
-        deepEqual(alog[1].message.body, {
-            error: null, in_reply_to: alog[0].message.message_id,
-            callback_this: callback_this,
-            callback_args: callback_args
-        });
-        is(blog.length, 4);
-        is(blog[0].direction, "send");
-        is(blog[0].message.message_type, "register");
-        is(blog[1].direction, "receive");
-        is(blog[1].message.message_type, "register_reply");
-        is(blog[2].direction, "receive");
-        deepEqual(blog[2].message, alog[0].message);
-        is(blog[3].direction, "send");
-        deepEqual(jQluster.cloneViaJSON(blog[3].message), alog[1].message);
-    }).then(null, function(error) {
-        ok(false, "error: " + error);
+        is(alog[1].message.body.in_reply_to, alog[0].message.message_id);
+        ok(jQluster.defined(alog[1].message.body.error));
     }).always(function() {
         start();
     });
@@ -458,13 +441,21 @@ asyncTest("selectAndListen - multiple targets", function() {
         }
     }).then(function() {
         var alog = alice_connection.getLog();
-        is(alog.length, 1);
+        is(alog.length, 3);
         is(alog[0].direction, "send");
         is(alog[0].message.message_type, "select_and_listen");
         is(alog[0].message.from, "alice");
         is(alog[0].message.to, "bob");
         deepEqual(alog[0].message.body, {
             remote_id: "bob", eval_code: "$('#test_button')", method: "click", options: []
+        });
+        $.each([1,2], function(i, log_index) {
+            var label = "alog select_and_listen_reply" + log_index;
+            is(alog[log_index].direction, "receive", label);
+            is(alog[log_index].message.message_type, "select_and_listen_reply", label);
+            is(alog[log_index].message.from, "bob", label);
+            is(alog[log_index].message.to, "alice", label);
+            deepEqual(alog[log_index].message.body, { error: null, result: "OK", in_reply_to: alog[0].message.message_id }, label);
         });
         $('#test_button').trigger('click');
         return $.when.apply($, event_deferreds);
@@ -481,21 +472,21 @@ asyncTest("selectAndListen - multiple targets", function() {
         ok(jQluster.defined(args1));
         deepEqual(this2, this1);
         ok(jQluster.defined(args2));
-        is(alog.length, 3);
-        is(alog[1].direction, "receive");
-        is(alog[1].message.message_type, "signal");
-        is(alog[1].message.from, "bob");
-        is(alog[1].message.to, "alice");
-        is(alog[1].message.body.error, null);
-        is(alog[1].message.body.in_reply_to, alog[0].message.message_id);
-        deepEqual(alog[1].message.body.callback_this, this1);
-        is(alog[2].direction, "receive");
-        is(alog[2].message.message_type, "signal");
-        is(alog[2].message.from, "bob");
-        is(alog[2].message.to, "alice");
-        is(alog[2].message.body.error, null);
-        is(alog[2].message.body.in_reply_to, alog[0].message.message_id);
-        deepEqual(alog[2].message.body.callback_this, this1);
+        is(alog.length, 5);
+        is(alog[3].direction, "receive");
+        is(alog[3].message.message_type, "signal");
+        is(alog[3].message.from, "bob");
+        is(alog[3].message.to, "alice");
+        is(alog[3].message.body.error, null);
+        is(alog[3].message.body.in_reply_to, alog[0].message.message_id);
+        deepEqual(alog[3].message.body.callback_this, this1);
+        is(alog[4].direction, "receive");
+        is(alog[4].message.message_type, "signal");
+        is(alog[4].message.from, "bob");
+        is(alog[4].message.to, "alice");
+        is(alog[4].message.body.error, null);
+        is(alog[4].message.body.in_reply_to, alog[0].message.message_id);
+        deepEqual(alog[4].message.body.callback_this, this1);
     }).then(null, function(error) {
         ok(false, "error: " + error);
     }).always(function() {
