@@ -6,7 +6,7 @@ use FindBin;
 use Plack::Builder;
 use JavaScript::Value::Escape;
 use jQluster::Server;
-use JSON qw(decode_json encode_json);
+use JSON qw(from_json to_json);
 use Scalar::Util qw(weaken refaddr);
 use Try::Tiny;
 
@@ -65,7 +65,7 @@ any $WEBSOCKET_ENDPOINT => sub {
             my ($c, $message) = @_;
             return if !$ws;
             my $message_obj = try {
-                decode_json($message);
+                from_json($message);
             }catch {
                 undef;
             };
@@ -81,7 +81,7 @@ any $WEBSOCKET_ENDPOINT => sub {
                     sender => sub {
                         my ($my_message_obj) = @_;
                         return if !$ws;
-                        $ws->send_message(encode_json($my_message_obj));
+                        $ws->send_message(to_json($my_message_obj));
                     }
                 );
             }
