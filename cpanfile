@@ -1,4 +1,5 @@
 
+requires "perl" => "5.10.0";
 requires "Carp";
 requires "Data::UUID";
 requires "Plack";

@@ -31,11 +31,29 @@ sub register_message {
     };
 }
 
-local $SIG{__WARN__} = sub { };
+sub create_server {
+    my @logs = ();
+    my $server = jQluster::Server->new(
+        logger => sub { push(@logs, [@_]) }
+    );
+    return ($server, \@logs);
+}
+
+sub check_server_logs {
+    my ($logs_ref) = @_;
+    foreach my $log (@$logs_ref) {
+        if(lc($log->[0]) eq "error") {
+            fail("There is an error log: $log->[0]: $log->[1]");
+            return;
+        }
+    }
+    pass("No error log");
+}
 
 {
     note("--- registration");
-    my $s = new_ok("jQluster::Server");
+    my @logs = ();
+    my $s = new_ok("jQluster::Server", [logger => sub { push(@logs, [@_]) }]);
     my $alice = create_fake_connection();
     $s->register(
         unique_id => 1,
@@ -49,11 +67,12 @@ local $SIG{__WARN__} = sub { };
         message_type => "register_reply", from => undef, to => "alice",
         body => { error => undef, in_reply_to => "hoge" }
     });
+    check_server_logs \@logs;
 }
 
 {
     note("--- single destination");
-    my $s = jQluster::Server->new();
+    my ($s, $server_logs) = create_server();
     my $alice = create_fake_connection();
     my $bob = create_fake_connection();
     $s->register(
@@ -74,11 +93,12 @@ local $SIG{__WARN__} = sub { };
     $s->distribute($message);
     is_deeply($alice->{log}, [], "alice recieves nothing");
     is_deeply($bob->{log}, [$message], "bob receives a message");
+    check_server_logs $server_logs;
 }
 
 {
     note("--- multiple destination");
-    my $s = jQluster::Server->new();
+    my ($s, $server_logs) = create_server();
     my @connections = map { create_fake_connection() } 1..2;
     foreach my $c (@connections) {
         $s->register(
@@ -96,11 +116,12 @@ local $SIG{__WARN__} = sub { };
         my $c = $connections[$i];
         is_deeply($c->{log}, [$message], "connection $i received the message");
     }
+    check_server_logs $server_logs;
 }
 
 {
     note("--- no destination");
-    my $s = jQluster::Server->new();
+    my ($s, $server_logs) = create_server();
     my $alice = create_fake_connection();
     $s->register(
         unique_id => "$alice", message => register_message("alice_register", "alice"),
@@ -121,11 +142,12 @@ local $SIG{__WARN__} = sub { };
     is($alice_message->{to}, "alice");
     is($alice_message->{body}{in_reply_to}, "to_bob");
     ok(defined($alice_message->{body}{error}), "the message indicates error");
+    check_server_logs $server_logs;
 }
 
 {
     note("--- unregister (single node in remote_id)");
-    my $s = jQluster::Server->new();
+    my ($s, $server_logs) = create_server();
     my $alice = create_fake_connection();
     $s->register(
         unique_id => "$alice",
@@ -141,16 +163,23 @@ local $SIG{__WARN__} = sub { };
     clear_log $alice, $bob;
     $s->unregister("$alice");
     $s->distribute({
-        message_id => "buzz", message_type => "test",
-        from => "bob", to => "alice", body => {error => undef}
+        message_id => "buzz", message_type => "select_and_listen",
+        from => "bob", to => "alice", body => {remote_id => "bob", eval_code => "hoge()"}
     });
     is_deeply($alice->{log}, [], "alice receives nothing because it is unregistered");
-    is_deeply($bob->{log}, [], "bob receives nothing, of course");
+    is(scalar(@{$bob->{log}}), 1, "bob receives a message");
+    my $bmessage = $bob->{log}[0];
+    is($bmessage->{message_type}, "select_and_listen_reply");
+    is($bmessage->{from}, undef);
+    is($bmessage->{to}, "bob");
+    is($bmessage->{body}{in_reply_to}, "buzz");
+    ok(defined($bmessage->{body}{error}));
+    check_server_logs $server_logs;
 }
 
 {
     note("--- unregister (multiple nodes in remote_id)");
-    my $s = jQluster::Server->new();
+    my ($s, $server_logs) = create_server();
     my @cs = map { create_fake_connection() } 1..2;
     foreach my $c (@cs) {
         $s->register(
@@ -168,6 +197,7 @@ local $SIG{__WARN__} = sub { };
     $s->distribute($message);
     is_deeply($cs[0]{log}, [], "connection 0 receives nothing because it is already unregistered");
     is_deeply($cs[1]{log}, [$message], "connection 1 receives the message because it is still registered");
+    check_server_logs $server_logs;
 }
 
 done_testing();

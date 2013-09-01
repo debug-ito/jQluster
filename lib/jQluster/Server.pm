@@ -1,15 +1,19 @@
 package jQluster::Server;
+use 5.10.0;
 use strict;
 use warnings;
 use Carp;
 use Data::UUID;
 
 sub new {
-    my ($class) = @_;
+    my ($class, %args) = @_;
     my $self = bless {
         id_generator => Data::UUID->new,
         registry => {},
-        uids_for_remote_id => {}
+        uids_for_remote_id => {},
+        logger => $args{logger} // sub {
+            warn(__PACKAGE__ . ": $_[0]: $_[1]\n");
+        }
     }, $class;
     return $self;
 }
@@ -20,8 +24,8 @@ sub _generate_message_id {
 }
 
 sub _log {
-    my ($level, $msg) = @_;
-    warn(__PACKAGE__ . ": $level: $msg\n");
+    my ($self, $level, $msg) = @_;
+    $self->{logger}->($level, $msg);
 }
 
 sub register {
@@ -44,7 +48,7 @@ sub register {
     );
     $self->{registry}{$reg_entry{unique_id}} = \%reg_entry;
     $self->{uids_for_remote_id}{$reg_entry{remote_id}}{$reg_entry{unique_id}} = 1;
-    _log(info => "Accept registration: unique_id = $reg_entry{unique_id}, remote_id = $reg_entry{remote_id}");
+    $self->_log(info => "Accept registration: unique_id = $reg_entry{unique_id}, remote_id = $reg_entry{remote_id}");
 
     $self->distribute({
         message_id => $self->_generate_message_id(),
@@ -59,7 +63,7 @@ sub unregister {
     my $entry = delete $self->{registry}{$unique_id};
     return if !defined($entry);
     delete $self->{uids_for_remote_id}{$entry->{remote_id}}{$entry->{unique_id}};
-    _log(info => "Unregister: unique_id = $unique_id");
+    $self->_log(info => "Unregister: unique_id = $unique_id");
 }
 
 my %REPLY_MESSAGE_TYPE_FOR = (
@@ -71,7 +75,7 @@ sub _try_reply_error_to {
     my ($self, $orig_message, $error) = @_;
     my $reply_message_type = $REPLY_MESSAGE_TYPE_FOR{$orig_message->{message_type}};
     if(!defined($reply_message_type)) {
-        _log("error", "Unknown message type: $orig_message->{message_type}: cannot reply to it.");
+        $self->_log("error", "Unknown message type: $orig_message->{message_type}: cannot reply to it.");
         return;
     }
     $self->distribute({
@@ -86,7 +90,6 @@ sub distribute {
     my ($self, $message) = @_;
     my $to = $message->{to};
     if(!defined($to)) {
-        _log("notice", "distribute: received an message without 'to' field.");
         return;
     }
     my $uid_map = $self->{uids_for_remote_id}{$to};
@@ -97,7 +100,7 @@ sub distribute {
     foreach my $uid (keys %$uid_map) {
         my $entry = $self->{registry}{$uid};
         if(!defined($entry)) {
-            _log("error", "UID registry has a key for $uid, but it does not map to an entry object. Something is wrong.");
+            $self->_log("error", "UID registry has a key for $uid, but it does not map to an entry object. Something is wrong.");
             next;
         }
         $entry->{sender}->($message);
@@ -114,7 +117,13 @@ jQluster::Server - jQluster tranport server independent of underlying connection
 
 =head1 SYNOPSIS
 
-    my $server = jQluster::Server->new();
+    my @logs = ();
+    my $server = jQluster::Server->new(
+        logger => sub {  ## OPTIONAL
+            my ($level, $msg) = @_;
+            push(@logs, [$level, $msg]);
+        }
+    );
     
     $server->register(
         unique_id => "global unique ID for the connection",
