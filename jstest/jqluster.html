@@ -200,19 +200,18 @@ asyncTest("selectAndGet - single target", function() {
     });
 });
 
-asyncTest("selectAndGet - no target: messages should be pending.", function() {
+asyncTest("selectAndGet - no target: the server should return an error message", function() {
     setupAlice();
     var promise_select = alice.selectAndGet({
         eval_code: "$('#test li').eq(2).text()",
         remote_id: "bob"
     });
-    var promise_bob = delay(0.001, setupBob);
-    $.when(promise_select, promise_bob).then(function(data) {
+    promise_select.then(function() {
+        ok(false, "the returned promise should not be resolved.");
+    }, function(error) {
         var alog = alice_connection.getLog();
-        var blog = bob_connection.getLog();
-        is(data, "3", "data OK");
+        ok(jQluster.defined(error), "it should return some defined error.");
         is(alog.length, 4);
-        is(blog.length, 4);
         is(alog[0].direction, "send");
         is(alog[0].message.message_type, "register");
         is(alog[1].direction, "receive");
@@ -224,26 +223,10 @@ asyncTest("selectAndGet - no target: messages should be pending.", function() {
         deepEqual(alog[2].message.body, {eval_code: "$('#test li').eq(2).text()", remote_id: "bob"});
         is(alog[3].direction, "receive");
         is(alog[3].message.message_type, "select_and_get_reply");
-        is(alog[3].message.from, "bob");
+        is(alog[3].message.from, null);
         is(alog[3].message.to, "alice");
-        deepEqual(alog[3].message.body, {error: null, result: "3", in_reply_to: alog[2].message.message_id});
-
-        is(blog[0].direction, "send");
-        is(blog[0].message.message_type, "register");
-        is(blog[1].direction, "receive");
-        is(blog[1].message.message_type, "register_reply");
-        is(blog[2].direction, "receive");
-        is(blog[2].message.message_type, "select_and_get");
-        is(blog[2].message.from, "alice");
-        is(blog[2].message.to, "bob");
-        deepEqual(blog[2].message.body, {eval_code: "$('#test li').eq(2).text()", remote_id: "bob"});
-        is(blog[3].direction, "send");
-        is(blog[3].message.message_type, "select_and_get_reply");
-        is(blog[3].message.from, "bob");
-        is(blog[3].message.to, "alice");
-        deepEqual(blog[3].message.body, {error: null, result: "3", in_reply_to: blog[2].message.message_id});
-    }, function(error) {
-        ok(false, "error: " + error);
+        is(alog[3].message.body.in_reply_to, alog[2].message.message_id);
+        ok(jQluster.defined(alog[3].message.body.error));
     }).always(function() {
         start();
     });
@@ -379,7 +362,7 @@ asyncTest("selectAndListen - single target", function() {
     });
 });
 
-asyncTest("selectAndListen - no target: listen request should be pending", function() {
+asyncTest("selectAndListen - no target: the server should return an error message.", function() {
     setupAlice();
     alice_connection.clearLog();
     var event_deferred = $.Deferred();

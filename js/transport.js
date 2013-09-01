@@ -32,14 +32,18 @@ if(!jQluster) { var jQluster = {}; }
     myclass.prototype = {
         selectAndGet: function(args) {
             // @params: args.eval_code, args.remote_id
-            // @return: Promise that contains the obtained data
             // 
-            // If the remote node does not exist, the request is
-            // deferred and delivered to the remote node when it
-            // appears. If there are multiple remote nodes, the caller
-            // will receive the result returned by one of the remote
-            // nodes, but it is not defined exactly which remote node
-            // is used.
+            // @return: Promise. In success, it is resolved and it
+            // contains the obtained data. In failure it is rejected
+            // and it contains the cause of the error.
+            // 
+            // If the remote node does not exist, the returned Promise
+            // will be rejected.
+            // 
+            // If there are multiple remote nodes, the caller will
+            // receive the result returned by one of the remote nodes,
+            // but it is not defined exactly which remote node is
+            // used.
 
             var self = this;
             var response_d = $.Deferred();

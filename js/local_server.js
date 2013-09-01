@@ -39,10 +39,13 @@ if(!jQluster) { var jQluster = {}; }
 })(jQluster, jQuery);
 
 (function(my, $) {
+    var REPLY_MESSAGE_TYPE_FOR = {
+        select_and_get: "select_and_get_reply",
+        // select_and_listen: "select_and_listen_reply"
+    };
     my.ServerLocal = function() {
         this.connections = {};
         this.register_log = [];
-        this.pending_messages_to = {};
     };
     my.ServerLocal.prototype = {
         register: function(connection, remote_id, register_message_id) {
@@ -59,12 +62,19 @@ if(!jQluster) { var jQluster = {}; }
                 from: null, to: remote_id,
                 body: { error: null, in_reply_to: register_message_id }
             });
-            if(self.pending_messages_to[remote_id] && self.pending_messages_to[remote_id].length > 0) {
-                $.each(self.pending_messages_to[remote_id], function(i, message) {
-                    self.distribute(message);
-                });
-                self.pending_messages_to.length = 0;
+        },
+        _tryReplyTo: function(original_message, error) {
+            var reply_message_type = REPLY_MESSAGE_TYPE_FOR[original_message.message_type];
+            if(!my.defined(error)) {
+                error = null;
             }
+            if(!my.defined(reply_message_type)) return;
+            this.distribute({
+                message_id: my.uuid(),
+                message_type: reply_message_type,
+                from: null, to: original_message.from,
+                body: { error: error, in_reply_to: original_message.message_id }
+            });
         },
 
         distribute: function(message) {
@@ -72,10 +82,7 @@ if(!jQluster) { var jQluster = {}; }
             var self = this;
             var conn_list = self.connections[message.to];
             if(!conn_list) {
-                if(!self.pending_messages_to[message.to]) {
-                    self.pending_messages_to[message.to] = [];
-                }
-                self.pending_messages_to[message.to].push(my.clone(message));
+                self._tryReplyTo(message, "target remote node does not exist.");
                 return;
             }
             $.each(conn_list, function(i, conn) {
