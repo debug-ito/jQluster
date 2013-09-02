@@ -33,9 +33,9 @@ $(function() {
     $("#chat-form").on("submit", function() {
         var speak_content = $("#chat-content").val();
         var speaker_name = $("#chat-name").val();
-        var updated_display = $("#chat-display").text() + speaker_name + ": " + speak_content + "\n";
+        var line = jQluster.htmlEscape(speaker_name + ": " + speak_content + "\n");
         $("#chat-content").val("");
-        $_("#chat-display").text(updated_display);
+        $_("#chat-display").append(line);
         return false;
     });
 });
