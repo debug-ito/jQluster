@@ -984,6 +984,22 @@ asyncTest("off() - only plain events calling convention is supported for now", f
     });
 });
 
+asyncTest("append()", function() {
+    var remote = new jQluster.RemoteSelector({
+        transport: alice, remote_id: "bob", selector: "#test .two"
+    });
+    var append_result = remote.append('<span class="appended">200</span>');
+    is(append_result, remote);
+    delay(0.05).then(function() {
+        is($("#test .two .appended").text(), "200");
+    }, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
+
 ////////////////////////////////////////////////////////////////////////
 module("jQluster.RemoteSelector - effects", {
     setup: setupAll,
