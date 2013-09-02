@@ -176,6 +176,26 @@ if(!jQluster) { var jQluster = {}; }
     // synchronous API just as the original jQuery does and still
     // prevent blocking the entire process during network
     // communication.
+
+    // TODO: setter methods return the context object ('this' remote
+    // selector), but this behavior is not completely the same as the
+    // original jQuery. If further methods are chained from a setter
+    // method, e.g. $_(".foobar").height(100).find(".hoge").width(50),
+    // it will be translated as two sentences on the remote node;
+    // $(".foobar").height(100) and
+    // $(".foobar").find(".hoge").width(50); The two sentences may do
+    // what you mean, but may not sometimes especially if the
+    // intermediate setter method manipulates DOM structure (because
+    // $(".foobar") is evaluated again in the second sentence). If we
+    // were able to detect method chaining and its termination, we
+    // could send a single sentence in the above mentioned scenario,
+    // but it's not possible, right? Or it would help to have actual
+    // jQuery objects on the remote node that correspond to all
+    // RemoteSelector objects on the local node. However, how can we
+    // release the jQuery objects on the remote node that are no
+    // longer used? Perhaps we should just make setter methods return
+    // nothing to prevent confusion.
+
     var accessorMethod = function(method_name, min_arg, max_arg_get) {
         myclass.prototype[method_name] = function() {
             if(arguments.length < min_arg) {
