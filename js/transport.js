@@ -30,6 +30,7 @@ if(!jQluster) { var jQluster = {}; }
         });
     };
     myclass.prototype = {
+        getMyRemoteID: function() { return this.remote_id; },
         selectAndGet: function(args) {
             // @params: args.eval_code, args.remote_id
             // 

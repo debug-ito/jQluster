@@ -11,10 +11,11 @@
         }
         return factory.forRemote(remote_id, selector);
     };
-    $.jqluster.init = function(my_remote_id, transport_id) {
-        factory = new my.RemoteSelectorFactory({
+    $.jqluster.init = function(my_remote_id, transport_id, options) {
+        if(!my.defined(options)) options = {};
+        factory = new my.RemoteSelectorFactory($.extend({}, options, {
             my_remote_id: my_remote_id, transport_id: transport_id
-        });
+        }));
     };
 })(jQluster, jQuery);
 

@@ -42,8 +42,9 @@ if(!jQluster) { var jQluster = {}; }
     };
 
     my.quoteString = function(str) {
-        str = "" + str;
-        return '"' + str.replace('"', '\\"')  + '"';
+        return JSON.stringify("" + str);
+        // str = "" + str;
+        // return '"' + str.replace('"', '\\"')  + '"';
     };
 
     my.argumentsStringFor = function(args) {

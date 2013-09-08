@@ -41,7 +41,7 @@ var teardownjQluster = function() {
     alice = undefined;
     bob = undefined;
     jQluster.RemoteSelectorFactory.releaseLocalServer();
-    jQluster.RemoteSelectorFactory.releaseRegisteredListeners();
+    jQluster.RemoteSelectorFactory.releaseFactories();
 };
 
 module("RemoteSelectorFactory", {
