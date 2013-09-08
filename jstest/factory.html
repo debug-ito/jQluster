@@ -112,7 +112,7 @@ asyncTest("$remote(func) should add callbacks for readiness of the remote node",
         bob = new jQluster.RemoteSelectorFactory({
             my_remote_id: "bob",
             transport_id: "local",
-            notify_to: "alice"
+            notify: "alice"
         });
         return delay(0.05);
     }).then(function() {
@@ -146,7 +146,7 @@ asyncTest("$remote(func) callback should be exeucted immediately if the remote n
     bob = new jQluster.RemoteSelectorFactory({
         my_remote_id: "bob",
         transport_id: "local",
-        notify_to: ["alice"]
+        notify: ["alice"]
     });
     var results = [];
     delay(0.05).then(function() {
@@ -171,7 +171,7 @@ asyncTest("$remote(func) callback should not be executed if the remote node is p
     bob = new jQluster.RemoteSelectorFactory({
         my_remote_id: "bob",
         transport_id: "local",
-        notify_to: ["carol", "david"]
+        notify: ["carol", "david"]
     });
     var results = [];
     delay(0.05).then(function() {
@@ -212,7 +212,7 @@ asyncTest("All $remote(func) callbacks should be executed if they are notified",
         deepEqual(callbacked, {alice:0, carol:0, david:0});
         bob = new jQluster.RemoteSelectorFactory({
             my_remote_id: "bob", transport_id: "local",
-            notify_to: ["alice", "carol"]
+            notify: ["alice", "carol"]
         });
         return delay(0.05);
     }).then(function() {
@@ -265,6 +265,37 @@ asyncTest("each", function() {
         start();
     }, 100);
 });
+
+module("jQuery plugin adaptor - readiness callback", {
+    setup: function() {
+        setupHTML();
+    },
+    teardown: teardownjQluster
+});
+
+asyncTest("readiness notification is set by notify option for $.jqluster.init()", function() {
+    $.jqluster.init("carol", "local", {notify: "bob"});
+    bob = new jQluster.RemoteSelectorFactory({
+        my_remote_id: "bob",
+        transport_id: "local",
+        notify: "carol"
+    });
+    var callbacked = { bob: 0, carol: 0 };
+    $.jqluster("bob", function() {
+        callbacked.bob += 1;
+    });
+    bob.forRemote("carol", function() {
+        callbacked.carol += 1;
+    });
+    delay(0.05).then(function() {
+        deepEqual(callbacked, {bob: 1, carol: 1});
+    }, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
 
 </script>
 </body>
