@@ -19,10 +19,10 @@
 <script src="../js/remote_selector.js"></script>
 <script src="../js/remote_selector_factory.js"></script>
 <script src="../js/jquery_adaptor.js"></script>
+<script src="./test_utils.js"></script>
 <script>
 "use strict";
 
-var is = strictEqual;
 
 var alice;
 var bob;
@@ -41,6 +41,7 @@ var teardownjQluster = function() {
     alice = undefined;
     bob = undefined;
     jQluster.RemoteSelectorFactory.releaseLocalServer();
+    jQluster.RemoteSelectorFactory.releaseRegisteredListeners();
 };
 
 module("RemoteSelectorFactory", {
@@ -83,6 +84,131 @@ $.each([
     test(testcase.label + ", direct interface", function() {
         var remote = alice.forRemote("bob", testcase.target);
         checker(remote);
+    });
+});
+
+module("RemoteSelectorFactory: listen to readiness of remote nodes", {
+    setup: function() {
+        setupHTML();
+        alice = new jQluster.RemoteSelectorFactory({
+            my_remote_id: "alice",
+            transport_id: "local"
+        });
+    },
+    teardown: teardownjQluster
+});
+
+asyncTest("$remote(func) should add callbacks for readiness of the remote node", function() {
+    var $remote_bob = alice.forRemote("bob");
+    var results = [];
+    $remote_bob(function() { results.push(1); });
+    $remote_bob(function() { results.push(2); });
+    $remote_bob(function() { results.push(3); });
+    delay(0.05).then(function() {
+        deepEqual(results, [], "callbacks should not be executed yet");
+        bob = new jQluster.RemoteSelectorFactory({
+            my_remote_id: "bob",
+            transport_id: "local",
+            notify_to: "alice"
+        });
+        return delay(0.05);
+    }).then(function() {
+        deepEqual(results, [1,2,3], "callbacks should be executed in order");
+    }).then(null, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
+asyncTest("$remote(func) should add callbacks, but they are not executed if not notified", function() {
+    var $remote_bob = alice.forRemote("bob");
+    var results = [];
+    $remote_bob(function() { results.push(1); });
+    bob = new jQluster.RemoteSelectorFactory({
+        my_remote_id: "bob",
+        transport_id: "local"
+    });
+    delay(0.05).then(function() {
+        deepEqual(results, [], "callback never executed.");
+    }, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
+asyncTest("$remote(func) callback should be exeucted immediately if the remote node is already present.", function() {
+    var $remote_bob = alice.forRemote("bob");
+    bob = new jQluster.RemoteSelectorFactory({
+        my_remote_id: "bob",
+        transport_id: "local",
+        notify_to: ["alice"]
+    });
+    var results = [];
+    delay(0.05).then(function() {
+        $remote_bob(function() { results.push(1); });
+        $remote_bob(function() { results.push(2); });
+        $remote_bob(function() { results.push(3); });
+        return delay(0.05);
+    }).then(function() {
+        deepEqual(results, [1,2,3], "callbacks executed.");
+    }, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
+asyncTest("$remote(func) callback should not be executed if the remote node is present but it does not notify you.", function() {
+    var $remote_bob = alice.forRemote("bob");
+    bob = new jQluster.RemoteSelectorFactory({
+        my_remote_id: "bob",
+        transport_id: "local",
+        notify_to: ["carol", "david"]
+    });
+    var results = [];
+    delay(0.05).then(function() {
+        $remote_bob(function() { results.push(1); });
+        return delay(0.05);
+    }).then(function() {
+        deepEqual(results, [], "callback should not be executed.");
+    }, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
+asyncTest("All $remote(func) callbacks should be executed if they are notified", function() {
+    var $rbob_alice = alice.forRemote("bob");
+    var carol = new jQluster.RemoteSelectorFactory({
+        my_remote_id: "carol", transport_id: "local"
+    });
+    var $rbob_carol = carol.forRemote("bob");
+    var david = new jQluster.RemoteSelectorFactory({
+        my_remote_id: "david", transport_id: "local"
+    });
+    var $rbob_david = david.forRemote("bob");
+    var callbacked = {
+        alice: 0, carol: 0, david: 0
+    };
+    $rbob_alice(function() { callbacked.alice += 1; });
+    $rbob_carol(function() { callbacked.carol += 1; });
+    $rbob_david(function() { callbacked.david += 1; });
+    delay(0.05).then(function() {
+        deepEqual(callbacked, {alice:0, carol:0, david:0});
+        bob = new jQluster.RemoteSelectorFactory({
+            my_remote_id: "bob", transport_id: "local",
+            notify_to: ["alice", "carol"]
+        });
+        return delay(0.05);
+    }).then(function() {
+        deepEqual(callbacked, {alice: 1, carol: 1, david: 0});
+    }, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
     });
 });
 
