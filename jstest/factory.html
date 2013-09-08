@@ -101,7 +101,10 @@ module("RemoteSelectorFactory: listen to readiness of remote nodes", {
 asyncTest("$remote(func) should add callbacks for readiness of the remote node", function() {
     var $remote_bob = alice.forRemote("bob");
     var results = [];
-    $remote_bob(function() { results.push(1); });
+    $remote_bob(function($arg) {
+        is($arg, $remote_bob);
+        results.push(1);
+    });
     $remote_bob(function() { results.push(2); });
     $remote_bob(function() { results.push(3); });
     delay(0.05).then(function() {
@@ -147,7 +150,10 @@ asyncTest("$remote(func) callback should be exeucted immediately if the remote n
     });
     var results = [];
     delay(0.05).then(function() {
-        $remote_bob(function() { results.push(1); });
+        $remote_bob(function($arg) {
+            is($arg, $remote_bob);
+            results.push(1);
+        });
         $remote_bob(function() { results.push(2); });
         $remote_bob(function() { results.push(3); });
         return delay(0.05);
@@ -193,8 +199,14 @@ asyncTest("All $remote(func) callbacks should be executed if they are notified",
     var callbacked = {
         alice: 0, carol: 0, david: 0
     };
-    $rbob_alice(function() { callbacked.alice += 1; });
-    $rbob_carol(function() { callbacked.carol += 1; });
+    $rbob_alice(function($arg) {
+        is($arg, $rbob_alice);
+        callbacked.alice += 1;
+    });
+    $rbob_carol(function($arg) {
+        is($arg, $rbob_carol);
+        callbacked.carol += 1;
+    });
     $rbob_david(function() { callbacked.david += 1; });
     delay(0.05).then(function() {
         deepEqual(callbacked, {alice:0, carol:0, david:0});
