@@ -37,6 +37,7 @@
 <script src="../js/local_server.js"></script>
 <script src="../js/transport.js"></script>
 <script src="../js/remote_selector.js"></script>
+<script src="./test_utils.js"></script>
 <script>
 "use strict";
 
@@ -45,8 +46,6 @@ var alice;
 var alice_connection;
 var bob;
 var bob_connection;
-
-var is = strictEqual;
 
 var createTransport = function(remote_id) {
     var conn = new jQluster.ConnectionLocal(server);
@@ -67,15 +66,6 @@ var setupBob = function() {
     var ret = createTransport("bob");
     bob_connection = ret[0];
     bob = ret[1];
-};
-
-var delay = function(delay_sec, routine) {
-    var deferred = $.Deferred();
-    setTimeout(function() {
-        if(routine) routine();
-        deferred.resolve();
-    }, delay_sec);
-    return deferred.promise();
 };
 
 var setupTest = function() {
