@@ -10,7 +10,7 @@
   <body>
     <table id="items">
       [% FOREACH item IN items %]
-      <tr><td class="item-mine">[% item %]</td><td><input type="button" value="GET" /></td><td class="item-yours"></td></tr>
+      <tr><td><input class="item-mine" type="text" value="[% item %]" /></td><td><input class="get-button" type="button" value="GET" /></td><td class="item-yours"></td></tr>
       [% END %]
     </table>
     <script src="/lib/jquery.js"></script>
@@ -22,10 +22,10 @@
 
 $(function() {
     $.jqluster.init("[% my_remote_id | js %]", "[% websocket_url | js %]");
-    $("#items").on("click", "input", function() {
+    $("#items").on("click", "input.get-button", function() {
         var $row = $(this).closest("tr");
         var $_ = $.jqluster("[% target_remote_id | js %]");
-        $_("#items").find("tr").eq($row.index()).find(".item-mine").text().then(function(your_item) {
+        $_("#items").find("tr").eq($row.index()).find(".item-mine").val().then(function(your_item) {
             $row.find(".item-yours").text(your_item);
         }, function(error) {
             console.error("Simple get error: " + error);
