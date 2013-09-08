@@ -20,6 +20,7 @@
 Display:
 </pre>
 
+<p>TODO: h1をセットする。シングルモード(jqlusterなし)とチャットモード(jqlusterあり)を用意する(引数で切り替え)</p>
 
     <form id="chat-form">
       <ul>
@@ -31,6 +32,7 @@ Display:
     <script src="/lib/jquery.js"></script>
     <script src="/lib/jquery.ellocate.js"></script>
     <script src="/lib/jquery.xpath.js"></script>
+    <script src="/lib/myutil.js"></script>
     <script src="/jqluster.js"></script>
     <script>
 "use strict";
@@ -42,7 +44,7 @@ $(function() {
     $("#chat-form").on("submit", function() {
         var speak_content = $("#chat-content").val();
         var speaker_name = $("#chat-name").val();
-        var line = jQluster.htmlEscape(speaker_name + ": " + speak_content + "\n");
+        var line = myutil.htmlEscape(speaker_name + ": " + speak_content + "\n");
         $("#chat-content").val("");
         $_("#chat-display").append(line);
         return false;
