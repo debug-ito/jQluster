@@ -1,22 +1,8 @@
-<!DOCTYPE html>
-
 %% ## args: websocket_url, is_alone
 
-<html>
-  <head>
-    <title>Chat example using jQluster ([% is_alone ? "Single Mode" : "Group Mode" %])</title>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <style>
-#chat-display {
-    padding: 5px;
-    border-color: #889;
-    border-width: 2px;
-    border-style: dashed;
-}
-    </style>
-  </head>
-  <body>
-    <h1>[% is_alone ? "Single" : "Group" %] chat sample</h1>
+[% WRAPPER "layout.tt" WITH title = "Chat example using jQluster" ~ (is_alone ? "Single Mode" : "Group Mode") %]
+
+<h1>[% is_alone ? "Single" : "Group" %] chat sample</h1>
 <pre id="chat-display">
 Display:
 </pre>
@@ -32,7 +18,7 @@ Display:
     <script src="/lib/jquery.xpath.js"></script>
     <script src="/lib/myutil.js"></script>
     <script src="/jqluster.js"></script>
-    <script>
+    <script id="code">
 "use strict";
 
 $(function() {
@@ -52,8 +38,5 @@ $(function() {
 });
 
     </script>
-  </body>
-</html>
 
-
-
+[% END %]

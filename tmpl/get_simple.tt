@@ -1,36 +1,12 @@
-<!DOCTYPE html>
-
+[% WRAPPER "layout.tt" WITH title = 'Simple remote "get" test' %]
 %% ## args: items, my_remote_id, target_remote_id, websocket_url
 
-<html>
-  <head>
-    <title>Simple remote "get" test</title>
-    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
-    <link rel="stylesheet" type="text/css" href="/lib/shjs/sh_emacs.css" />
-    <link rel="stylesheet" type="text/css" href="/css/mystyle.css" />
-  </head>
-  <body>
     <h1>Simple "get from remote node" example</h1> 
     <table id="items">
       [% FOREACH item IN items %]
       <tr><td><input class="item-mine" type="text" value="[% item %]" /></td><td><input class="get-button" type="button" value="GET" /></td><td class="item-yours"></td></tr>
       [% END %]
     </table>
-    <h2>Code</h2>
-    <pre class="sh_javascript" id="code-display">
-    </pre>
-    <script src="/lib/jquery.js"></script>
-    <script src="/lib/jquery.ellocate.js"></script>
-    <script src="/lib/jquery.xpath.js"></script>
-    <script src="/lib/shjs/sh_main.js"></script>
-    <script src="/lib/shjs/sh_javascript.js"></script>
-    <script src="/jqluster.js"></script>
-    <script>
-$(function() {
-    $("#code-display").text($("#code").text());
-    sh_highlightDocument();
-});
-    </script>
 
     <script id="code">
 "use strict";
@@ -48,6 +24,6 @@ $(function() {
     });
 });
     </script>
-  </body>
-</html>
+
+[% END %]
 
