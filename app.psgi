@@ -138,6 +138,7 @@ get '/chat.html' => sub {
  
 return builder {
     mount "/lib" => Plack::App::File->new(root => "$FindBin::RealBin/js/lib")->to_app;
+    mount "/css" => Plack::App::File->new(root => "$FindBin::RealBin/css")->to_app;
     mount "/" => __PACKAGE__->to_app();
 };
 

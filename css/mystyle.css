@@ -1,0 +1,10 @@
+
+pre#code-display {
+    border-radius: 10px;
+    font-size: 90%;
+    padding: 8px;
+    border-color: #333;
+    border-width: 5px;
+    border-style: solid;
+    margin: 4px 10px;
+}
