@@ -131,7 +131,9 @@ get '/get_simple.html' => sub {
 
 get '/chat.html' => sub {
     my ($c) = @_;
-    return $c->render("chat.tt", { websocket_url => jqluster_endpoint_url($c->req->env) });
+    return $c->render("chat.tt",
+                      { websocket_url => jqluster_endpoint_url($c->req->env),
+                        is_alone => $c->req->query_parameters->{is_alone}});
 };
  
 return builder {

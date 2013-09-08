@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 
-%% ## args: websocket_url
+%% ## args: websocket_url, is_alone
 
 <html>
   <head>
-    <title>Chat example using jQluster</title>
+    <title>Chat example using jQluster ([% is_alone ? "Single Mode" : "Group Mode" %])</title>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <style>
 #chat-display {
@@ -16,12 +16,10 @@
     </style>
   </head>
   <body>
+    <h1>[% is_alone ? "Single" : "Group" %] chat sample</h1>
 <pre id="chat-display">
 Display:
 </pre>
-
-<p>TODO: h1をセットする。シングルモード(jqlusterなし)とチャットモード(jqlusterあり)を用意する(引数で切り替え)</p>
-
     <form id="chat-form">
       <ul>
         <li>Name: <input id="chat-name" type="text" value="" /></li>
@@ -38,15 +36,17 @@ Display:
 "use strict";
 
 $(function() {
+    [% IF !is_alone %]
     $.jqluster.init("chat_example", "[% websocket_url | js %]");
     var $_ = $.jqluster("chat_example");
+    [% END %]
     
     $("#chat-form").on("submit", function() {
         var speak_content = $("#chat-content").val();
         var speaker_name = $("#chat-name").val();
         var line = myutil.htmlEscape(speaker_name + ": " + speak_content + "\n");
         $("#chat-content").val("");
-        $_("#chat-display").append(line);
+        [% is_alone ? '$' : '$_' %]("#chat-display").append(line);
         return false;
     });
 });
