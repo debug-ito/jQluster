@@ -1,6 +1,14 @@
 %% ## args: websocket_url, is_alone
 
 [% WRAPPER "layout.tt" WITH title = "Chat example using jQluster" ~ (is_alone ? "Single Mode" : "Group Mode") %]
+<style>
+#chat-display {
+    padding: 5px;
+    border-color: #889;
+    border-width: 2px;
+    border-style: dashed;
+}
+</style>
 
 <h1>[% is_alone ? "Single" : "Group" %] chat sample</h1>
 <pre id="chat-display">
