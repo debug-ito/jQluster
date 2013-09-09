@@ -1,4 +1,4 @@
-<!doctype html>
+<!DOCTYPE html>
 <html>
   <head>
     <title>Canvas Painter Demo</title>
@@ -15,7 +15,13 @@
       <ul>
         <li><a href="chat.html?is_alone=1">Single mode</a></li>
         <li><a href="chat.html?is_alone=0">Group mode</a></li>
-    </ul>
+      </ul>
+      <li>Readiness callback example</li>
+      <ul>
+        <li><a href="ready.html?my_id=alice">Alice</a></li>
+        <li><a href="ready.html?my_id=bob">Bob</a></li>
+        <li><a href="ready.html?my_id=carol">Carol</a></li>
+      </ul>
   </body>
 </html>
 

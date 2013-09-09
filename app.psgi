@@ -24,13 +24,11 @@ my @JQLUSTER_FILES = qw(util.js
 __PACKAGE__->load_plugin("Web::WebSocket");
 
 __PACKAGE__->template_options(
-    function => { js => \&javascript_value_escape }
+    function => {
+        js => \&javascript_value_escape,
+        json => \&to_json,
+    }
 );
-
-get '/' => sub {
-    my ($c) = @_;
-    return $c->render('index.tt');
-};
 
 get '/single.html' => sub {
     my ($c) = @_;
@@ -135,6 +133,31 @@ get '/chat.html' => sub {
                       { websocket_url => jqluster_endpoint_url($c->req->env),
                         is_alone => $c->req->query_parameters->{is_alone}});
 };
+
+
+my @READINESS_NODES = qw(alice bob carol);
+my %READINESS_NODES = map { $_ => 1 } @READINESS_NODES;
+
+get '/ready.html' => sub {
+    my ($c) = @_;
+    my $my_id = $c->req->query_parameters->{my_id};
+    if(!defined($my_id) || !$READINESS_NODES{$my_id}) {
+        return $c->res_405;
+    }
+    my %other_nodes = %READINESS_NODES;
+    delete $other_nodes{$my_id};
+    my @other_nodes = keys %other_nodes;
+    return $c->render("ready.tt",
+                      { websocket_url => jqluster_endpoint_url($c->req->env),
+                        my_id => $my_id, notify_ids => \@other_nodes, listen_ids => \@other_nodes} );
+};
+
+get '/' => sub {
+    my ($c) = @_;
+    return $c->render('index.tt');
+};
+
+
  
 return builder {
     mount "/lib" => Plack::App::File->new(root => "$FindBin::RealBin/js/lib")->to_app;

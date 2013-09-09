@@ -1,0 +1,25 @@
+%% ## args: websocket_url, my_id, notify_ids, listen_ids
+
+[% WRAPPER "layout.tt" WITH title = "Readiness callback example" %]
+
+<h1>Readiness callback example ([% my_id %])</h1>
+
+<ul id="readiness-display">
+</ul>
+
+<script id="code">
+$(function() {
+    var $_;
+    $.jqluster.init("[% my_id | js %]", "[% websocket_url | js %]",
+                    {notify: [% notify_ids | json | mark_raw %]});
+    [%- FOREACH listen_id IN listen_ids %]
+    
+    $_ = $.jqluster("[% listen_id | js %]");
+    $_(function() {
+        $("#readiness-display").append("<li>[% listen_id | js %] is ready.</li>");
+    });
+    [%- END %]
+});
+</script>
+
+[% END %]
