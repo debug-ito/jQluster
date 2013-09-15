@@ -3,7 +3,6 @@ use warnings;
 use Amon2::Lite;
 use Plack::App::File;
 use FindBin;
-use Plack::Builder;
 use JavaScript::Value::Escape;
 use jQluster::Server;
 use JSON qw(from_json to_json);
@@ -157,12 +156,5 @@ get '/' => sub {
     return $c->render('index.tt');
 };
 
-
- 
-return builder {
-    mount "/lib" => Plack::App::File->new(root => "$FindBin::RealBin/js/lib")->to_app;
-    mount "/css" => Plack::App::File->new(root => "$FindBin::RealBin/css")->to_app;
-    mount "/" => __PACKAGE__->to_app();
-};
-
+return __PACKAGE__->to_app(handle_static => 1);
 

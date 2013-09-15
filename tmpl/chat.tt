@@ -21,11 +21,7 @@ Display:
         <li><input id="chat-submit" type="submit" value="SUBMIT" /></li>
       </ul>
     </form>
-    <script src="/lib/jquery.js"></script>
-    <script src="/lib/jquery.ellocate.js"></script>
-    <script src="/lib/jquery.xpath.js"></script>
-    <script src="/lib/myutil.js"></script>
-    <script src="/jqluster.js"></script>
+    <script src="/static/js/myutil.js"></script>
     <script id="code">
 "use strict";
 

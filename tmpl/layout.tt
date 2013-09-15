@@ -3,13 +3,13 @@
   <head>
     <title>[% title %] - jQluster demo</title>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
-    <link rel="stylesheet" type="text/css" href="/lib/shjs/sh_emacs.css" />
-    <link rel="stylesheet" type="text/css" href="/css/mystyle.css" />
-    <script src="/lib/jquery.js"></script>
-    <script src="/lib/jquery.ellocate.js"></script>
-    <script src="/lib/jquery.xpath.js"></script>
-    <script src="/lib/shjs/sh_main.js"></script>
-    <script src="/lib/shjs/sh_javascript.js"></script>
+    <link rel="stylesheet" type="text/css" href="/static/shjs/sh_emacs.css" />
+    <link rel="stylesheet" type="text/css" href="/static/css/mystyle.css" />
+    <script src="/static/js/jquery.js"></script>
+    <script src="/static/js/jquery.ellocate.js"></script>
+    <script src="/static/js/jquery.xpath.js"></script>
+    <script src="/static/shjs/sh_main.js"></script>
+    <script src="/static/shjs/sh_javascript.js"></script>
     <script src="/jqluster.js"></script>
     <script>
 $(function() {

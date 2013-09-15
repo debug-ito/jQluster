@@ -3,7 +3,7 @@
 <head>
   <title>Conventional Single Page Application</title>
   <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
-  <link rel="stylesheet" media="screen" type="text/css" href="/lib/colorpicker/css/colorpicker.css" />
+  <link rel="stylesheet" media="screen" type="text/css" href="/static/colorpicker/css/colorpicker.css" />
 <style type="text/css">
 body {
     padding: 10px;
@@ -43,10 +43,10 @@ body {
   </div>
   <div id="painter-colorpicker-container">
   </div>
-  <script src="/lib/jquery.js"></script>
-  <script src="/lib/jquery.ellocate.js"></script>
-  <script src="/lib/jquery.xpath.js"></script>
-  <script type="text/javascript" src="/lib/colorpicker/js/colorpicker.js"></script>
+  <script src="/static/js/jquery.js"></script>
+  <script src="/static/js/jquery.ellocate.js"></script>
+  <script src="/static/js/jquery.xpath.js"></script>
+  <script type="text/javascript" src="/static/colorpicker/js/colorpicker.js"></script>
   
 <script>
 "use strict";
