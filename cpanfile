@@ -5,6 +5,7 @@ requires "Data::UUID";
 requires "Plack";
 requires "Plack::App::File";
 requires "FindBin";
+requires "Amon2";
 requires "Amon2::Lite";
 requires "Protocol::WebSocket";
 requires "Twiggy";
