@@ -8,6 +8,7 @@ use jQluster::PSGI;
 use JSON qw(to_json);
 
 __PACKAGE__->template_options(
+    path => ["$FindBin::RealBin/tmpl/sample"],
     function => {
         js => \&javascript_value_escape,
         json => \&to_json,
