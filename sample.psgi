@@ -11,7 +11,7 @@ __PACKAGE__->template_options(
     function => {
         js => \&javascript_value_escape,
         json => \&to_json,
-        jqluster_library => sub { javascript_value_escape(jQluster::PSGI->url_library) },
+        jqluster_library => sub { jQluster::PSGI->url_library },
     }
 );
 
