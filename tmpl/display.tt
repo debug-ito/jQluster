@@ -8,9 +8,9 @@
 </div>
 
 <div class="container">
-  <div class="jumbotron">
-    <h1>Clicked Item</h1>
-    <p id="clicked-item"></p>
+  <div class="row">
+    <div class="col-md-offset-1 col-md-10" id="feeditem-display">
+    </div>
   </div>
 </div>
 [% END %]

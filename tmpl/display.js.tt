@@ -4,10 +4,18 @@ $(function() {
     $.jqluster.init("display", "[% websocket_url | js %]");
     $.jqluster("headlines", function($_) {
         $_("#feeditem-list").on("click", "li", function() {
-            $_(this).find(".feeditem-title").text().then(function(title_text) {
-                $("#clicked-item").text(title_text);
-            }, function(error) {
-                console.error("error: " + error);
+            $_(this).find(".feeditem-id").text().then(function(item_id) {
+                return $.ajax({
+                    type: "GET",
+                    url: "body.html",
+                    data: {id: item_id},
+                    dataType: "html",
+                });
+            }).then(function(data, text_status, jq_xhr) {
+                $("#feeditem-display").html(data);
+            }).then(null, function(error) {
+                console.error("Load feeditem error: ");
+                console.error(error);
             });
         });
     });

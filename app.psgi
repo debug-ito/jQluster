@@ -55,11 +55,13 @@ get "/body.html" => sub {
         die "id param is mandatory" if not defined $id;
         my $item = $feed_items->get_item(id => $id);
         die "No item found" if not defined $item;
-        return $c->render('body.tt', {
-            body => $item->{body}
-        });
+        return $c->render("body.tt", { item => $item });
     }catch {
-        return $c->res_404;
+        my $e = shift;
+        return $c->create_response(
+            404, ['Content-Type' => 'text/plain; charset=UTF-8'],
+            ["Not Found: $e"]
+        );
     };
 };
 
