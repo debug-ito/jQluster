@@ -6,6 +6,8 @@ use Plack::Builder;
 use JavaScript::Value::Escape;
 use FindBin;
 
+my $FEED_DB = "$FindBin::RealBin/feed_store.sqlite3";
+
 __PACKAGE__->template_options(
     function => {
         js => \&javascript_value_escape,
@@ -18,9 +20,12 @@ jQluster::PSGI->config(
     mounted_on => "/jqluster"
 );
 
-get "/index.html" => sub {
-    
+my $handler_display = sub {
+    my ($c) = @_;
+    return $c->render('display.tt');
 };
+
+get $_ => $handler_display foreach '/', '/index.html';
 
 get "/headlines.html" => sub {
     
