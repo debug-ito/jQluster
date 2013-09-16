@@ -15,7 +15,7 @@ sub new {
     state $validator = Data::Validator->new(
         sqlite => { isa => 'Str' },
         count_per_page => { isa => 'Int', default => 100 },
-    )->with("Method", "Croak");
+    )->with("Method");
     my ($class, $args) = $validator->validate(@_);
     if($args->{count_per_page} <= 0) {
         croak "count_per_page parameter must be > 0";
@@ -90,7 +90,7 @@ sub add_items {
 sub get_items {
     state $dv = Data::Validator->new(
         page => { isa => "Int", default => 0 },
-    )->with('Method', 'Croak');
+    )->with('Method');
     my ($self, $args) = $dv->validate(@_);
     if($args->{page} < 0) {
         croak "page parameter must be >= 0";
@@ -108,7 +108,7 @@ sub get_items {
 sub get_item {
     state $dv = Data::Validator->new(
         id => { isa => "Str" }
-    )->with('Method', 'Croak');
+    )->with('Method');
     my ($self, $args) = $dv->validate(@_);
     my ($sql, @bind) = $self->{maker}->select(
         'feed_items', ['*'], { id => $args->{id} }
