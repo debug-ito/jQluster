@@ -17,6 +17,9 @@ requires "Data::Validator";
 requires "DBI";
 requires "DBD::SQLite";
 requires "SQL::Maker";
+requires "URI";
+requires "XML::Feed";
+requires "DateTime::Format::Strptime";
 
 on test => sub {
     requires "Test::More";

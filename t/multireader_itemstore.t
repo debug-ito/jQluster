@@ -33,4 +33,14 @@ BEGIN {
     is_deeply([ map { $_->{id} } $storage->get_items(page => 100) ], [], "get_items() too large page");
 }
 
+{
+    my $storage = MultiReader::ItemStore->new(source => ['dbi:SQLite:dbname=:memory:', '', '']);
+    $storage->import_items(file => "./t/sample_feed.xml");
+    my $item = $storage->get_item(id => 'http://www.feedforall.com/schools.htm');
+    is($item->{id}, 'http://www.feedforall.com/schools.htm', 'id ok');
+    is($item->{original_url}, 'http://www.feedforall.com/schools.htm', 'original_url ok');
+    is($item->{created_at}, '2004-10-19T11:09:09-0400', 'created_at ok');
+    is($item->{title}, 'RSS Solutions for Schools and Colleges', 'title ok');
+}
+
 done_testing;

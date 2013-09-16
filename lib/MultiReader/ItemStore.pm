@@ -7,6 +7,9 @@ use DBI;
 use SQL::Maker;
 use Try::Tiny;
 use Carp;
+use URI;
+use XML::Feed;
+use DateTime::Format::Strptime;
 
 sub new {
     state $validator = Data::Validator->new(
@@ -118,6 +121,43 @@ sub get_item {
     return $dbh->selectrow_hashref($sql, {}, @bind);
 }
 
+my $DATETIME_FORMAT = DateTime::Format::Strptime->new(
+    pattern => '%Y-%m-%dT%H:%M:%S%z'
+);
+
+sub format_datetime {
+    my ($class_self, $datetime) = @_;
+    return $DATETIME_FORMAT->format_datetime($datetime);
+}
+
+sub import_items {
+    my ($self, %args) = @_;
+    my $feed_source;
+    if(defined($args{data})) {
+        $feed_source = \($args{data});
+    }elsif(defined($args{file})) {
+        $feed_source = $args{file};
+    }elsif(defined($args{url})) {
+        $feed_source = URI->new($args{url});
+    }else {
+        croak "Either data, file or url parameter is mandatory";
+    }
+    my $feed = XML::Feed->parse($feed_source);
+    my @converted_items = ();
+    foreach my $entry ($feed->entries) {
+        my $created_at = $entry->modified || $entry->issued;
+        push(@converted_items, {
+            id => $entry->id,
+            created_at => ref($self)->format_datetime($created_at),
+            original_url => $entry->link,
+            title => $entry->title,
+            body => $entry->content->body
+        });
+    }
+    $self->add_items(@converted_items);
+}
+
+
 1;
 
 __END__
@@ -146,6 +186,10 @@ MultiReader::ItemStore - storage for feed items
         original_url => "http://example.com/show/456789",
         body => '<p>hogehoge</p>',
     });
+    
+    $storage->import_items(data => $feed_xml_string);
+    $storage->import_items(file => $feed_xml_filename);
+    $storage->import_items(url  => $feed_xml_url_string);
 
 =head1 DESCRIPTION
 
