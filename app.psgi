@@ -63,6 +63,18 @@ get "/body.html" => sub {
     };
 };
 
+foreach my $js_name (qw(display headlines)) {
+    my $template_name = "$js_name.js.tt";
+    get "/$js_name.js" => sub {
+        my ($c) = @_;
+        my $res = $c->render($template_name, {
+            websocket_url => jQluster::PSGI->url_websocket($c->req->env),
+        });
+        $res->content_type("application/javascript");
+        return $res;
+    };
+}
+
 return builder {
     mount(jQluster::PSGI->mounted_app);
     mount "/" => __PACKAGE__->to_app(handle_static => 1);

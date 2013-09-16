@@ -1,5 +1,5 @@
 %% ## args: items, page
-[% WRAPPER 'layout.tt' WITH title = "Headlines (page "~ page ~")" %]
+[% WRAPPER 'layout.tt' WITH title = "Headlines (page "~ page ~")", scripts = ["headlines.js"] %]
 <div class="navbar navbar-default navbar-fixed-top">
   <div class="container">
     <div class="navbar-header">
@@ -16,9 +16,9 @@
 </div>
 
 <div class="container">
-  <ul class="list-group">
+  <ul class="list-group" id="feeditem-list">
     [% FOREACH item IN items -%]
-    <li class="list-group-item" data-feeditem-id="[% item.id %]">[% item.title %] <small>[% item.created_at %]</small></li>
+    <li class="list-group-item"><span class="feeditem-title">[% item.title %]</span><small class="feeditem-created-at">[% item.created_at %]</small><span class="feeditem-id">[% item.id %]</span></li>
     [% END -%]
   </ul>
 </div>

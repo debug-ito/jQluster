@@ -1,0 +1,5 @@
+"use strict";
+
+$(function() {
+    $.jqluster.init("headlines", "[% websocket_url | js %]", { notify: "display" });
+});

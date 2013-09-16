@@ -1,0 +1,14 @@
+"use strict";
+
+$(function() {
+    $.jqluster.init("display", "[% websocket_url | js %]");
+    $.jqluster("headlines", function($_) {
+        $_("#feeditem-list").on("click", "li", function() {
+            $_(this).find(".feeditem-title").text().then(function(title_text) {
+                $("#clicked-item").text(title_text);
+            }, function(error) {
+                console.error("error: " + error);
+            });
+        });
+    });
+});

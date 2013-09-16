@@ -14,5 +14,8 @@
 <script src="/static/js/jquery.ellocate.js"></script>
 <script src="/static/bootstrap/js/bootstrap.min.js"></script>
 <script src="[% jqluster_library() %]"></script>
+[% FOREACH script IN scripts -%]
+<script src="[% script %]"></script>
+[% END -%]
 </body>
 </html>

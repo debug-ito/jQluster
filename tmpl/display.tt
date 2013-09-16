@@ -1,4 +1,4 @@
-[% WRAPPER 'layout.tt' WITH title = "Multiscreen Reader" %]
+[% WRAPPER 'layout.tt' WITH title = "Multiscreen Reader", scripts = ["display.js"] %]
 <div class="navbar navbar-default navbar-fixed-top">
   <div class="container">
     <div class="navbar-header">
@@ -9,9 +9,8 @@
 
 <div class="container">
   <div class="jumbotron">
-    <h1>Navbar example</h1>
-    <p>This example is a quick exercise to illustrate how the default, static and fixed to top navbar work. It includes the responsive CSS and HTML, so it also adapts to your viewport and device.</p>
-    <p>To see the difference between static and fixed top navbars, just scroll.</p>
+    <h1>Clicked Item</h1>
+    <p id="clicked-item"></p>
   </div>
 </div>
 [% END %]
