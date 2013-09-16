@@ -1,0 +1,25 @@
+%% ## args: items, page
+[% WRAPPER 'layout.tt' WITH title = "Headlines (page "~ page ~")" %]
+<div class="navbar navbar-default navbar-fixed-top">
+  <div class="container">
+    <div class="navbar-header">
+      <a class="navbar-brand" href="?page=0">Headlines</a>
+    </div>
+    <div class="collapse navbar-collapse navbar-ex1-collapse">
+      <ul class="nav navbar-nav">
+        <li><a class="glyphicon glyphicon-chevron-left [% IF page == 0 %]disabled[% END %]" href="[% IF page == 0 %]#[% ELSE %]?page=[% page - 1 %][% END %]"></a></li>
+        <li><a><span class="label label-default">Page [% page + 1 %]</span></a></li>
+        <li><a class="glyphicon glyphicon-chevron-right" href="?page=[% page + 1 %]"></a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <ul class="list-group">
+    [% FOREACH item IN items -%]
+    <li class="list-group-item" data-feeditem-id="[% item.id %]">[% item.title %] <small>[% item.created_at %]</small></li>
+    [% END -%]
+  </ul>
+</div>
+[% END %]

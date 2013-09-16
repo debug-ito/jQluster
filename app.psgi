@@ -1,10 +1,13 @@
+use 5.10.0;
 use strict;
 use warnings;
 use Amon2::Lite;
 use jQluster::PSGI;
 use Plack::Builder;
 use JavaScript::Value::Escape;
+use MultiReader::ItemStore;
 use FindBin;
+use Try::Tiny;
 
 my $FEED_DB = "$FindBin::RealBin/feed_store.sqlite3";
 
@@ -20,6 +23,10 @@ jQluster::PSGI->config(
     mounted_on => "/jqluster"
 );
 
+my $feed_items = MultiReader::ItemStore->new(
+    sqlite => $FEED_DB, count_per_page => 5
+);
+
 my $handler_display = sub {
     my ($c) = @_;
     return $c->render('display.tt');
@@ -28,11 +35,32 @@ my $handler_display = sub {
 get $_ => $handler_display foreach '/', '/index.html';
 
 get "/headlines.html" => sub {
-    
+    my ($c) = @_;
+    return try {
+        my $page = $c->req->query_parameters->{page} // 0;
+        my @items = $feed_items->get_items(page => $page);
+        return $c->render('headlines.tt', {
+            page => $page,
+            items => \@items,
+        });
+    }catch {
+        return $c->res_404;
+    };
 };
 
 get "/body.html" => sub {
-    
+    my ($c) = @_;
+    return try {
+        my $id = $c->req->query_parameters->{id};
+        die "id param is mandatory" if not defined $id;
+        my $item = $feed_items->get_item(id => $id);
+        die "No item found" if not defined $item;
+        return $c->render('body.tt', {
+            body => $item->{body}
+        });
+    }catch {
+        return $c->res_404;
+    };
 };
 
 return builder {
