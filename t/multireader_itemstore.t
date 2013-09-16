@@ -31,6 +31,15 @@ BEGIN {
               [ map { "http://hogehoge.com/item/$_" } (13, 12, 11) ],
               "get_items() third page");
     is_deeply([ map { $_->{id} } $storage->get_items(page => 100) ], [], "get_items() too large page");
+
+    $storage->add_items({
+        id => 'http://hogehoge.com/item/10',
+        created_at => '2013-03-12T21:30:00+0900',
+        title => 'overwritten',
+        original_url => "",
+        body => "",
+    });
+    is($storage->get_item(id => 'http://hogehoge.com/item/10')->{title}, 'title 10', 'adding an item with an existent ID is just ignored.');
 }
 
 {

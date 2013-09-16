@@ -56,7 +56,7 @@ sub _create_tables {
     my $dbh = $self->_get_dbh();
     $dbh->do(<<SQL);
 CREATE TABLE IF NOT EXISTS feed_items (
-    id TEXT NOT NULL PRIMARY KEY,
+    id TEXT NOT NULL PRIMARY KEY ON CONFLICT IGNORE,
     created_at TEXT NOT NULL,
     title TEXT NOT NULL,
     original_url TEXT NOT NULL,
