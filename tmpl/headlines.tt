@@ -3,15 +3,21 @@
 <div class="navbar navbar-default navbar-fixed-top">
   <div class="container">
     <div class="navbar-header">
+      <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
       <a class="navbar-brand" href="?page=0">Headlines</a>
+      <p class="navbar-text"><span class="label label-default">Page [% page + 1 %]</span></p>
     </div>
-    <div class="collapse navbar-collapse navbar-ex1-collapse">
+    <div class="navbar-collapse collapse">
       <ul class="nav navbar-nav">
         <li><a class="glyphicon glyphicon-chevron-left [% IF page == 0 %]disabled[% END %]" href="[% IF page == 0 %]#[% ELSE %]?page=[% page - 1 %][% END %]"></a></li>
-        <li><a><span class="label label-default">Page [% page + 1 %]</span></a></li>
         <li><a class="glyphicon glyphicon-chevron-right" href="?page=[% page + 1 %]"></a></li>
-      </ul>
+      </p>
     </div>
+
   </div>
 </div>
 
