@@ -59,7 +59,19 @@ if(!jQluster) { var jQluster = {}; }
             self._doSend(message);
         },
         _doSend: function(message) {
-            this.websocket.send(JSON.stringify(message));
+            try {
+                this.websocket.send(JSON.stringify(message, function(key, value) {
+                    if($.isWindow(value) || value === document || this === value || my.isHTMLElement(value)) {
+                        return undefined;
+                    }else {
+                        return value;
+                    }
+                }));
+            }catch(error) {
+                console.error("Cannot send the following message");
+                console.error(message);
+                throw error;
+            }
         }
     });
 })(jQluster, jQuery);
