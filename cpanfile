@@ -13,6 +13,10 @@ requires "JavaScript::Value::Escape";
 requires "JSON";
 requires "Scalar::Util";
 requires "Try::Tiny";
+requires "Data::Validator";
+requires "DBI";
+requires "DBD::SQLite";
+requires "SQL::Maker";
 
 on test => sub {
     requires "Test::More";
