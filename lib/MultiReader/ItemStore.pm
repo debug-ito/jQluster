@@ -13,7 +13,7 @@ use DateTime::Format::Strptime;
 
 sub new {
     state $validator = Data::Validator->new(
-        source => { isa => 'ArrayRef' },
+        sqlite => { isa => 'Str' },
         count_per_page => { isa => 'Int', default => 100 },
     )->with("Method", "Croak");
     my ($class, $args) = $validator->validate(@_);
@@ -22,7 +22,7 @@ sub new {
     }
     my $self = bless {
         dbh => undef,
-        source => $args->{source},
+        sqlite_source => $args->{sqlite},
         count_per_page => $args->{count_per_page},
         maker => undef,
     }, $class;
@@ -33,19 +33,15 @@ sub new {
 
 sub _init_maker {
     my ($self) = @_;
-    if($self->{source}[0] !~ /^dbi:([^:]+):/) {
-        croak "Invalid DSN: " . $self->{source}[0];
-    }
-    my $driver = $1;
-    $self->{maker} = SQL::Maker->new(driver => $driver);
+    $self->{maker} = SQL::Maker->new(driver => "SQLite");
 }
 
 sub _get_dbh {
     my ($self) = @_;
     if(!defined($self->{dbh})) {
-        $self->{dbh} = DBI->connect(@{$self->{source}}, {
+        $self->{dbh} = DBI->connect("dbi:SQLite:dbname=$self->{sqlite_source}", "", "", {
             RaiseError => 1, PrintError => 0, AutoCommit => 1,
-            FetchHashKeyName => "NAME_lc",
+            FetchHashKeyName => "NAME_lc", sqlite_unicode => 1,
         });
     }
     return $self->{dbh};
@@ -171,7 +167,7 @@ MultiReader::ItemStore - storage for feed items
 =head1 SYNOPSIS
 
     my $storage = MultiReader::ItemStore->new(
-        source => ['dbi:SQLite:dbname=hoge.sqlite3', '', ''],
+        sqlite => 'hoge.sqlite3',
         count_per_page => 50,
     );
     

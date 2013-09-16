@@ -8,7 +8,7 @@ BEGIN {
 
 {
     my $storage = new_ok('MultiReader::ItemStore', [
-        source => ['dbi:SQLite:dbname=:memory:', '', ''],
+        sqlite => ':memory:',
         count_per_page => 3
     ]);
     my @added_items = map {
@@ -43,7 +43,7 @@ BEGIN {
 }
 
 {
-    my $storage = MultiReader::ItemStore->new(source => ['dbi:SQLite:dbname=:memory:', '', '']);
+    my $storage = MultiReader::ItemStore->new(sqlite => ':memory:');
     $storage->import_items(file => "./t/sample_feed.xml");
     my $item = $storage->get_item(id => 'http://www.feedforall.com/schools.htm');
     is($item->{id}, 'http://www.feedforall.com/schools.htm', 'id ok');
