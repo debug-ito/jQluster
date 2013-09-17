@@ -10,6 +10,7 @@ $(function() {
     $(".qr-code-on").on("click", showQRCode);
     
     $.jqluster("headlines", function($_) {
+        $_("#feeditem-list").off("click", "li");
         $_("#feeditem-list").on("click", "li", function() {
             $_(this).find(".feeditem-id").text().then(function(item_id) {
                 return $.ajax({
