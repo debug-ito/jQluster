@@ -2,7 +2,7 @@
 <div class="navbar navbar-default navbar-fixed-top">
   <div class="container">
     <div class="navbar-header">
-      <a class="navbar-brand" href="#">Multiscreen Reader</a>
+      <a class="navbar-brand qr-code-on" href="#">Multiscreen Reader</a>
     </div>
   </div>
 </div>
