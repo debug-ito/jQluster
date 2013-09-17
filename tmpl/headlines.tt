@@ -11,7 +11,7 @@
       <a class="navbar-brand" href="?page=0">Headlines</a>
       <p class="navbar-text"><span class="label label-default">Page [% page + 1 %]</span></p>
     </div>
-    <div class="navbar-collapse collapse">
+    
       <ul class="nav navbar-nav">
         <li><a class="glyphicon glyphicon-chevron-left [% IF page == 0 %]disabled[% END %]" href="[% IF page == 0 %]#[% ELSE %]?page=[% page - 1 %][% END %]"></a></li>
         <li><a class="glyphicon glyphicon-chevron-right" href="?page=[% page + 1 %]"></a></li>
@@ -19,7 +19,6 @@
       <ul class="nav navbar-nav navbar-right">
         <li><a class="glyphicon glyphicon-remove headlines-finish" href="#"></a></li>
       </ul>
-    </div>
 
   </div>
 </div>
