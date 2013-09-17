@@ -26,5 +26,8 @@ $(function() {
                 console.error(error);
             });
         });
+        
+        $_(".headlines-finish").off("click");
+        $_(".headlines-finish").on("click", showQRCode);
     });
 });
