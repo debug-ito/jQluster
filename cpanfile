@@ -1,5 +1,5 @@
 
-requires "perl" => "5.10.0";
+requires "perl", "5.10.0";
 requires "Carp";
 requires "Data::UUID";
 requires "Plack";
@@ -20,6 +20,7 @@ requires "SQL::Maker";
 requires "URI";
 requires "XML::Feed";
 requires "DateTime::Format::Strptime";
+requires "HTML::Barcode::QRCode";
 
 on test => sub {
     requires "Test::More";

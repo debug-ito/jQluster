@@ -4,13 +4,16 @@
     <div class="navbar-header">
       <a class="navbar-brand qr-code-on" href="#">Multiscreen Reader</a>
     </div>
+    <ul class="nav navbar-nav">
+      <li><a href="/headlines.html">Headlines</a></li>
+    </ul>
   </div>
 </div>
 
 <div class="container">
   <div class="row">
-    <div class="col-md-offset-1 col-md-10" id="feeditem-display">
-    </div>
+    <div class="col-md-offset-1 col-md-10 text-center" id="qrcode">[% qrcode | mark_raw %]</div>
+    <div class="col-md-offset-1 col-md-10" id="feeditem-display"></div>
   </div>
 </div>
 [% END %]

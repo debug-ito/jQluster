@@ -8,6 +8,7 @@ use JavaScript::Value::Escape;
 use MultiReader::ItemStore;
 use FindBin;
 use Try::Tiny;
+use HTML::Barcode::QRCode;
 
 my $FEED_DB = "$FindBin::RealBin/feed_store.sqlite3";
 
@@ -27,9 +28,23 @@ my $feed_items = MultiReader::ItemStore->new(
     sqlite => $FEED_DB, count_per_page => 5
 );
 
+sub get_qrcode {
+    my ($env) = @_;
+    state $cached;
+    return $cached if defined $cached;
+    my $hostport = $env->{HTTP_HOST} // "$env->{SERVER_NAME}:$env->{SERVER_PORT}";
+    return $cached = HTML::Barcode::QRCode->new(
+        text => $env->{'psgi.url_scheme'}."://$hostport/headlines.html",
+        module_size => '15px',
+        css_class => "qrcode-headlines",
+    )->render;
+}
+
 my $handler_display = sub {
     my ($c) = @_;
-    return $c->render('display.tt');
+    return $c->render('display.tt', {
+        qrcode => get_qrcode($c->req->env)
+    });
 };
 
 get $_ => $handler_display foreach '/', '/index.html';

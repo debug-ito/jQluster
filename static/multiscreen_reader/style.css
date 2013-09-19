@@ -11,6 +11,10 @@ body {
     margin: 0px 8px;
 }
 
+.qrcode-headlines {
+    margin: auto;
+}
+
 /* 
  * BEGIN -- non-responsive navbar
  * http://getbootstrap.com/examples/non-responsive/

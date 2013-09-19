@@ -2,9 +2,10 @@
 
 $(function() {
     $.jqluster.init("display", "[% websocket_url | js %]");
-    
+
     var showQRCode = function() {
-        $("#feeditem-display").html('<div class="text-center"><a href="/headlines.html"><img src="/static/img/qr_headlines.png" /></a></div>')
+        $("#feeditem-display").hide();
+        $("#qrcode").show();
     };
     showQRCode();
     $(".qr-code-on").on("click", showQRCode);
@@ -20,7 +21,8 @@ $(function() {
                     dataType: "html",
                 });
             }).then(function(data, text_status, jq_xhr) {
-                $("#feeditem-display").html(data);
+                $("#qrcode").hide();
+                $("#feeditem-display").html(data).show();
             }).then(null, function(error) {
                 console.error("Load feeditem error: ");
                 console.error(error);
