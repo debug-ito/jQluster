@@ -9,13 +9,12 @@ if(!jQluster) { var jQluster = {}; }
     var superclass = my.Connection;
 
     // jQluster Connection implementation specifically to the ServerLocal object.
-    // This implementation is for testing purposes.
     my.ConnectionLocal = function(server) {
         superclass.apply(this);
         this.server = server;
         this.log = [];
     };
-    my.ConnectionLocal.prototype = $.extend(new superclass(), {
+    my.ConnectionLocal.prototype = $.extend({}, superclass.prototype, {
         send: function(message) {
             // @return: nothing
             this.log.push({ direction: "send",  message: my.clone(message)});

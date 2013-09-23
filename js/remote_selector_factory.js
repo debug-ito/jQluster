@@ -64,6 +64,7 @@ if(!jQluster) { var jQluster = {}; }
             }else if(target === document) {
                 args.eval_code = "$(document)";
             }else if($.isPlainObject(target) && my.defined(target.remote_type)) {
+                // if target is a remote DOM Pointer object...
                 if(target.remote_type === "xpath") {
                     args.xpath = target.remote_xpath;
                     if(my.defined(target.remote_id)) {
@@ -134,7 +135,7 @@ if(!jQluster) { var jQluster = {}; }
             });
         },
         isNotifying: function(notified_remote_id) {
-            // @return: true if this Factory notifies its readiness to notofied_remote_id. false otherwise.
+            // @return: true if this Factory notifies its readiness to notified_remote_id. false otherwise.
             return this.notified_dict[notified_remote_id] || false;
         },
         beNotified: function(from_remote_id) {

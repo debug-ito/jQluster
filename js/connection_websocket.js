@@ -21,7 +21,7 @@ if(!jQluster) { var jQluster = {}; }
             console[log_func]("WebSocketConnection: " + message);
         };
     });
-    myclass.prototype = $.extend(new superclass(), {
+    myclass.prototype = $.extend({}, superclass.prototype, {
         _initWebSocket: function() {
             var self = this;
             var ws = new WebSocket(self.url);
