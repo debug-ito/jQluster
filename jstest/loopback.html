@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Test jQluster.TransportLoopback</title>
+<link rel="stylesheet" href="./qunit.css">
+</head>
+<body>
+<div id="qunit"></div>
+<div id="qunit-fixture"></div>
+<script src="../static/js/jquery.js"></script>
+<script src="../static/js/jquery.ellocate.js"></script>
+<script src="../static/js/jquery.xpath.js"></script>
+<script src="./qunit.js"></script>
+<script src="../js/util.js"></script>
+<script src="../js/connection.js"></script>
+<script src="../js/local_server.js"></script>
+<script src="../js/transport.js"></script>
+<script src="../js/transport_loopback.js"></script>
+<script src="../js/remote_selector.js"></script>
+<script src="../js/readiness_callback_manager.js"></script>
+<script src="../js/remote_selector_factory.js"></script>
+<script src="./test_utils.js"></script>
+<script>
+"use strict";
+
+var setupHTML = function() {
+    $("#qunit-fixture").html(
+        "<ul>"
+            + '<li class="one">1</li>'
+            + '<li class="two">2</li>'
+            + '<li class="three">3</li>'
+            + '</ul>'
+    );
+};
+
+module("TransportLoopback", {
+    setup: setupHTML
+});
+
+asyncTest("selectAndGet() should access this page itself", function() {
+    var transport = new jQluster.TransportLoopback();
+    transport.selectAndGet({
+        remote_id: "hoge",
+        eval_code: '$("#qunit-fixture").find("li").eq(1).text()'
+    }).then(function(data) {
+        is(data, "2");
+    }, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
+asyncTest("selectAndListen() should access this page itself", function() {
+    var transport = new jQluster.TransportLoopback();
+    var got_xpaths = [];
+    transport.selectAndListen({
+        remote_id: "foobar",
+        eval_code: '$("#qunit-fixture").find("ul")',
+        method: "on", options: ["click", "li"],
+        callback: function() {
+            var pointer = this;
+            is(pointer.remote_type, "xpath");
+            got_xpaths.push(pointer.remote_xpath);
+        }
+    }).then(function() {
+        deepEqual(got_xpaths, []);
+        $("#qunit-fixture").find(".two").trigger("click");
+        return delay(0.05);
+    }).then(function() {
+        deepEqual(got_xpaths, ["//html[1]/body[1]/div[@id='qunit-fixture']/ul[1]/li[2]"]);
+    }).then(null, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
+module("RemoteSelectorFactory", {
+    setup: setupHTML
+});
+
+asyncTest("factory(loopback) should always create loopback remote selectors", function() {
+    var factory = new jQluster.RemoteSelectorFactory({
+        my_remote_id: "hoge", transport_id: "loopback"
+    });
+    factory.forRemote("hoge", "#qunit-fixture").find(".three").text().then(function(data) {
+        is(data, "3", "my_remote_id == target_remote_id OK");
+        return factory.forRemote("foobar", "#qunit-fixture").find(".three").text();
+    }).then(function(data) {
+        is(data, "3", "my_remote_id != target_remote_id OK");
+    }).then(null, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
+asyncTest("readiness callback should fire immediately", function() {
+    var factory = new jQluster.RemoteSelectorFactory({
+        my_remote_id: "hoge", transport_id: "loopback"
+    });
+    var $_ = factory.forRemote("foobar");
+    var callback_count = 0;
+    $_(function() {
+        callback_count++;
+    });
+    delay(0.05).then(function() {
+        is(callback_count, 1);
+    }).then(null, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
+
+</script>
+</body>
+</html>

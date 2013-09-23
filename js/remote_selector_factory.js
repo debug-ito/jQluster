@@ -1,7 +1,7 @@
 "use strict";
 
 // jQluster factory object for generating RemoteSelector objects
-// requires: jquery, util, remote_selector, transport, local_server, loopback_transport, readiness_callback_manager
+// requires: jquery, util, remote_selector, transport, local_server, transport_loopback, readiness_callback_manager
 
 if(!jQluster) { var jQluster = {}; }
 
@@ -16,13 +16,19 @@ if(!jQluster) { var jQluster = {}; }
             throw "transport_id parameter is mandatory";
         }
         this.transport = myclass._createTransport(args.my_remote_id, args.transport_id);
-        this.readiness_callback_manager = new my.ReadinessCallbackManager({
-            transport: this.transport, notify: args.notify
-        });
+        if(args.transport_id === "loopback") {
+            this.readiness_callback_manager = new my.ReadinessCallbackManagerLoopback({
+                transport: this.transport
+            });
+        }else {
+            this.readiness_callback_manager = new my.ReadinessCallbackManager({
+                transport: this.transport, notify: args.notify
+            });
+        }
     };
     myclass._createTransport = function(my_remote_id, transport_id) {
         if(transport_id === "loopback") {
-            return new my.LoopbackTransport();
+            return new my.TransportLoopback();
         }else {
             return new my.Transport({
                 remote_id: my_remote_id,
