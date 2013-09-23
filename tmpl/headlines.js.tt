@@ -1,5 +1,5 @@
 "use strict";
 
 $(function() {
-    $.jqluster.init("headlines", "[% websocket_url | js %]", { notify: "display" });
+    $.jqluster.init("headlines", "[% transport_id | js %]", { notify: "display" });
 });

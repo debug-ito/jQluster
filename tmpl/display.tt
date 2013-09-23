@@ -12,8 +12,12 @@
 
 <div class="container">
   <div class="row">
-    <div class="col-md-offset-1 col-md-10 text-center" id="qrcode">[% qrcode | mark_raw %]</div>
-    <div class="col-md-offset-1 col-md-10" id="feeditem-display"></div>
+    <div class="col-md-offset-1 col-md-10 text-center">
+      <div id="qrcode">[% qrcode | mark_raw %]</div>
+    </div>
+    <div class="col-md-offset-1 col-md-10">
+      <div id="feeditem-display"></div>
+    </div>
   </div>
 </div>
 [% END %]

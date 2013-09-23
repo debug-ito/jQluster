@@ -85,7 +85,7 @@ foreach my $js_name (qw(display headlines)) {
     get "/$js_name.js" => sub {
         my ($c) = @_;
         my $res = $c->render($template_name, {
-            websocket_url => jQluster::PSGI->url_websocket($c->req->env),
+            transport_id => jQluster::PSGI->url_websocket($c->req->env),
         });
         $res->content_type("application/javascript");
         return $res;

@@ -1,7 +1,7 @@
 "use strict";
 
 $(function() {
-    $.jqluster.init("display", "[% websocket_url | js %]");
+    $.jqluster.init("display", "[% transport_id | js %]");
 
     var showQRCode = function() {
         $("#feeditem-display").hide();
