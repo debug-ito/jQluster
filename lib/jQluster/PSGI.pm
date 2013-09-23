@@ -13,8 +13,11 @@ use Try::Tiny;
 my @JQLUSTER_FILES = qw(util.js
                         connection.js
                         connection_websocket.js
+                        local_server.js
                         transport.js
+                        transport_loopback.js
                         remote_selector.js
+                        readiness_callback_manager.js
                         remote_selector_factory.js
                         jquery_adaptor.js
                    );
@@ -79,16 +82,20 @@ any $ENDPOINT_WEBSOCKET => sub {
 
 get $ENDPOINT_LIBRARY => sub {
     my ($c) = @_;
-    my $total = "";
-    foreach my $filename (@JQLUSTER_FILES) {
-        my $path = "$library_dir/$filename";
-        open my $file, "<", $path or die "Cannot open $path: $!";
-        $total .= do { local $/; <$file> };
-        close $file;
+    state $cached;
+    if(!defined($cached)) {
+        my $total = "";
+        foreach my $filename (@JQLUSTER_FILES) {
+            my $path = "$library_dir/$filename";
+            open my $file, "<", $path or die "Cannot open $path: $!";
+            $total .= do { local $/; <$file> };
+            close $file;
+        }
+        $cached = $total;
     }
     return $c->create_response(200, ["Content-Type" => "application/javascript",
-                                     "Content-Length" => length($total)],
-                               [$total]);
+                                     "Content-Length" => length($cached)],
+                               [$cached]);
 };
 
 sub _websocket_amon2 {
