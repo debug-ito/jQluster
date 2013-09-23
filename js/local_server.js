@@ -42,14 +42,29 @@ if(!jQluster) { var jQluster = {}; }
         select_and_get: "select_and_get_reply",
         select_and_listen: "select_and_listen_reply"
     };
-    my.ServerLocal = function() {
+    my.ServerLocal = function(args) {
+        // @params: args.debug = false
+        if(!args) args = {};
+        
+        // ** Cyclic reference between the server and connections, but
+        // ** it's (probably) ok.  JavaScript garbage collectors can
+        // ** release cyclic objects UNLESS THE CYCLE DOES NOT INVOLVE
+        // ** DOM NODES.
         this.connections = {};
         this.register_log = [];
+        this.debug = !!args.debug;
     };
     my.ServerLocal.prototype = {
+        _dlog: function(message, obj) {
+            console.debug("ServerLocal: " + message);
+            console.debug(obj);
+        },
         register: function(connection, remote_id, register_message_id) {
             // @return: nothing
             var self = this;
+            if(self.debug) {
+                self._dlog("Got register from " + remote_id);
+            }
             if(!self.connections[remote_id]) {
                 self.connections[remote_id] = [];
             }
@@ -79,6 +94,9 @@ if(!jQluster) { var jQluster = {}; }
         distribute: function(message) {
             // @return: nothing
             var self = this;
+            if(self.debug) {
+                self._dlog("Send message: " + message.message_type, message);
+            }
             var conn_list = self.connections[message.to];
             if(!conn_list) {
                 self._tryReplyTo(message, "target remote node does not exist.");
