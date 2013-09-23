@@ -21,8 +21,18 @@ if(!jQluster) { var jQluster = {}; }
         return $.extend(true, {}, obj);
     };
 
+    my.JSONstringifySafely = function(obj) {
+        return JSON.stringify(obj, function(key, value) {
+            if($.isWindow(value) || value === document || this === value || my.isHTMLElement(value)) {
+                return undefined;
+            }else {
+                return value;
+            }
+        });
+    };
+
     my.cloneViaJSON = function(obj) {
-        return JSON.parse(JSON.stringify(obj));
+        return JSON.parse(my.JSONstringifySafely(obj));
     };
 
     my.defined = function(val) {

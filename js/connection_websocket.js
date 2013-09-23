@@ -60,13 +60,7 @@ if(!jQluster) { var jQluster = {}; }
         },
         _doSend: function(message) {
             try {
-                this.websocket.send(JSON.stringify(message, function(key, value) {
-                    if($.isWindow(value) || value === document || this === value || my.isHTMLElement(value)) {
-                        return undefined;
-                    }else {
-                        return value;
-                    }
-                }));
+                this.websocket.send(my.JSONstringifySafely(message));
             }catch(error) {
                 console.error("Cannot send the following message");
                 console.error(message);
