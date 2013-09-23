@@ -49,19 +49,22 @@ my $handler_display = sub {
 
 get $_ => $handler_display foreach '/', '/index.html';
 
-get "/headlines.html" => sub {
-    my ($c) = @_;
-    return try {
-        my $page = $c->req->query_parameters->{page} // 0;
-        my @items = $feed_items->get_items(page => $page);
-        return $c->render('headlines.tt', {
-            page => $page,
-            items => \@items,
-        });
-    }catch {
-        return $c->res_404;
+foreach my $page_name (qw(headlines single)) {
+    get "/$page_name.html" => sub {
+        my ($c) = @_;
+        return try {
+            my $page = $c->req->query_parameters->{page} // 0;
+            my @items = $feed_items->get_items(page => $page);
+            return $c->render("$page_name.tt", {
+                page => $page,
+                items => \@items,
+            });
+        }catch {
+            return $c->res_404;
+        };
     };
-};
+}
+
 
 get "/body.html" => sub {
     my ($c) = @_;
@@ -80,12 +83,16 @@ get "/body.html" => sub {
     };
 };
 
+
+
 foreach my $js_name (qw(display headlines)) {
     my $template_name = "$js_name.js.tt";
     get "/$js_name.js" => sub {
         my ($c) = @_;
         my $res = $c->render($template_name, {
-            transport_id => jQluster::PSGI->url_websocket($c->req->env),
+            transport_id => $c->req->query_parameters->{loopback}
+                    ? "loopback"
+                    : jQluster::PSGI->url_websocket($c->req->env),
         });
         $res->content_type("application/javascript");
         return $res;
