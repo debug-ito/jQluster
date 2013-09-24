@@ -1,5 +1,5 @@
 %% ## args: items, page
-[% WRAPPER 'layout.tt' WITH title = "Single Screen Reader (page "~ (page + 1) ~")", scripts = ["/display.js?loopback=1"] %]
+[% WRAPPER 'layout.tt' WITH title = "Single Screen Reader (page "~ (page + 1) ~")", scripts = ["/display.js?loopback=1", "/headlines.js?loopback=1"] %]
 <div class="navbar navbar-default navbar-fixed-top">
   <div class="container">
     <div class="navbar-header">
