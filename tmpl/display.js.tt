@@ -9,10 +9,11 @@ $(function() {
     };
     showQRCode();
     $(".qr-code-on").on("click", showQRCode);
-    
-    $.jqluster("headlines", function($_) {
-        $_("#feeditem-list").off("click", "li");
-        $_("#feeditem-list").on("click", "li", function() {
+
+    var $_ = $.jqluster("headlines");
+    $_(function() {
+        $_("#feeditem-list").off("click.remote", "li");
+        $_("#feeditem-list").on("click.remote", "li", function() {
             $_(this).find(".feeditem-id").text().then(function(item_id) {
                 return $.ajax({
                     type: "GET",
@@ -29,7 +30,7 @@ $(function() {
             });
         });
         
-        $_(".headlines-finish").off("click");
-        $_(".headlines-finish").on("click", showQRCode);
+        $_(".headlines-finish").off("click.remote");
+        $_(".headlines-finish").on("click.remote", showQRCode);
     });
 });

@@ -2,4 +2,10 @@
 
 $(function() {
     $.jqluster.init("headlines", "[% transport_id | js %]", { notify: "display" });
+
+    $("#feeditem-list").on("click.local", "li", function() {
+        $("#feeditem-list").children().removeClass("active");
+        $(this).addClass("active");
+    });
 });
+
