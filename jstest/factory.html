@@ -43,6 +43,7 @@ var teardownjQluster = function() {
     bob = undefined;
     jQluster.RemoteSelectorFactory.releaseLocalServer();
     jQluster.ReadinessCallbackManager.release();
+    $.jqluster.release();
 };
 
 module("RemoteSelectorFactory", {
@@ -267,6 +268,30 @@ asyncTest("each", function() {
     }, 100);
 });
 
+asyncTest("second and subsequent calls of $.jqluster.init() should be ignored", function() {
+    $.jqluster.init("carol", "local");
+    $.jqluster.init("alice", "local");
+    var $a = $.jqluster("alice");
+    $a("#qunit-fixture").find("li").eq(2).text().then(function(data) {
+        ok(false, "alice should not exist. init(alice) should be ignored");
+    }, function(error) {
+        ok(true, "operation should fail because alice does not exist. error: " + error);
+    }).always(function() {
+        start();
+    });
+
+    // var $c = bob.forRemote("carol");
+    // var time_limit = setTimeLimit();
+    // $c("#qunit-fixture").find("li").eq(2).text().then(function(data) {
+    //     clearTimeout(time_limit);
+    //     is(data, "3");
+    // }).then(null, function(error) {
+    //     ok(false, "error: " + error);
+    // }).always(function() {
+    //     start();
+    // });
+});
+
 module("jQuery plugin adaptor - readiness callback", {
     setup: function() {
         setupHTML();
@@ -296,7 +321,6 @@ asyncTest("readiness notification is set by notify option for $.jqluster.init()"
         start();
     });
 });
-
 
 </script>
 </body>

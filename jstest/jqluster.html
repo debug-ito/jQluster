@@ -100,15 +100,6 @@ var teardownTest = function() {
     bob_connection = undefined;
 };
 
-var TIMEOUT_MSEC = 3000;
-
-var setTimeLimit = function() {
-    return setTimeout(function() {
-        ok(false, "It tooks too long.");
-        start();
-    }, TIMEOUT_MSEC);
-};
-
 module("jQluster.Transport", {
     setup: setupTest,
     teardown: teardownTest,
