@@ -217,7 +217,7 @@ if(!jQluster) { var jQluster = {}; }
         ["attr", 1, 1], ["hasClass", 1, 1], ["val", 0, 0], ["css", 1, 1],
         ["height", 0, 0], ["innerHeight", 0, 0], ["innerWidth", 0, 0], ["outerHeight", 0, 1],
         ["outerWidth", 0, 1], ["width", 0, 0], ["data", 1, 1], ["text", 0, 0],
-        ["index", 0, 1], ["size", 0, 0], ["append", 1, 0]
+        ["index", 0, 1], ["size", 0, 0], ["append", 1, 0], ["trigger", 1, 0]
     ], function(i, method_spec) {
         accessorMethod.apply(null, method_spec);
     });

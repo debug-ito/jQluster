@@ -980,6 +980,28 @@ asyncTest("append()", function() {
     });
 });
 
+asyncTest("trigger()", function() {
+    var remote = new jQluster.RemoteSelector({
+        transport: alice, remote_id: "bob", selector: "#test"
+    });
+    var event_args = [];
+    $("#test").on("custom-event", function() {
+        event_args.push(jQluster.argsToArray(arguments));
+    });
+    remote.trigger("custom-event", [1, "two", {three: 3}]);
+    delay(0.05).then(function() {
+        is(event_args.length, 1);
+        is(event_args[0].length, 4);
+        is(event_args[0][1], 1);
+        is(event_args[0][2], "two");
+        deepEqual(event_args[0][3], {three: 3});
+    }).then(null, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
 
 ////////////////////////////////////////////////////////////////////////
 module("jQluster.RemoteSelector - effects", {
