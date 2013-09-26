@@ -1,6 +1,7 @@
 "use strict";
 
 $(function() {
+    var headlines_page = 0;
     $.jqluster.init("display", "[% transport_id | js %]");
 
     var showQRCode = function() {
@@ -12,6 +13,21 @@ $(function() {
 
     var $_ = $.jqluster("headlines");
     $_(function() {
+        $_(document).trigger("change-page", [headlines_page]);
+
+        $_("#headlines-prev-page").off("click.remote");
+        $_("#headlines-prev-page").on("click.remote", function() {
+            if(headlines_page <= 0) return;
+            headlines_page--;
+            $_(document).trigger("change-page", [headlines_page]);
+        });
+        
+        $_("#headlines-next-page").off("click.remote");
+        $_("#headlines-next-page").on("click.remote", function() {
+            headlines_page++;
+            $_(document).trigger("change-page", [headlines_page]);
+        })
+        
         $_("#feeditem-list").off("click.remote", "li");
         $_("#feeditem-list").on("click.remote", "li", function() {
             $_(this).find(".feeditem-id").text().then(function(item_id) {

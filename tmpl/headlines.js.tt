@@ -1,11 +1,26 @@
 "use strict";
 
 $(function() {
-    $.jqluster.init("headlines", "[% transport_id | js %]", { notify: "display" });
-
+    var my_page;
+    $(document).on("change-page", function(event, page) {
+        if(page === my_page) return;
+        my_page = page;
+        $.ajax({
+            type: "GET", url: "component_headlines.html", data: {page: page},
+            dataType: "html"
+        }).then(function(data) {
+            $("#feeditem-list").html(data);
+        }).then(null, function(error) {
+            console.error(error);
+        });
+        $(".headlines-page").text(page);
+    });
+    
     $("#feeditem-list").on("click.local", "li", function() {
         $("#feeditem-list").children().removeClass("active");
         $(this).addClass("active");
     });
+    
+    $.jqluster.init("headlines", "[% transport_id | js %]", { notify: "display" });
 });
 

@@ -53,17 +53,25 @@ foreach my $page_name (qw(headlines single)) {
     get "/$page_name.html" => sub {
         my ($c) = @_;
         return try {
-            my $page = $c->req->query_parameters->{page} // 0;
-            my @items = $feed_items->get_items(page => $page);
-            return $c->render("$page_name.tt", {
-                page => $page,
-                items => \@items,
-            });
+            return $c->render("$page_name.tt");
         }catch {
             return $c->res_404;
         };
     };
 }
+
+get "/component_headlines.html" => sub {
+    my ($c) = @_;
+    return try {
+        my $page = $c->req->query_parameters->{page} // 0;
+        my @items = $feed_items->get_items(page => $page);
+        return $c->render("component_headlines.tt", {
+            items => \@items
+        });
+    }catch {
+        return $c->res_404;
+    };
+};
 
 
 get "/body.html" => sub {

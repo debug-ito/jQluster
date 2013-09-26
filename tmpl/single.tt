@@ -1,5 +1,4 @@
-%% ## args: items, page
-[% WRAPPER 'layout.tt' WITH title = "Single Screen Reader (page "~ (page + 1) ~")", scripts = ["/display.js?loopback=1", "/headlines.js?loopback=1"] %]
+[% WRAPPER 'layout.tt' WITH title = "Single Screen Reader", scripts = ["/headlines.js?loopback=1", "/display.js?loopback=1"] %]
 <div class="navbar navbar-default navbar-fixed-top">
   <div class="container">
     <div class="navbar-header">
@@ -8,20 +7,21 @@
         <span class="icon-bar"></span>
         <span class="icon-bar"></span>
       </button>
-      <a class="navbar-brand" href="?page=0">Single Screen Reader</a>
-      <p class="navbar-text"><span class="label label-default">Page [% page + 1 %]</span></p>
+      <a class="navbar-brand" href="single.html">Single Screen Reader</a>
+      <p class="navbar-text"><span class="label label-default">Page <span class="headlines-page"></span></span></p>
     </div>
     <ul class="nav navbar-nav">
       <li><a href="/">Multi Screen Reader</a></li>
     </ul>
-    [% INCLUDE "component_headlines_navbar.tt" WITH page = page %]
+    [% INCLUDE "component_headlines_navbar.tt" %]
   </div>
 </div>
 
 <div class="container">
   <div class="row">
     <div class="col-md-3">
-      [% INCLUDE "component_headlines.tt" WITH items = items %]
+      <ul class="list-group" id="feeditem-list">
+      </ul>
     </div>
     <div class="col-md-9">
       <div id="feeditem-display"></div>
