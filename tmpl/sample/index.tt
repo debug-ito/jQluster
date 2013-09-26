@@ -1,11 +1,11 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Canvas Painter Demo</title>
+    <title>jQluster samples</title>
   </head>
   <body>
     <ul>
-      <li><a href="single.html">Single Page</a></li>
+      <!-- <li><a href="single.html">Single Page</a></li> -->
       <li>Simple Get</li>
       <ul>
         <li><a href="get_simple.html?my_id=alice&target_id=bob">Alice</a></li>
