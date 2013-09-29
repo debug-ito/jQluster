@@ -16,7 +16,7 @@ $(function() {
         $(".headlines-page").text(page);
     });
     
-    $("#feeditem-list").on("click.local", "li", function() {
+    $("#feeditem-list").on("click.headlines", "li", function() {
         $("#feeditem-list").children().removeClass("active");
         $(this).addClass("active");
     });

@@ -15,21 +15,21 @@ $(function() {
     $_(function() {
         $_(document).trigger("change-page", [headlines_page]);
 
-        $_("#headlines-prev-page").off("click.remote");
-        $_("#headlines-prev-page").on("click.remote", function() {
+        $_("#headlines-prev-page").off("click.display");
+        $_("#headlines-prev-page").on("click.display", function() {
             if(headlines_page <= 0) return;
             headlines_page--;
             $_(document).trigger("change-page", [headlines_page]);
         });
         
-        $_("#headlines-next-page").off("click.remote");
-        $_("#headlines-next-page").on("click.remote", function() {
+        $_("#headlines-next-page").off("click.display");
+        $_("#headlines-next-page").on("click.display", function() {
             headlines_page++;
             $_(document).trigger("change-page", [headlines_page]);
         })
         
-        $_("#feeditem-list").off("click.remote", "li");
-        $_("#feeditem-list").on("click.remote", "li", function() {
+        $_("#feeditem-list").off("click.display", "li");
+        $_("#feeditem-list").on("click.display", "li", function() {
             $_(this).find(".feeditem-id").text().then(function(item_id) {
                 return $.ajax({
                     type: "GET",
@@ -46,7 +46,7 @@ $(function() {
             });
         });
         
-        $_(".headlines-finish").off("click.remote");
-        $_(".headlines-finish").on("click.remote", showQRCode);
+        $_(".headlines-finish").off("click.display");
+        $_(".headlines-finish").on("click.display", showQRCode);
     });
 });
