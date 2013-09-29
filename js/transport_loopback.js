@@ -11,7 +11,7 @@ if(!jQluster) { var jQluster = {}; }
     myclass = my.TransportLoopback = function() {
         this.loopback_server = new my.ServerLocal();
         superclass.call(this, {
-            remote_id: "self",
+            my_remote_id: "self",
             connection_object: new my.ConnectionLocal(this.loopback_server)
         });
     };

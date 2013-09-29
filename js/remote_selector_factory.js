@@ -31,7 +31,7 @@ if(!jQluster) { var jQluster = {}; }
             return new my.TransportLoopback();
         }else {
             return new my.Transport({
-                remote_id: my_remote_id,
+                my_remote_id: my_remote_id,
                 connection_object: myclass._createConnection(transport_id)
             });
         }

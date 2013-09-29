@@ -10,14 +10,14 @@ if(!jQluster) { var jQluster = {}; }
     var myclass;
     myclass = my.Transport = function(args) {
         var self = this;
-        // @params: args.remote_id, args.connection_object
-        if(!my.defined(args.remote_id)) {
-            throw "remote_id param is mandatory";
+        // @params: args.my_remote_id, args.connection_object
+        if(!my.defined(args.my_remote_id)) {
+            throw "my_remote_id param is mandatory";
         }
         if(!my.defined(args.connection_object)) {
             throw "connection_object param is mandatory";
         }
-        self.remote_id = args.remote_id;
+        self.my_remote_id = args.my_remote_id;
         self.connection_object = args.connection_object;
         self.pending_request_for = {};
         self.signal_callback_for = {};
@@ -25,12 +25,12 @@ if(!jQluster) { var jQluster = {}; }
         self.connection_object.onReceive(function(message) { self._onReceive(message); });
         self.connection_object.send({
             message_id: my.uuid(), message_type: "register",
-            from: self.remote_id, to: null,
-            body: { remote_id: self.remote_id }
+            from: self.my_remote_id, to: null,
+            body: { remote_id: self.my_remote_id }
         });
     };
     myclass.prototype = {
-        getMyRemoteID: function() { return this.remote_id; },
+        getMyRemoteID: function() { return this.my_remote_id; },
         selectAndGet: function(args) {
             // @params: args.eval_code, args.remote_id
             // 
@@ -57,7 +57,7 @@ if(!jQluster) { var jQluster = {}; }
                 }
                 var message = {
                     message_id: my.uuid(), message_type: "select_and_get",
-                    from: self.remote_id, to: args.remote_id,
+                    from: self.my_remote_id, to: args.remote_id,
                     body: { eval_code: args.eval_code, remote_id: args.remote_id }
                 };
                 self.pending_request_for[message.message_id] = response_d;
@@ -109,7 +109,7 @@ if(!jQluster) { var jQluster = {}; }
                 if(!my.defined(args.options)) args.options = [];
                 message = {
                     message_id: my.uuid(), message_type: "select_and_listen",
-                    from: self.remote_id, to: args.remote_id,
+                    from: self.my_remote_id, to: args.remote_id,
                     body: {
                         remote_id: args.remote_id, eval_code: args.eval_code, 
                         method: args.method, options: args.options
@@ -183,7 +183,7 @@ if(!jQluster) { var jQluster = {}; }
             }
             var reply = {
                 message_id: my.uuid(), message_type: "select_and_get_reply",
-                from: self.remote_id, to: request_message.from,
+                from: self.my_remote_id, to: request_message.from,
                 body: { "error": null,  "result": null, "in_reply_to": request_message.message_id}
             };
             result_p.then(function(result) {
@@ -212,7 +212,7 @@ if(!jQluster) { var jQluster = {}; }
         _createRemoteDOMPointerIfDOM: function(obj) {
             if(my.isHTMLElement(obj)) {
                return {
-                   remote_id: this.remote_id,
+                   remote_id: this.my_remote_id,
                    remote_type: "xpath",
                    remote_xpath: my.xpathFor($(obj))
                };
@@ -233,7 +233,7 @@ if(!jQluster) { var jQluster = {}; }
                 reply_sent = true;
                 self.connection_object.send({
                     message_id: my.uuid(), message_type: "select_and_listen_reply",
-                    from: self.remote_id, to: request_from,
+                    from: self.my_remote_id, to: request_from,
                     body: {error: error, result: (my.defined(error) ? "NG" : "OK"), in_reply_to: request_id}
                 });
             };
@@ -250,7 +250,7 @@ if(!jQluster) { var jQluster = {}; }
                     try_send_reply(null);
                     self.connection_object.send({
                         message_id: my.uuid(), message_type: "signal",
-                        from: self.remote_id, to: request_from,
+                        from: self.my_remote_id, to: request_from,
                         body: { error: null, in_reply_to: request_id,
                                 callback_this: callback_this, callback_args: callback_args}
                     });

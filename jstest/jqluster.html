@@ -47,10 +47,10 @@ var alice_connection;
 var bob;
 var bob_connection;
 
-var createTransport = function(remote_id) {
+var createTransport = function(my_remote_id) {
     var conn = new jQluster.ConnectionLocal(server);
     var trans = new jQluster.Transport({
-        remote_id: remote_id,
+        my_remote_id: my_remote_id,
         connection_object: conn
     });
     return [conn, trans];
