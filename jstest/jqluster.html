@@ -93,10 +93,25 @@ var setupAll = function() {
 };
 
 var teardownTest = function() {
+    if(server) {
+        server.release();
+    }
     server = undefined;
+    if(alice) {
+        alice.release();
+    }
     alice = undefined;
+    if(alice_connection) {
+        alice_connection.release();
+    }
     alice_connection = undefined;
+    if(bob) {
+        bob.release();
+    }
     bob = undefined;
+    if(bob_connection) {
+        bob_connection.release();
+    }
     bob_connection = undefined;
 };
 

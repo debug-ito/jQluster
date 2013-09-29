@@ -12,6 +12,9 @@ if(!jQluster) { var jQluster = {}; }
         this.receive_callbacks = [];
     };
     myclass.prototype = {
+        release: function() {
+            this.receive_callbacks = [];
+        },
         send: function() { throw "send() must be implemented"; },
         onReceive: function(callback) {
             // @return: nothing

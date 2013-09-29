@@ -260,6 +260,15 @@ if(!jQluster) { var jQluster = {}; }
             }catch(e) {
                 try_send_reply("_processSelectAndListen error: " + e);
             }
+        },
+        
+        release: function() {
+            if(my.defined(this.connection_object)) {
+                this.connection_object.release();
+            }
+            this.connection_object = null;
+            this.pending_request_for = {};
+            this.signal_callback_for = {};
         }
     };
     

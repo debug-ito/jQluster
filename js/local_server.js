@@ -29,6 +29,11 @@ if(!jQluster) { var jQluster = {}; }
             this.log.push({ direction: "receive", message: my.clone(message)});
             return superclass.prototype.triggerReceive.call(this, message);
         },
+        release: function() {
+            superclass.prototype.release.call(this);
+            this.server = null;
+            this.log = [];
+        },
 
         // below are ConnectionLocal specific functions
         getID: function() { return this.remote_id; },
@@ -108,6 +113,16 @@ if(!jQluster) { var jQluster = {}; }
             });
         },
 
-        getRegisterLog: function() { return this.register_log; }
+        getRegisterLog: function() { return this.register_log; },
+        release: function() {
+            var self = this;
+            $.each(self.connections, function(remote_id, connection_list) {
+                $.each(connection_list, function(i, connection) {
+                    connection.release();
+                });
+            });
+            self.connections = {};
+            self.register_log = [];
+        },
     };
 })(jQluster, jQuery);

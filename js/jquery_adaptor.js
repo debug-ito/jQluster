@@ -18,7 +18,12 @@
             my_remote_id: my_remote_id, transport_id: transport_id
         }));
     };
-    $.jqluster.release = function() { factory = null; };
+    $.jqluster.release = function() {
+        if(my.defined(factory)) {
+            factory.release();
+            factory = null;
+        }
+    };
 })(jQluster, jQuery);
 
 

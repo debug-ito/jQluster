@@ -48,6 +48,9 @@ if(!jQluster) { var jQluster = {}; }
         throw "Unknown transport_id: " + transport_id;
     };
     myclass.releaseLocalServer = function() {
+        if(my.defined(local_server)) {
+            local_server.release();
+        }
         local_server = undefined;
     };
     myclass.prototype = {
@@ -92,6 +95,13 @@ if(!jQluster) { var jQluster = {}; }
             }else {
                 return factory;
             }
+        },
+        release: function() {
+            if(my.defined(this.transport)) {
+                this.transport.release();
+                this.transport = null;
+            }
+            this.readiness_callback_manager = null;
         },
     };
 })(jQluster, jQuery);

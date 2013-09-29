@@ -66,6 +66,15 @@ if(!jQluster) { var jQluster = {}; }
                 console.error(message);
                 throw error;
             }
+        },
+        release: function() {
+            superclass.prototype.release.call(this);
+            if(my.defined(this.websocket)) {
+                this.websocket.close();
+            }
+            this.websocket = null;
+            this.is_socket_ready = false;
+            this.send_buffer = [];
         }
     });
 })(jQluster, jQuery);

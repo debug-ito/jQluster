@@ -25,6 +25,11 @@ if(!jQluster) { var jQluster = {}; }
             if(!args) args = {};
             args.remote_id = "self";
             return superclass.prototype.selectAndListen.call(this, args);
+        },
+        release: function() {
+            superclass.prototype.release.call(this);
+            this.loopback_server.release();
+            this.loopback_server = null;
         }
     });
 })(jQluster, jQuery);

@@ -39,7 +39,13 @@ var setupHTML = function() {
 };
 
 var teardownjQluster = function() {
+    if(alice) {
+        alice.release();
+    }
     alice = undefined;
+    if(bob) {
+        bob.release();
+    }
     bob = undefined;
     jQluster.RemoteSelectorFactory.releaseLocalServer();
     jQluster.ReadinessCallbackManager.release();
