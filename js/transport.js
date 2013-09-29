@@ -8,6 +8,16 @@ if(!jQluster) { var jQluster = {}; }
 
 (function(my, $) {
     var myclass;
+
+    // TODO: Design and implement some mechanism for node grouping. In
+    // the current implementation, it is possible for multiple nodes
+    // to have the same ID. However, in this case there is no way to
+    // distinguish individual nodes with that ID. With a proper
+    // grouping mechanism, the user would be able to multi-cast a
+    // message (e.g. a 'select_and_listen' message) and still
+    // distinguish individual node in the group (e.g. the exact node
+    // that sends a 'signal' message).
+    
     myclass = my.Transport = function(args) {
         var self = this;
         // @params: args.my_remote_id, args.connection_object
