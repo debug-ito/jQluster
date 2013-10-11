@@ -146,6 +146,11 @@ if(!jQluster) { var jQluster = {}; }
         _onReceive: function(message) {
             // @return: nothing
             var self = this;
+            if(message.to !== self.my_remote_id) {
+                console.debug("A message whose 'to' field is "+ (defined(message.to) ? message.to : "[null]")
+                              + " is received but ignored because I'm "+ self.my_remote_id);
+                return;
+            }
             if(message.message_type === "signal") {
                 self._processSignal(message);
             }else if(my.defined(message.body.in_reply_to)) {
