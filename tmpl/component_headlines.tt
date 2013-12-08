@@ -1,5 +1,0 @@
-%% ## args: items
-[% FOREACH item IN items -%]
-<li class="list-group-item"><span class="feeditem-title">[% item.title %]</span><small class="feeditem-created-at">[% item.created_at %]</small><span class="feeditem-id">[% item.id %]</span></li>
-[% END -%]
-
