@@ -87,12 +87,12 @@ $.each([
         is(remote._getEvalCode(), testcase.exp_eval_code, "eval code OK");
     };
     test(testcase.label + ", function interface", function() {
-        var factory = alice.forRemote("bob");
+        var factory = alice.forRemoteNode("bob");
         var remote = factory(testcase.target);
         checker(remote);
     });
     test(testcase.label + ", direct interface", function() {
-        var remote = alice.forRemote("bob", testcase.target);
+        var remote = alice.forRemoteNode("bob", testcase.target);
         checker(remote);
     });
 });
@@ -109,7 +109,7 @@ module("RemoteSelectorFactory: listen to readiness of remote nodes", {
 });
 
 asyncTest("$remote(func) should add callbacks for readiness of the remote node", function() {
-    var $remote_bob = alice.forRemote("bob");
+    var $remote_bob = alice.forRemoteNode("bob");
     var results = [];
     $remote_bob(function($arg) {
         is($arg, $remote_bob);
@@ -135,7 +135,7 @@ asyncTest("$remote(func) should add callbacks for readiness of the remote node",
 });
 
 asyncTest("$remote(func) should add callbacks, but they are not executed if not notified", function() {
-    var $remote_bob = alice.forRemote("bob");
+    var $remote_bob = alice.forRemoteNode("bob");
     var results = [];
     $remote_bob(function() { results.push(1); });
     bob = new jQluster.RemoteSelectorFactory({
@@ -152,7 +152,7 @@ asyncTest("$remote(func) should add callbacks, but they are not executed if not 
 });
 
 asyncTest("$remote(func) callback should be exeucted immediately if the remote node is already present.", function() {
-    var $remote_bob = alice.forRemote("bob");
+    var $remote_bob = alice.forRemoteNode("bob");
     bob = new jQluster.RemoteSelectorFactory({
         node_id: "bob",
         transport_id: "local",
@@ -177,7 +177,7 @@ asyncTest("$remote(func) callback should be exeucted immediately if the remote n
 });
 
 asyncTest("$remote(func) callback should not be executed if the remote node is present but it does not notify you.", function() {
-    var $remote_bob = alice.forRemote("bob");
+    var $remote_bob = alice.forRemoteNode("bob");
     bob = new jQluster.RemoteSelectorFactory({
         node_id: "bob",
         transport_id: "local",
@@ -197,15 +197,15 @@ asyncTest("$remote(func) callback should not be executed if the remote node is p
 });
 
 asyncTest("All $remote(func) callbacks should be executed if they are notified", function() {
-    var $rbob_alice = alice.forRemote("bob");
+    var $rbob_alice = alice.forRemoteNode("bob");
     var carol = new jQluster.RemoteSelectorFactory({
         node_id: "carol", transport_id: "local"
     });
-    var $rbob_carol = carol.forRemote("bob");
+    var $rbob_carol = carol.forRemoteNode("bob");
     var david = new jQluster.RemoteSelectorFactory({
         node_id: "david", transport_id: "local"
     });
-    var $rbob_david = david.forRemote("bob");
+    var $rbob_david = david.forRemoteNode("bob");
     var callbacked = {
         alice: 0, carol: 0, david: 0
     };
@@ -288,7 +288,7 @@ asyncTest("second and subsequent calls of $.jqluster.init() should be ignored", 
         start();
     });
 
-    // var $c = bob.forRemote("carol");
+    // var $c = bob.forRemoteNode("carol");
     // var time_limit = setTimeLimit();
     // $c("#qunit-fixture").find("li").eq(2).text().then(function(data) {
     //     clearTimeout(time_limit);
@@ -318,7 +318,7 @@ asyncTest("readiness notification is set by notify option for $.jqluster.init()"
     $.jqluster("bob", function() {
         callbacked.bob += 1;
     });
-    bob.forRemote("carol", function() {
+    bob.forRemoteNode("carol", function() {
         callbacked.carol += 1;
     });
     delay(0.05).then(function() {

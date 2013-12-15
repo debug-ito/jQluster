@@ -9,7 +9,7 @@
         if(!my.defined(factory)) {
             throw "call $.jqluster.init() first.";
         }
-        return factory.forRemote(remote_node_id, selector);
+        return factory.forRemoteNode(remote_node_id, selector);
     };
     $.jqluster.init = function(my_node_id, transport_id, options) {
         if(my.defined(factory)) return;

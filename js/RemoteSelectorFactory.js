@@ -80,7 +80,7 @@ if(!jQluster) { var jQluster = {}; }
             }
             return new my.RemoteSelector(args);
         },
-        forRemote: function(remote_node_id, immediate_target) {
+        forRemoteNode: function(remote_node_id, immediate_target) {
             var self = this;
             var factory = function(target) {
                 if($.isFunction(target)) {

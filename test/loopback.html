@@ -87,9 +87,9 @@ asyncTest("factory(loopback) should always create loopback remote selectors", fu
     var factory = new jQluster.RemoteSelectorFactory({
         node_id: "hoge", transport_id: "loopback"
     });
-    factory.forRemote("hoge", "#qunit-fixture").find(".three").text().then(function(data) {
+    factory.forRemoteNode("hoge", "#qunit-fixture").find(".three").text().then(function(data) {
         is(data, "3", "my_node_id == target_node_id OK");
-        return factory.forRemote("foobar", "#qunit-fixture").find(".three").text();
+        return factory.forRemoteNode("foobar", "#qunit-fixture").find(".three").text();
     }).then(function(data) {
         is(data, "3", "my_node_id != target_node_id OK");
     }).then(null, function(error) {
@@ -103,7 +103,7 @@ asyncTest("readiness callback should fire immediately", function() {
     var factory = new jQluster.RemoteSelectorFactory({
         node_id: "hoge", transport_id: "loopback"
     });
-    var $_ = factory.forRemote("foobar");
+    var $_ = factory.forRemoteNode("foobar");
     var callback_count = 0;
     $_(function() {
         callback_count++;
