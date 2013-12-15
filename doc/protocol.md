@@ -73,6 +73,7 @@ When the remote node ("Bob") receives the message, it executes the following.
 1. It evaluates `body.eval_code` that is a JavaScript string. Let the result be `RESULT`.
 2. Create a callback function object. Let it be `CALLBACK`.
 3. Execute the following
+
         RESULT[METHOD_NAME].apply(RESULT, [OPT1, OPT2, CALLBACK]);
 
 The `CALLBACK` it creates sends a `signal` message when called, thus reporting the event to the requester node ("Alice").
