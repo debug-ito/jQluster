@@ -13,12 +13,12 @@ if(!jQluster) { jQluster = {}; }
         if(!my.defined(args.transport)) {
             throw "transport parameter is mandatory";
         }
-        args.notify = [args.transport.getMyRemoteID()];
+        args.notify = [args.transport.getNodeID()];
         superclass.call(this, args);
     };
     myclass.prototype = $.extend({}, superclass.prototype, {
-        listenToRemoteReadiness: function(remote_id, callback) {
-            return superclass.prototype.listenToRemoteReadiness.call(this, this.transport.getMyRemoteID(), callback);
+        listenToRemoteReadiness: function(node_id, callback) {
+            return superclass.prototype.listenToRemoteReadiness.call(this, this.transport.getNodeID(), callback);
         },
     });
 })(jQluster, jQuery);

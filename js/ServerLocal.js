@@ -27,21 +27,21 @@ if(!jQluster) { var jQluster = {}; }
             console.debug("ServerLocal: " + message);
             console.debug(obj);
         },
-        register: function(connection, remote_id, register_message_id) {
+        register: function(connection, node_id, register_message_id) {
             // @return: nothing
             var self = this;
             if(self.debug) {
-                self._dlog("Got register from " + remote_id);
+                self._dlog("Got register from " + node_id);
             }
-            if(!self.connections[remote_id]) {
-                self.connections[remote_id] = [];
+            if(!self.connections[node_id]) {
+                self.connections[node_id] = [];
             }
-            self.register_log.push(remote_id);
-            self.connections[remote_id].push(connection);
+            self.register_log.push(node_id);
+            self.connections[node_id].push(connection);
             self.distribute({
                 message_id: my.uuid(),
                 message_type: "register_reply",
-                from: null, to: remote_id,
+                from: null, to: node_id,
                 body: { error: null, in_reply_to: register_message_id }
             });
         },
@@ -67,7 +67,7 @@ if(!jQluster) { var jQluster = {}; }
             }
             var conn_list = self.connections[message.to];
             if(!conn_list) {
-                self._tryReplyTo(message, "target remote node does not exist.");
+                self._tryReplyTo(message, "target node does not exist.");
                 return;
             }
             $.each(conn_list, function(i, conn) {
@@ -79,7 +79,7 @@ if(!jQluster) { var jQluster = {}; }
         getRegisterLog: function() { return this.register_log; },
         release: function() {
             var self = this;
-            $.each(self.connections, function(remote_id, connection_list) {
+            $.each(self.connections, function(node_id, connection_list) {
                 $.each(connection_list, function(i, connection) {
                     connection.release();
                 });

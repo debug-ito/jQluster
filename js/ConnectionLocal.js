@@ -20,7 +20,7 @@ if(!jQluster) { var jQluster = {}; }
             this.log.push({ direction: "send",  message: my.clone(message)});
             // console.log("send: type: " + message.message_type + ", from: " + message.from);
             if(message.message_type === "register") {
-                this.server.register(this, message.body.remote_id, message.message_id);
+                this.server.register(this, message.body.node_id, message.message_id);
             }else {
                 this.server.distribute(message);
             }
@@ -36,7 +36,6 @@ if(!jQluster) { var jQluster = {}; }
         },
 
         // below are ConnectionLocal specific functions
-        getID: function() { return this.remote_id; },
         getLog: function() { return this.log; },
         clearLog: function() { this.log = [] }
     });

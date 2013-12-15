@@ -48,10 +48,10 @@ var alice_connection;
 var bob;
 var bob_connection;
 
-var createTransport = function(my_remote_id) {
+var createTransport = function(my_node_id) {
     var conn = new jQluster.ConnectionLocal(server);
     var trans = new jQluster.Transport({
-        my_remote_id: my_remote_id,
+        node_id: my_node_id,
         connection_object: conn
     });
     return [conn, trans];
@@ -136,7 +136,7 @@ test("registration", function() {
         is(log[0].message.message_type, "register", "log 0 : register");
         is(log[0].message.from, id, "log 0 from");
         is(log[0].message.to, null, "log 0 to");
-        deepEqual(log[0].message.body, {remote_id: id}, "log 0 body");
+        deepEqual(log[0].message.body, {node_id: id}, "log 0 body");
         
         is(log[1].direction, "receive", "log 1 : receive");
         is(log[1].message.message_type, "register_reply", "log 1 : register_reply");
@@ -154,7 +154,7 @@ asyncTest("selectAndGet - single target", function() {
 
     alice.selectAndGet({
         eval_code: "$(\"#test\").find(\".two\").text()",
-        remote_id: "bob"
+        node_id: "bob"
     }).then(function(data) {
         var alog = alice_connection.getLog();
         var blog = bob_connection.getLog();
@@ -167,7 +167,7 @@ asyncTest("selectAndGet - single target", function() {
         is(alog[0].message.to, "bob");
         deepEqual(alog[0].message.body, {
             eval_code: "$(\"#test\").find(\".two\").text()",
-            remote_id: "bob"
+            node_id: "bob"
         });
         is(blog[0].direction, "receive");
         is(blog[0].message.message_type, "select_and_get");
@@ -176,7 +176,7 @@ asyncTest("selectAndGet - single target", function() {
         is(blog[0].message.message_id, alog[0].message.message_id);
         deepEqual(blog[0].message.body, {
             eval_code: "$(\"#test\").find(\".two\").text()",
-            remote_id: "bob"
+            node_id: "bob"
         });
 
         is(blog[1].direction, "send");
@@ -201,7 +201,7 @@ asyncTest("selectAndGet - no target: the server should return an error message",
     setupAlice();
     var promise_select = alice.selectAndGet({
         eval_code: "$('#test li').eq(2).text()",
-        remote_id: "bob"
+        node_id: "bob"
     });
     promise_select.then(function() {
         ok(false, "the returned promise should not be resolved.");
@@ -217,7 +217,7 @@ asyncTest("selectAndGet - no target: the server should return an error message",
         is(alog[2].message.message_type, "select_and_get");
         is(alog[2].message.from, "alice");
         is(alog[2].message.to, "bob");
-        deepEqual(alog[2].message.body, {eval_code: "$('#test li').eq(2).text()", remote_id: "bob"});
+        deepEqual(alog[2].message.body, {eval_code: "$('#test li').eq(2).text()", node_id: "bob"});
         is(alog[3].direction, "receive");
         is(alog[3].message.message_type, "select_and_get_reply");
         is(alog[3].message.from, null);
@@ -239,7 +239,7 @@ asyncTest("selectAndGet - multiple targets: the result is returned from any one 
     bob2_connection.clearLog();
     alice.selectAndGet({
         eval_code: "$('#test > ul').eq(0).children().eq(1).text()",
-        remote_id: "bob"
+        node_id: "bob"
     }).then(function(data) {
         var alog = alice_connection.getLog();
         var blog = bob_connection.getLog();
@@ -250,7 +250,7 @@ asyncTest("selectAndGet - multiple targets: the result is returned from any one 
         is(alog[0].message.message_type, "select_and_get");
         is(alog[0].message.from, "alice");
         is(alog[0].message.to, "bob");
-        deepEqual(alog[0].message.body, {eval_code: "$('#test > ul').eq(0).children().eq(1).text()", remote_id: "bob"});
+        deepEqual(alog[0].message.body, {eval_code: "$('#test > ul').eq(0).children().eq(1).text()", node_id: "bob"});
         is(alog[1].direction, "receive");
         is(alog[1].message.message_type, "select_and_get_reply");
         is(alog[1].message.to, "alice");
@@ -263,7 +263,7 @@ asyncTest("selectAndGet - multiple targets: the result is returned from any one 
             is(e.log[0].message.message_type, "select_and_get", e.log.label + " [0] type = select_and_get");
             is(e.log[0].message.from, "alice", e.log.label + " [0] from = alice");
             is(e.log[0].message.to, "bob", e.log.label + " [0] to = bob");
-            deepEqual(e.log[0].message.body, {eval_code: "$('#test > ul').eq(0).children().eq(1).text()", remote_id: "bob"}, e.log.label + " [0] body OK");
+            deepEqual(e.log[0].message.body, {eval_code: "$('#test > ul').eq(0).children().eq(1).text()", node_id: "bob"}, e.log.label + " [0] body OK");
         });
     }, function(error) {
         ok(false, "error: " + error);
@@ -276,12 +276,12 @@ asyncTest("selectAndGet - get promise to wait animation", function() {
     setupAlice();
     setupBob();
     alice.selectAndGet({
-        remote_id: "bob",
+        node_id: "bob",
         eval_code: '$("#test").find("li").eq(1).fadeOut()'
     });
     is($("li.two").css("display"), "list-item", "the element is still visible");
     alice.selectAndGet({
-        remote_id: "bob",
+        node_id: "bob",
         eval_code: '$("li.two")',
     }).then(function() {
         is($("li.two").css("display"), "none", "the element is invisible now");
@@ -299,7 +299,7 @@ asyncTest("selectAndListen - single target", function() {
     bob_connection.clearLog();
     var event_deferred = $.Deferred();
     alice.selectAndListen({
-        remote_id: "bob",
+        node_id: "bob",
         eval_code: "$('#test input#test_button')",
         method: "on",
         options: ["click"],
@@ -318,7 +318,7 @@ asyncTest("selectAndListen - single target", function() {
         is(alog[0].message.from, "alice");
         is(alog[0].message.to, "bob");
         deepEqual(alog[0].message.body, {
-            remote_id: "bob", eval_code: "$('#test input#test_button')",
+            node_id: "bob", eval_code: "$('#test input#test_button')",
             method: "on",
             options: ["click"]
         });
@@ -342,7 +342,7 @@ asyncTest("selectAndListen - single target", function() {
         var alog = alice_connection.getLog();
         var blog = bob_connection.getLog();
         deepEqual(event_this, {
-            remote_type: "xpath", remote_id: "bob",
+            remote_type: "xpath", remote_node_id: "bob",
             remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
         });
         ok(jQluster.defined(event));
@@ -373,7 +373,7 @@ asyncTest("selectAndListen - no target: the server should return an error messag
     alice_connection.clearLog();
     var event_deferred = $.Deferred();
     alice.selectAndListen({
-        remote_id: "bob",
+        node_id: "bob",
         eval_code: "$('#test_button')",
         method: 'dblclick',
         callback: function() {
@@ -395,7 +395,7 @@ asyncTest("selectAndListen - no target: the server should return an error messag
         is(alog[0].message.from, "alice");
         is(alog[0].message.to, "bob");
         deepEqual(alog[0].message.body, {
-            remote_id: "bob", eval_code: "$('#test_button')",
+            node_id: "bob", eval_code: "$('#test_button')",
             method: "dblclick", options: []
         });
         is(alog[1].direction, "receive");
@@ -425,7 +425,7 @@ asyncTest("selectAndListen - multiple targets", function() {
     bob_connection.clearLog();
     bob2_connection.clearLog();
     alice.selectAndListen({
-        remote_id: "bob",
+        node_id: "bob",
         eval_code: "$('#test_button')",
         method: "click",
         callback: function() {
@@ -444,7 +444,7 @@ asyncTest("selectAndListen - multiple targets", function() {
         is(alog[0].message.from, "alice");
         is(alog[0].message.to, "bob");
         deepEqual(alog[0].message.body, {
-            remote_id: "bob", eval_code: "$('#test_button')", method: "click", options: []
+            node_id: "bob", eval_code: "$('#test_button')", method: "click", options: []
         });
         $.each([1,2], function(i, log_index) {
             var label = "alog select_and_listen_reply" + log_index;
@@ -463,7 +463,7 @@ asyncTest("selectAndListen - multiple targets", function() {
         var args2 = result2[1];
         var alog = alice_connection.getLog();
         deepEqual(this1, {
-            remote_type: "xpath", remote_id: "bob",
+            remote_type: "xpath", remote_node_id: "bob",
             remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
         });
         ok(jQluster.defined(args1));
@@ -496,7 +496,7 @@ asyncTest("selectAndListen - event delegation", function() {
     setupBob();
     var event_deferred = $.Deferred();
     alice.selectAndListen({
-        remote_id: "bob",
+        node_id: "bob",
         eval_code: "$('#test')",
         method: "on",
         options: ["click", "li"],
@@ -517,7 +517,7 @@ asyncTest("selectAndListen - event delegation", function() {
         return event_deferred.promise();
     }).then(function(callback_this, callback_args) {
         deepEqual(callback_this, {
-            remote_type: "xpath", remote_id: "bob", remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li[1]"
+            remote_type: "xpath", remote_node_id: "bob", remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li[1]"
         });
         ok(jQluster.defined(callback_args));
         
@@ -526,7 +526,7 @@ asyncTest("selectAndListen - event delegation", function() {
         return event_deferred.promise();
     }).then(function(callback_this, callback_args) {
         deepEqual(callback_this, {
-            remote_type: "xpath", remote_id: "bob", remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li[2]"
+            remote_type: "xpath", remote_node_id: "bob", remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li[2]"
         });
         ok(jQluster.defined(callback_args));
     }).then(null, function(error) {
@@ -542,7 +542,7 @@ asyncTest("selectAndListen - multiple listen calls to a single remote DOM, remot
     var event_deferreds;
     var next_deferred_index;
     var request_base = {
-        remote_id: "bob",
+        node_id: "bob",
         eval_code: "$('#test').find('input#test_button')",
         method: "on",
         options: ["click"],
@@ -577,7 +577,7 @@ asyncTest("selectAndListen - multiple listen calls to a single remote DOM, remot
     }).then(function(callback_type, callback_this, callback_args) {
         is(callback_type, "callback1");
         deepEqual(callback_this, {
-            remote_type: "xpath", remote_id: "bob",
+            remote_type: "xpath", remote_node_id: "bob",
             remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
         });
         ok(jQluster.defined(callback_args));
@@ -592,20 +592,20 @@ asyncTest("selectAndListen - multiple listen calls to a single remote DOM, remot
     }).then(function(result1, result2) {
         is(result1[0], "callback1", "callback1 fired");
         deepEqual(result1[1], {
-            remote_type: "xpath", remote_id: "bob",
+            remote_type: "xpath", remote_node_id: "bob",
             remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
         });
         ok(jQluster.defined(result1[2]));
         is(result2[0], "callback2", "callback2 fired");
         deepEqual(result2[1], {
-            remote_type: "xpath", remote_id: "bob",
+            remote_type: "xpath", remote_node_id: "bob",
             remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
         });
         ok(jQluster.defined(result2[2]));
 
         initDeferreds(0);
         return alice.selectAndGet({
-            remote_id: "bob",
+            node_id: "bob",
             eval_code: "$('#test_button').off('click')"
         });
     }).then(function() {
@@ -625,7 +625,7 @@ asyncTest("selectAndListen - remote each() method", function() {
     setupBob();
     var each_results = [];
     alice.selectAndListen({
-        remote_id: "bob",
+        node_id: "bob",
         eval_code: "$('#test').find('li')",
         method: 'each',
         callback: function() {
@@ -640,14 +640,14 @@ asyncTest("selectAndListen - remote each() method", function() {
         is(each_results.length, 3, "callbacks called 3 times");
         for(i = 0 ; i < each_results.length ; i++) {
             exp_pointer = {
-                remote_type: "xpath", remote_id: "bob",
+                remote_type: "xpath", remote_node_id: "bob",
                 remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li["+(i+1)+"]"
             };
             deepEqual(each_results[i].callback_this, exp_pointer, "results "+i+", callback_this");
             deepEqual(each_results[i].callback_args, [i, exp_pointer], "results "+i+", callback_args");
         }
         return alice.selectAndGet({
-            remote_id: "bob",
+            node_id: "bob",
             eval_code: '$(document).xpath("'+ each_results[1].callback_this.remote_xpath +'").attr("class")',
         });
     }).then(function(result) {
@@ -669,7 +669,7 @@ module("jQluster.RemoteSelector", {
 
 test("constructor: eval_code", function() {
     var remote = new jQluster.RemoteSelector({
-        transport: alice, remote_id: "bob",
+        transport: alice, node_id: "bob",
         eval_code: "$('#test').children('.hoge')"
     });
     is(remote._getEvalCode(), "$('#test').children('.hoge')");
@@ -677,7 +677,7 @@ test("constructor: eval_code", function() {
 
 test("constructor: selector", function() {
     var remote = new jQluster.RemoteSelector({
-        transport: alice, remote_id: "bob",
+        transport: alice, node_id: "bob",
         selector: '#test .hoge'
     });
     is(remote._getEvalCode(), '$("#test .hoge")');
@@ -685,7 +685,7 @@ test("constructor: selector", function() {
 
 test("constructor: xpath", function() {
    var remote = new jQluster.RemoteSelector({
-       transport: alice, remote_id: "bob",
+       transport: alice, node_id: "bob",
        xpath: "//html[1]/body[1]/div[@id='#test']"
    }) ;
     is(remote._getEvalCode(), "$(document).xpath(\"//html[1]/body[1]/div[@id='#test']\")");
@@ -713,7 +713,7 @@ $.each([
 ], function(i, testcase) {
     asyncTest(testcase.method + "()", function() {
         var remote = new jQluster.RemoteSelector({
-            transport: alice, remote_id: "bob",
+            transport: alice, node_id: "bob",
             selector: testcase.selector
         });
         remote[testcase.method].apply(remote, testcase.args).then(function(got_value) {
@@ -728,7 +728,7 @@ $.each([
 
 asyncTest("promise() with animation", function() {
     var remote = new jQluster.RemoteSelector({
-        transport: alice, remote_id: "bob",
+        transport: alice, node_id: "bob",
         selector: "#test li.two"
     });
     remote.fadeOut(20);
@@ -780,7 +780,7 @@ $.each([
 ], function(i, testcase) {
     test(testcase.method + "()", function() {
         var remote = new jQluster.RemoteSelector({
-            transport: alice, remote_id: "bob",
+            transport: alice, node_id: "bob",
             selector: '#top'
         });
         is(remote[testcase.method].apply(remote, testcase.args)._getEvalCode(), testcase.exp);
@@ -789,7 +789,7 @@ $.each([
 
 test("chained selections", function() {
     var remote = new jQluster.RemoteSelector({
-        transport: alice, remote_id: "bob", selector: '#top'
+        transport: alice, node_id: "bob", selector: '#top'
     });
     is(
         remote.find(".hoge").eq(10).parentsUntil(".foo", ".bar")._getEvalCode(),
@@ -806,7 +806,7 @@ module("jQluster.RemoteSelector - callbacks", {
 
 asyncTest("on() - direct", function() {
     var remote = new jQluster.RemoteSelector({
-        transport: alice, remote_id: "bob", selector: "#test"
+        transport: alice, node_id: "bob", selector: "#test"
     });
     var timelimit = setTimeLimit();
     var button_remote = remote.find("#test_button");
@@ -814,7 +814,7 @@ asyncTest("on() - direct", function() {
         clearTimeout(timelimit);
         is(event.type, "click");
         deepEqual(this, {
-            remote_type: "xpath", remote_id: "bob",
+            remote_type: "xpath", remote_node_id: "bob",
             remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
         });
         start();
@@ -825,14 +825,14 @@ asyncTest("on() - direct", function() {
 
 asyncTest("on() - delegated", function() {
     var remote = new jQluster.RemoteSelector({
-        transport: alice, remote_id: "bob", selector: "#test"
+        transport: alice, node_id: "bob", selector: "#test"
     });
     var timelimit = setTimeLimit();
     var on_ret = remote.on("click", "input", function(event) {
         clearTimeout(timelimit);
         is(event.type, "click");
         deepEqual(this, {
-            remote_type: "xpath", remote_id: "bob",
+            remote_type: "xpath", remote_node_id: "bob",
             remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
         });
         start();
@@ -843,7 +843,7 @@ asyncTest("on() - delegated", function() {
 
 asyncTest("on() - with data", function() {
     var remote = new jQluster.RemoteSelector({
-        transport: alice, remote_id: "bob", selector: "#test_button"
+        transport: alice, node_id: "bob", selector: "#test_button"
     });
     var timelimit = setTimeLimit();
     var on_ret = remote.on("click", null, {some: "data"}, function(event) {
@@ -851,7 +851,7 @@ asyncTest("on() - with data", function() {
         is(event.type, "click");
         deepEqual(event.data, {some: "data"});
         deepEqual(this, {
-            remote_type: "xpath", remote_id: "bob",
+            remote_type: "xpath", remote_node_id: "bob",
             remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
         });
         start();
@@ -862,12 +862,12 @@ asyncTest("on() - with data", function() {
 
 asyncTest("on() - Object as events", function() {
     var remote = new jQluster.RemoteSelector({
-        transport: alice, remote_id: "bob", selector: "#test_button"
+        transport: alice, node_id: "bob", selector: "#test_button"
     });
     var timelimit = setTimeLimit();
     var events = {click: $.Deferred(), mouseenter: $.Deferred()};
     var exp_remote_dom = {
-        remote_type: "xpath", remote_id: "bob",
+        remote_type: "xpath", remote_node_id: "bob",
         remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/input[@id='test_button']"
     };
     var on_ret = remote.on({
@@ -895,7 +895,7 @@ asyncTest("on() - Object as events", function() {
 
 asyncTest("each() - full loop", function() {
     var remote = new jQluster.RemoteSelector({
-        transport: alice, remote_id: "bob", selector: "#test li"
+        transport: alice, node_id: "bob", selector: "#test li"
     });
     var results = [];
     var each_ret = remote.each(function(i, elem) {
@@ -903,11 +903,11 @@ asyncTest("each() - full loop", function() {
     });
     is(each_ret, remote, "return value of each()");
     var exp_elems = [
-        {remote_type: "xpath", remote_id: "bob",
+        {remote_type: "xpath", remote_node_id: "bob",
          remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li[1]"},
-        {remote_type: "xpath", remote_id: "bob",
+        {remote_type: "xpath", remote_node_id: "bob",
          remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li[2]"},
-        {remote_type: "xpath", remote_id: "bob",
+        {remote_type: "xpath", remote_node_id: "bob",
          remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li[3]"},
     ];
     delay(0.05).then(function() {
@@ -926,7 +926,7 @@ asyncTest("each() - full loop", function() {
 
 asyncTest("each() - breaking loop", function() {
     var remote = new jQluster.RemoteSelector({
-        transport: alice, remote_id: "bob", selector: "#test li"
+        transport: alice, node_id: "bob", selector: "#test li"
     });
     var results = [];
     var each_ret = remote.each(function(i, elem) {
@@ -937,9 +937,9 @@ asyncTest("each() - breaking loop", function() {
     });
     is(each_ret, remote);
     var exp_elems = [
-        {remote_type: "xpath", remote_id: "bob",
+        {remote_type: "xpath", remote_node_id: "bob",
          remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li[1]"},
-        {remote_type: "xpath", remote_id: "bob",
+        {remote_type: "xpath", remote_node_id: "bob",
          remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/ul[1]/li[2]"},
     ];
     delay(0.05).then(function() {
@@ -964,7 +964,7 @@ module("jQluster.RemoteSelector - setters", {
 
 asyncTest("off() - only plain events calling convention is supported for now", function() {
     var remote = new jQluster.RemoteSelector({
-        transport: alice, remote_id: "bob", selector: "#test_button"
+        transport: alice, node_id: "bob", selector: "#test_button"
     });
     remote.on("click", function() {
         ok(false, "this callback must be cancelled");
@@ -983,7 +983,7 @@ asyncTest("off() - only plain events calling convention is supported for now", f
 
 asyncTest("append()", function() {
     var remote = new jQluster.RemoteSelector({
-        transport: alice, remote_id: "bob", selector: "#test .two"
+        transport: alice, node_id: "bob", selector: "#test .two"
     });
     var append_result = remote.append('<span class="appended">200</span>');
     is(append_result, remote);
@@ -998,7 +998,7 @@ asyncTest("append()", function() {
 
 asyncTest("trigger()", function() {
     var remote = new jQluster.RemoteSelector({
-        transport: alice, remote_id: "bob", selector: "#test"
+        transport: alice, node_id: "bob", selector: "#test"
     });
     var event_args = [];
     $("#test").on("custom-event", function() {
@@ -1044,13 +1044,13 @@ module("jQluster.RemoteSelector - effects", {
     ], function(i, testcase) {
         asyncTest(testcase.label + " with callback", function() {
             var remote = new jQluster.RemoteSelector({
-                transport: alice, remote_id: "bob", selector: "#" + testcase.target_box_id
+                transport: alice, node_id: "bob", selector: "#" + testcase.target_box_id
             });
             var timelimit = setTimeLimit();
             var ret_val = remote[testcase.method].apply(remote, testcase.args.concat([function() {
                 var remote = this;
                 clearTimeout(timelimit);
-                deepEqual(remote, {remote_type: "xpath", remote_id: "bob",
+                deepEqual(remote, {remote_type: "xpath", remote_node_id: "bob",
                                    remote_xpath: "//html[1]/body[1]/div[@id='qunit-fixture']/div[@id='test']/div[@id='"
                                    + testcase.target_box_id +"']"}, "remote DOM pointer OK");
                 is($("#" + testcase.target_box_id).css(testcase.exp_style), testcase.exp_value, "css result OK");
@@ -1061,7 +1061,7 @@ module("jQluster.RemoteSelector - effects", {
         
         asyncTest(testcase.label + " without callback", function() {
             var remote = new jQluster.RemoteSelector({
-                transport: alice, remote_id: "bob", selector: "#" + testcase.target_box_id
+                transport: alice, node_id: "bob", selector: "#" + testcase.target_box_id
             });
             var ret_val = remote[testcase.method].apply(remote, testcase.args);
             is(ret_val, remote, "rev_val from " + testcase.method + "() is the invocant");

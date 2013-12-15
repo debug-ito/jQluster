@@ -21,7 +21,7 @@ if(!jQluster) { jQluster = {}; }
         self.notified_dict = {};
         
         doc_factories = $(document).data("jqluster-readiness-callback-managers") || {};
-        doc_factories[self.transport.getMyRemoteID()] = self;
+        doc_factories[self.transport.getNodeID()] = self;
         $(document).data("jqluster-readiness-callback-managers", doc_factories);
 
         self._notify(args.notify);
@@ -30,39 +30,39 @@ if(!jQluster) { jQluster = {}; }
         $(document).data("jqluster-readiness-callback-managers", {});
     };
     myclass.prototype = {
-        _notify: function(notified_remote_id_array) {
+        _notify: function(notified_node_id_array) {
             var self = this;
-            $.each(notified_remote_id_array, function(i, notified_remote_id) {
-                self.notified_dict[notified_remote_id] = true;
+            $.each(notified_node_id_array, function(i, notified_node_id) {
+                self.notified_dict[notified_node_id] = true;
                 self.transport.selectAndGet({
-                    remote_id: notified_remote_id,
-                    eval_code: '$(document).data("jqluster-readiness-callback-managers")['+ my.quoteString(notified_remote_id) +']._beNotified('
-                        + my.quoteString(self.transport.getMyRemoteID()) +')'
+                    node_id: notified_node_id,
+                    eval_code: '$(document).data("jqluster-readiness-callback-managers")['+ my.quoteString(notified_node_id) +']._beNotified('
+                        + my.quoteString(self.transport.getNodeID()) +')'
                 });
             });
         },
-        _isNotifying: function(notified_remote_id) {
-            // @return: true if this Factory notifies its readiness to notified_remote_id. false otherwise.
-            return this.notified_dict[notified_remote_id] || false;
+        _isNotifying: function(notified_node_id) {
+            // @return: true if this Factory notifies its readiness to notified_node_id. false otherwise.
+            return this.notified_dict[notified_node_id] || false;
         },
-        _beNotified: function(from_remote_id) {
+        _beNotified: function(from_node_id) {
             var self = this;
-            var listeners = self.notify_listeners_for[from_remote_id];
+            var listeners = self.notify_listeners_for[from_node_id];
             if(!listeners) return;
             $.each(listeners, function(i, callback) {
                 callback();
             });
         },
-        _checkIfRemoteAvailable: function(remote_id) {
-            // @return: promise, resolved if the remote is available, rejected if not.
+        _checkIfRemoteNodeAvailable: function(node_id) {
+            // @return: promise, resolved if the remote node is available, rejected if not.
             var self = this;
             var result_d = $.Deferred();
             self.transport.selectAndGet({
-                remote_id: remote_id,
-                eval_code: '$(document).data("jqluster-readiness-callback-managers")['+ my.quoteString(remote_id) +']._isNotifying('
-                    + my.quoteString(self.transport.getMyRemoteID()) +')'
-            }).then(function(does_remote_notify_you) {
-                if(does_remote_notify_you) {
+                node_id: node_id,
+                eval_code: '$(document).data("jqluster-readiness-callback-managers")['+ my.quoteString(node_id) +']._isNotifying('
+                    + my.quoteString(self.transport.getNodeID()) +')'
+            }).then(function(does_remote_node_notify_you) {
+                if(does_remote_node_notify_you) {
                     result_d.resolve();
                 }else {
                     result_d.reject("remote node exists, but it does not notify you.");
@@ -72,14 +72,14 @@ if(!jQluster) { jQluster = {}; }
             });
             return result_d.promise();
         },
-        listenToRemoteReadiness: function(remote_id, callback) {
+        listenToRemoteReadiness: function(node_id, callback) {
             // @return nothing
             var self = this;
-            if(!self.notify_listeners_for[remote_id]) {
-                self.notify_listeners_for[remote_id] = [];
+            if(!self.notify_listeners_for[node_id]) {
+                self.notify_listeners_for[node_id] = [];
             }
-            self.notify_listeners_for[remote_id].push(callback);
-            self._checkIfRemoteAvailable(remote_id).then(function() {
+            self.notify_listeners_for[node_id].push(callback);
+            self._checkIfRemoteNodeAvailable(node_id).then(function() {
                 callback();
             });
         },

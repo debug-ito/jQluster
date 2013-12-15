@@ -11,19 +11,19 @@ if(!jQluster) { var jQluster = {}; }
     myclass = my.TransportLoopback = function() {
         this.loopback_server = new my.ServerLocal();
         superclass.call(this, {
-            my_remote_id: "self",
+            node_id: "self",
             connection_object: new my.ConnectionLocal(this.loopback_server)
         });
     };
     myclass.prototype = $.extend({}, superclass.prototype, {
         selectAndGet: function(args) {
             if(!args) args = {};
-            args.remote_id = "self";
+            args.node_id = "self";
             return superclass.prototype.selectAndGet.call(this, args);
         },
         selectAndListen: function(args) {
             if(!args) args = {};
-            args.remote_id = "self";
+            args.node_id = "self";
             return superclass.prototype.selectAndListen.call(this, args);
         },
         release: function() {

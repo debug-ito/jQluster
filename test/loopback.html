@@ -43,7 +43,7 @@ module("TransportLoopback", {
 asyncTest("selectAndGet() should access this page itself", function() {
     var transport = new jQluster.TransportLoopback();
     transport.selectAndGet({
-        remote_id: "hoge",
+        node_id: "hoge",
         eval_code: '$("#qunit-fixture").find("li").eq(1).text()'
     }).then(function(data) {
         is(data, "2");
@@ -58,7 +58,7 @@ asyncTest("selectAndListen() should access this page itself", function() {
     var transport = new jQluster.TransportLoopback();
     var got_xpaths = [];
     transport.selectAndListen({
-        remote_id: "foobar",
+        node_id: "foobar",
         eval_code: '$("#qunit-fixture").find("ul")',
         method: "on", options: ["click", "li"],
         callback: function() {
@@ -85,13 +85,13 @@ module("RemoteSelectorFactory", {
 
 asyncTest("factory(loopback) should always create loopback remote selectors", function() {
     var factory = new jQluster.RemoteSelectorFactory({
-        my_remote_id: "hoge", transport_id: "loopback"
+        node_id: "hoge", transport_id: "loopback"
     });
     factory.forRemote("hoge", "#qunit-fixture").find(".three").text().then(function(data) {
-        is(data, "3", "my_remote_id == target_remote_id OK");
+        is(data, "3", "my_node_id == target_node_id OK");
         return factory.forRemote("foobar", "#qunit-fixture").find(".three").text();
     }).then(function(data) {
-        is(data, "3", "my_remote_id != target_remote_id OK");
+        is(data, "3", "my_node_id != target_node_id OK");
     }).then(null, function(error) {
         ok(false, "error: " + error);
     }).always(function() {
@@ -101,7 +101,7 @@ asyncTest("factory(loopback) should always create loopback remote selectors", fu
 
 asyncTest("readiness callback should fire immediately", function() {
     var factory = new jQluster.RemoteSelectorFactory({
-        my_remote_id: "hoge", transport_id: "loopback"
+        node_id: "hoge", transport_id: "loopback"
     });
     var $_ = factory.forRemote("foobar");
     var callback_count = 0;

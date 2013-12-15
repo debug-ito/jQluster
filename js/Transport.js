@@ -20,14 +20,14 @@ if(!jQluster) { var jQluster = {}; }
     
     myclass = my.Transport = function(args) {
         var self = this;
-        // @params: args.my_remote_id, args.connection_object
-        if(!my.defined(args.my_remote_id)) {
-            throw "my_remote_id param is mandatory";
+        // @params: args.node_id, args.connection_object
+        if(!my.defined(args.node_id)) {
+            throw "node_id param is mandatory";
         }
         if(!my.defined(args.connection_object)) {
             throw "connection_object param is mandatory";
         }
-        self.my_remote_id = args.my_remote_id;
+        self.node_id = args.node_id;
         self.connection_object = args.connection_object;
         self.pending_request_for = {};
         self.signal_callback_for = {};
@@ -35,14 +35,14 @@ if(!jQluster) { var jQluster = {}; }
         self.connection_object.onReceive(function(message) { self._onReceive(message); });
         self.connection_object.send({
             message_id: my.uuid(), message_type: "register",
-            from: self.my_remote_id, to: null,
-            body: { remote_id: self.my_remote_id }
+            from: self.node_id, to: null,
+            body: { node_id: self.node_id }
         });
     };
     myclass.prototype = {
-        getMyRemoteID: function() { return this.my_remote_id; },
+        getNodeID: function() { return this.node_id; },
         selectAndGet: function(args) {
-            // @params: args.eval_code, args.remote_id
+            // @params: args.eval_code, args.node_id
             // 
             // @return: Promise. In success, it is resolved and it
             // contains the obtained data. In failure it is rejected
@@ -62,13 +62,13 @@ if(!jQluster) { var jQluster = {}; }
                 if(!my.defined(args.eval_code)) {
                     throw "eval_code param is mandatory";
                 }
-                if(!my.defined(args.remote_id)) {
-                    throw "remote_id param is mandatory";
+                if(!my.defined(args.node_id)) {
+                    throw "node_id param is mandatory";
                 }
                 var message = {
                     message_id: my.uuid(), message_type: "select_and_get",
-                    from: self.my_remote_id, to: args.remote_id,
-                    body: { eval_code: args.eval_code, remote_id: args.remote_id }
+                    from: self.node_id, to: args.node_id,
+                    body: { eval_code: args.eval_code, node_id: args.node_id }
                 };
                 self.pending_request_for[message.message_id] = response_d;
                 self.connection_object.send(message);
@@ -80,7 +80,7 @@ if(!jQluster) { var jQluster = {}; }
         selectAndListen: function(args) {
             // @params: args.eval_code (must return a jQuery object),
             //          args.method, args.options = [],
-            //          args.callback, args.remote_id
+            //          args.callback, args.node_id
             // 
             // @return: Promise. It will be resolved if the request is
             // accepted by the remote node. The content of the promise
@@ -101,7 +101,7 @@ if(!jQluster) { var jQluster = {}; }
             // copy of the arguments for the remote callback, except
             // that DOM elements are converted to 'Pointer
             // objects'. The structure of a Pointer object is:
-            // {"remote_type": "xpath", "remote_id": REMOTE_ID,
+            // {"remote_type": "xpath", "remote_node_id": REMOTE_ID,
             // "remote_xpath": XPATH_STR}. 'this' object for
             // args.callback is the copy of 'this' object for the
             // remote callback. It may be a Pointer object, too.
@@ -110,7 +110,7 @@ if(!jQluster) { var jQluster = {}; }
             var result_d = $.Deferred();
             var message, callback;
             try {
-                $.each(["remote_id", "eval_code", "method", "callback"], function(i, mandatory_key) {
+                $.each(["node_id", "eval_code", "method", "callback"], function(i, mandatory_key) {
                     if(!my.defined(args[mandatory_key])) {
                         throw mandatory_key + " param is mandatory";
                     }
@@ -119,9 +119,9 @@ if(!jQluster) { var jQluster = {}; }
                 if(!my.defined(args.options)) args.options = [];
                 message = {
                     message_id: my.uuid(), message_type: "select_and_listen",
-                    from: self.my_remote_id, to: args.remote_id,
+                    from: self.node_id, to: args.node_id,
                     body: {
-                        remote_id: args.remote_id, eval_code: args.eval_code, 
+                        node_id: args.node_id, eval_code: args.eval_code, 
                         method: args.method, options: args.options
                     }
                 };
@@ -146,9 +146,9 @@ if(!jQluster) { var jQluster = {}; }
         _onReceive: function(message) {
             // @return: nothing
             var self = this;
-            if(message.to !== self.my_remote_id) {
+            if(message.to !== self.node_id) {
                 console.debug("A message whose 'to' field is "+ (defined(message.to) ? message.to : "[null]")
-                              + " is received but ignored because I'm "+ self.my_remote_id);
+                              + " is received but ignored because I'm "+ self.node_id);
                 return;
             }
             if(message.message_type === "signal") {
@@ -198,7 +198,7 @@ if(!jQluster) { var jQluster = {}; }
             }
             var reply = {
                 message_id: my.uuid(), message_type: "select_and_get_reply",
-                from: self.my_remote_id, to: request_message.from,
+                from: self.node_id, to: request_message.from,
                 body: { "error": null,  "result": null, "in_reply_to": request_message.message_id}
             };
             result_p.then(function(result) {
@@ -227,7 +227,7 @@ if(!jQluster) { var jQluster = {}; }
         _createRemoteDOMPointerIfDOM: function(obj) {
             if(my.isHTMLElement(obj)) {
                return {
-                   remote_id: this.my_remote_id,
+                   remote_node_id: this.node_id,
                    remote_type: "xpath",
                    remote_xpath: my.xpathFor($(obj))
                };
@@ -248,8 +248,8 @@ if(!jQluster) { var jQluster = {}; }
                 reply_sent = true;
                 self.connection_object.send({
                     message_id: my.uuid(), message_type: "select_and_listen_reply",
-                    from: self.my_remote_id, to: request_from,
-                    body: {error: error, result: (my.defined(error) ? "NG" : "OK"), in_reply_to: request_id}
+                    from: self.node_id, to: request_from,
+                    body: {error: error, result: (my.defined(error) ? null : "OK"), in_reply_to: request_id}
                 });
             };
             try {
@@ -265,7 +265,7 @@ if(!jQluster) { var jQluster = {}; }
                     try_send_reply(null);
                     self.connection_object.send({
                         message_id: my.uuid(), message_type: "signal",
-                        from: self.my_remote_id, to: request_from,
+                        from: self.node_id, to: request_from,
                         body: { error: null, in_reply_to: request_id,
                                 callback_this: callback_this, callback_args: callback_args}
                     });

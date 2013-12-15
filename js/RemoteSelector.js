@@ -8,16 +8,16 @@ if(!jQluster) { var jQluster = {}; }
 (function(my, $) {
     var myclass;
     myclass = my.RemoteSelector = function(args) {
-        // @params: args.transport, remote_id,
+        // @params: args.transport, node_id,
         //          args.eval_code || args.selector || args.xpath
         if(!my.defined(args.transport)) {
             throw "transport parameter is mandatory";
         }
-        if(!my.defined(args.remote_id)) {
-            throw "remote_id parameter is mandatory";
+        if(!my.defined(args.node_id)) {
+            throw "node_id parameter is mandatory";
         }
         this.transport = args.transport;
-        this.remote_id = args.remote_id;
+        this.node_id = args.node_id;
         if(my.defined(args.xpath)) {
             this.eval_code = myclass._getEvalCodeFromXPath(args.xpath);
         }else if(my.defined(args.selector)) {
@@ -77,7 +77,7 @@ if(!jQluster) { var jQluster = {}; }
             var transport_args = {
                 eval_code: self._getEvalCode(),
                 method: "on", options: options,
-                remote_id: self.remote_id, callback: handler
+                node_id: self.node_id, callback: handler
             };
             myclass._logPromiseError(self.transport.selectAndListen(transport_args));
             return self;
@@ -99,7 +99,7 @@ if(!jQluster) { var jQluster = {}; }
             var loop_enabled = true;
             var result = self.transport.selectAndListen({
                 eval_code: self._getEvalCode(),
-                method: "each", remote_id: self.remote_id,
+                method: "each", node_id: self.node_id,
                 callback: function(index, remote_elem) {
                     var callback_result;
                     if(loop_enabled) {
@@ -124,7 +124,7 @@ if(!jQluster) { var jQluster = {}; }
                                                 : my.argumentsStringFor([events]);
             var result = this.transport.selectAndGet({
                 eval_code: this._getEvalCode() + ".off("+ args_str +")",
-                remote_id: this.remote_id
+                node_id: this.node_id
             });
             myclass._logPromiseError(result);
             return this;
@@ -139,7 +139,7 @@ if(!jQluster) { var jQluster = {}; }
             var result_deferred = $.Deferred();
             self.transport.selectAndGet({
                 eval_code: self._getEvalCode() + ".promise("+ args_str +")",
-                remote_id: self.remote_id
+                node_id: self.node_id
             }).then(function() {
                 result_deferred.resolveWith(self, [self]);
             }, function() {
@@ -152,7 +152,7 @@ if(!jQluster) { var jQluster = {}; }
     var selectionMethod = function(method_name) {
         myclass.prototype[method_name] = function() {
             return new myclass({
-                transport: this.transport, remote_id: this.remote_id,
+                transport: this.transport, node_id: this.node_id,
                 eval_code: this.eval_code + "." + method_name + "("+ my.argumentsStringFor(arguments) +")"
             });
         };
@@ -203,7 +203,7 @@ if(!jQluster) { var jQluster = {}; }
             }
             var eval_code = this.eval_code + "."+ method_name +"("+ my.argumentsStringFor(arguments) +")";
             var select_result = this.transport.selectAndGet({
-                remote_id: this.remote_id, eval_code: eval_code
+                node_id: this.node_id, eval_code: eval_code
             });
             if(arguments.length <= max_arg_get) {
                 return select_result;
@@ -235,7 +235,7 @@ if(!jQluster) { var jQluster = {}; }
             if(my.defined(callback)) {
                 select_result = self.transport.selectAndListen({
                     eval_code: eval_code,
-                    remote_id: self.remote_id,
+                    node_id: self.node_id,
                     method: method_name,
                     options: args,
                     callback: callback
@@ -244,7 +244,7 @@ if(!jQluster) { var jQluster = {}; }
                 eval_code += "."+ method_name +"("+ my.argumentsStringFor(args) +")";
                 select_result = self.transport.selectAndGet({
                     eval_code: eval_code,
-                    remote_id: self.remote_id
+                    node_id: self.node_id
                 });
             }
             myclass._logPromiseError(select_result);

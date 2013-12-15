@@ -9,14 +9,14 @@ if(!jQluster) { var jQluster = {}; }
 (function(my, $) {
     var local_server;
     var myclass = my.RemoteSelectorFactory = function(args) {
-        // @params: args.my_remote_id, args.transport_id, args.notify = []
-        if(!my.defined(args.my_remote_id)) {
-            throw "my_remote_id parameter is mandatory";
+        // @params: args.node_id, args.transport_id, args.notify = []
+        if(!my.defined(args.node_id)) {
+            throw "node_id parameter is mandatory";
         }
         if(!my.defined(args.transport_id)) {
             throw "transport_id parameter is mandatory";
         }
-        this.transport = myclass._createTransport(args.my_remote_id, args.transport_id);
+        this.transport = myclass._createTransport(args.node_id, args.transport_id);
         if(args.transport_id === "loopback") {
             this.readiness_callback_manager = new my.ReadinessCallbackManagerLoopback({
                 transport: this.transport
@@ -27,12 +27,12 @@ if(!jQluster) { var jQluster = {}; }
             });
         }
     };
-    myclass._createTransport = function(my_remote_id, transport_id) {
+    myclass._createTransport = function(node_id, transport_id) {
         if(transport_id === "loopback") {
             return new my.TransportLoopback();
         }else {
             return new my.Transport({
-                my_remote_id: my_remote_id,
+                node_id: node_id,
                 connection_object: myclass._createConnection(transport_id)
             });
         }
@@ -55,11 +55,11 @@ if(!jQluster) { var jQluster = {}; }
         local_server = undefined;
     };
     myclass.prototype = {
-        _createRemoteSelector: function(remote_id, target) {
+        _createRemoteSelector: function(remote_node_id, target) {
             var self = this;
             var args = {
                 transport: self.transport,
-                remote_id: remote_id,
+                node_id: remote_node_id,
             };
             if(target === window) {
                 args.eval_code = "$(window)";
@@ -69,8 +69,8 @@ if(!jQluster) { var jQluster = {}; }
                 // if target is a remote DOM Pointer object...
                 if(target.remote_type === "xpath") {
                     args.xpath = target.remote_xpath;
-                    if(my.defined(target.remote_id)) {
-                        args.remote_id = target.remote_id;
+                    if(my.defined(target.remote_node_id)) {
+                        args.node_id = target.remote_node_id;
                     }
                 }else {
                     throw "Unknown remote pointer type: " + target.remote_type;
@@ -80,15 +80,15 @@ if(!jQluster) { var jQluster = {}; }
             }
             return new my.RemoteSelector(args);
         },
-        forRemote: function(remote_id, immediate_target) {
+        forRemote: function(remote_node_id, immediate_target) {
             var self = this;
             var factory = function(target) {
                 if($.isFunction(target)) {
                     self.readiness_callback_manager.listenToRemoteReadiness(
-                        remote_id, function() { target(factory); }
+                        remote_node_id, function() { target(factory); }
                     );
                 }else {
-                    return self._createRemoteSelector(remote_id, target);
+                    return self._createRemoteSelector(remote_node_id, target);
                 }
             };
             if(my.defined(immediate_target)) {

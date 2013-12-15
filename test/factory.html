@@ -57,11 +57,11 @@ var teardownjQluster = function() {
 module("RemoteSelectorFactory", {
     setup: function() {
         alice = new jQluster.RemoteSelectorFactory({
-            my_remote_id: "alice",
+            node_id: "alice",
             transport_id: "local",
         });
         bob = new jQluster.RemoteSelectorFactory({
-            my_remote_id: "bob",
+            node_id: "bob",
             transport_id: "local"
         });
     },
@@ -73,17 +73,17 @@ $.each([
     {label: "document", target: document, exp_eval_code: '$(document)'},
     {label: 'window', target: window, exp_eval_code: '$(window)'},
     {label: 'XPath remote pointer (same node)',
-     target: {remote_type: "xpath", remote_id: "bob", remote_xpath: "//html[1]/body[1]/div[@id='hoge']"},
+     target: {remote_type: "xpath", remote_node_id: "bob", remote_xpath: "//html[1]/body[1]/div[@id='hoge']"},
      exp_eval_code: "$(document).xpath(\"//html[1]/body[1]/div[@id='hoge']\")"},
     {label: 'XPath remote pointer (different node)',
-     target: {remote_type: "xpath", remote_id: "carol", remote_xpath: "//html[1]/body[1]/div[@id='foobar']"},
-     exp_remote_id: 'carol', exp_eval_code: "$(document).xpath(\"//html[1]/body[1]/div[@id='foobar']\")"}
+     target: {remote_type: "xpath", remote_node_id: "carol", remote_xpath: "//html[1]/body[1]/div[@id='foobar']"},
+     exp_node_id: 'carol', exp_eval_code: "$(document).xpath(\"//html[1]/body[1]/div[@id='foobar']\")"}
 ], function(i, testcase) {
-    if(!testcase.exp_remote_id) {
-        testcase.exp_remote_id = "bob";
+    if(!testcase.exp_node_id) {
+        testcase.exp_node_id = "bob";
     }
     var checker = function(remote) {
-        is(remote.remote_id, testcase.exp_remote_id, "remote object to bob");
+        is(remote.node_id, testcase.exp_node_id, "remote object to " + testcase.exp_node_id);
         is(remote._getEvalCode(), testcase.exp_eval_code, "eval code OK");
     };
     test(testcase.label + ", function interface", function() {
@@ -101,7 +101,7 @@ module("RemoteSelectorFactory: listen to readiness of remote nodes", {
     setup: function() {
         setupHTML();
         alice = new jQluster.RemoteSelectorFactory({
-            my_remote_id: "alice",
+            node_id: "alice",
             transport_id: "local"
         });
     },
@@ -120,7 +120,7 @@ asyncTest("$remote(func) should add callbacks for readiness of the remote node",
     delay(0.05).then(function() {
         deepEqual(results, [], "callbacks should not be executed yet");
         bob = new jQluster.RemoteSelectorFactory({
-            my_remote_id: "bob",
+            node_id: "bob",
             transport_id: "local",
             notify: "alice"
         });
@@ -139,7 +139,7 @@ asyncTest("$remote(func) should add callbacks, but they are not executed if not 
     var results = [];
     $remote_bob(function() { results.push(1); });
     bob = new jQluster.RemoteSelectorFactory({
-        my_remote_id: "bob",
+        node_id: "bob",
         transport_id: "local"
     });
     delay(0.05).then(function() {
@@ -154,7 +154,7 @@ asyncTest("$remote(func) should add callbacks, but they are not executed if not 
 asyncTest("$remote(func) callback should be exeucted immediately if the remote node is already present.", function() {
     var $remote_bob = alice.forRemote("bob");
     bob = new jQluster.RemoteSelectorFactory({
-        my_remote_id: "bob",
+        node_id: "bob",
         transport_id: "local",
         notify: ["alice"]
     });
@@ -179,7 +179,7 @@ asyncTest("$remote(func) callback should be exeucted immediately if the remote n
 asyncTest("$remote(func) callback should not be executed if the remote node is present but it does not notify you.", function() {
     var $remote_bob = alice.forRemote("bob");
     bob = new jQluster.RemoteSelectorFactory({
-        my_remote_id: "bob",
+        node_id: "bob",
         transport_id: "local",
         notify: ["carol", "david"]
     });
@@ -199,11 +199,11 @@ asyncTest("$remote(func) callback should not be executed if the remote node is p
 asyncTest("All $remote(func) callbacks should be executed if they are notified", function() {
     var $rbob_alice = alice.forRemote("bob");
     var carol = new jQluster.RemoteSelectorFactory({
-        my_remote_id: "carol", transport_id: "local"
+        node_id: "carol", transport_id: "local"
     });
     var $rbob_carol = carol.forRemote("bob");
     var david = new jQluster.RemoteSelectorFactory({
-        my_remote_id: "david", transport_id: "local"
+        node_id: "david", transport_id: "local"
     });
     var $rbob_david = david.forRemote("bob");
     var callbacked = {
@@ -221,7 +221,7 @@ asyncTest("All $remote(func) callbacks should be executed if they are notified",
     delay(0.05).then(function() {
         deepEqual(callbacked, {alice:0, carol:0, david:0});
         bob = new jQluster.RemoteSelectorFactory({
-            my_remote_id: "bob", transport_id: "local",
+            node_id: "bob", transport_id: "local",
             notify: ["alice", "carol"]
         });
         return delay(0.05);
@@ -239,7 +239,7 @@ module("jQuery plugin adaptor", {
         setupHTML();
         $.jqluster.init("carol", "local");
         bob = new jQluster.RemoteSelectorFactory({
-            my_remote_id: "bob",
+            node_id: "bob",
             transport_id: "local"
         });
     },
@@ -310,7 +310,7 @@ module("jQuery plugin adaptor - readiness callback", {
 asyncTest("readiness notification is set by notify option for $.jqluster.init()", function() {
     $.jqluster.init("carol", "local", {notify: "bob"});
     bob = new jQluster.RemoteSelectorFactory({
-        my_remote_id: "bob",
+        node_id: "bob",
         transport_id: "local",
         notify: "carol"
     });
