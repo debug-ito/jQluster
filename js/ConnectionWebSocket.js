@@ -1,7 +1,7 @@
 "use strict";
 
 // jQluster Connection implementation with WebSocket
-// requires: jquery, util, connection
+// requires: jquery, util, Connection
 
 if(!jQluster) { var jQluster = {}; }
 

@@ -1,7 +1,7 @@
 "use strict";
 
 // jQluster-jQuery adaptor: Convert jQluster modules into jQuery plugin
-// requires: jquery, remote_selector_factory
+// requires: jquery, RemoteSelectorFactory
 
 (function(my, $) {
     var factory = null;

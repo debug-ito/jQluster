@@ -1,7 +1,7 @@
 "use strict";
 
 // jQluster loopback Transport object
-// requires: jquery, util, local_server, transport
+// requires: jquery, util, ServerLocal, ConnectionLocal, Transport
 
 if(!jQluster) { var jQluster = {}; }
 

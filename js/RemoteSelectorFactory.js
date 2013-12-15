@@ -1,7 +1,8 @@
 "use strict";
 
 // jQluster factory object for generating RemoteSelector objects
-// requires: jquery, util, remote_selector, transport, local_server, transport_loopback, readiness_callback_manager
+// requires: jquery, util, RemoteSelector, Transport, ServerLocal, ConnectionLocal
+//           TransportLoopback, ReadinessCallbackManager, ReadinessCallbackManagerLoopback
 
 if(!jQluster) { var jQluster = {}; }
 
