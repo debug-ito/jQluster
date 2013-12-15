@@ -1,5 +1,7 @@
-
 # jQluster - jQuery to remote browsers
+
+**I'm still working on this project. Nothing is stable. Everything may be changed and be broken sometimes. It lacks documentation.**
+
 
 jQluster is a jQuery plugin that manipulates DOM objects and events in
 **other browsers**.

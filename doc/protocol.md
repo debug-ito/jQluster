@@ -128,4 +128,4 @@ To do that, jQluster protocol defines a remote DOM pointer object that is struct
 
 ## Author
 
-Toshio Ito
+Toshio Ito - https://github.com/debug-ito
