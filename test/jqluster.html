@@ -1008,6 +1008,13 @@ asyncTest("trigger()", function() {
 $.each([
     {method: "append", selector: "#test .two", args: ['<span class="appended">200</span>'],
      validator: function(){ is($("#test .two .appended").text(), "200"); }},
+    {method: "attr"},
+    {method: "val"},
+    {method: "css"},
+    {method: "height"},
+    {method: "width"},
+    {method: "data"},
+    {method: "text"},
     {method: "html", selector: "#test .html-test", args: ['<span>hoge</span>'],
      validator: function() { var $s = $("#test .html-test span"); is($s.size(), 1); is($s.text(), "hoge"); }},
 ], function(i, testcase) {
