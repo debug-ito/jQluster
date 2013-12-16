@@ -83,6 +83,7 @@ var setupTest = function() {
             +   '<div id="with-data" data-some-data="100"></div>'
             +   '<div id="hidden-box">hidden</div>'
             +   '<div id="visible-box">visible</div>'
+            +   '<div class="html-test"><span>HTML</span></div>'
             + '</div>'
     );
 };
@@ -710,6 +711,7 @@ $.each([
     {method: "index", selector: "#test li.two", args: [], exp: 1},
     {method: "index", selector: "#test li.two", args: ["#test li.two"], exp: 0},
     {method: "size", selector: "#test li", args: [], exp: 3},
+    {method: "html", selector: "#test .html-test", args: [], exp: "<span>HTML</span>"}
 ], function(i, testcase) {
     asyncTest(testcase.method + "()", function() {
         var remote = new jQluster.RemoteSelector({
@@ -981,21 +983,6 @@ asyncTest("off() - only plain events calling convention is supported for now", f
     });
 });
 
-asyncTest("append()", function() {
-    var remote = new jQluster.RemoteSelector({
-        transport: alice, node_id: "bob", selector: "#test .two"
-    });
-    var append_result = remote.append('<span class="appended">200</span>');
-    is(append_result, remote);
-    delay(0.05).then(function() {
-        is($("#test .two .appended").text(), "200");
-    }, function(error) {
-        ok(false, "error: " + error);
-    }).always(function() {
-        start();
-    });
-});
-
 asyncTest("trigger()", function() {
     var remote = new jQluster.RemoteSelector({
         transport: alice, node_id: "bob", selector: "#test"
@@ -1015,6 +1002,28 @@ asyncTest("trigger()", function() {
         ok(false, "error: " + error);
     }).always(function() {
         start();
+    });
+});
+
+$.each([
+    {method: "append", selector: "#test .two", args: ['<span class="appended">200</span>'],
+     validator: function(){ is($("#test .two .appended").text(), "200"); }},
+    {method: "html", selector: "#test .html-test", args: ['<span>hoge</span>'],
+     validator: function() { var $s = $("#test .html-test span"); is($s.size(), 1); is($s.text(), "hoge"); }},
+], function(i, testcase) {
+    asyncTest(testcase.method + "()", function() {
+        var remote = new jQluster.RemoteSelector({
+            transport: alice, node_id: "bob", selector: testcase.selector
+        });
+        var result = remote[testcase.method].apply(remote, testcase.args);
+        is(result, remote);
+        delay(0.05).then(function() {
+            testcase.validator();
+        }, function(error) {
+            ok(false, "error: " + error);
+        }).always(function() {
+            start();
+        });
     });
 });
 
