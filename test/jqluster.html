@@ -703,17 +703,20 @@ $.each([
     {method: "height", selector: "#sized-box", args: [], exp: 50},
     {method: "innerHeight", selector: "#sized-box", args: [], exp: 60},
     {method: "innerWidth", selector: "#sized-box", args: [], exp: 210},
-    {method: "outerHeight", selector: "#sized-box", args: [true], exp: 70},
-    {method: "outerWidth", selector: "#sized-box", args: [false], exp: 210},
+    {method: "outerHeight", label: "with true arg", selector: "#sized-box", args: [true], exp: 70},
+    {method: "outerHeight", label: "no arg", selector: "#sized-box", args: [], exp: 60},
+    {method: "outerWidth", label: "with false arg", selector: "#sized-box", args: [false], exp: 210},
+    {method: "outerWidth", label: "no arg", selector: "#sized-box", args: [], exp: 210},
     {method: "width", selector: "#sized-box", args: [], exp: 200},
     {method: "data", selector: "#with-data", args: ["some-data"], exp: 100},
     {method: "text", selector: "#test li.two", args: [], exp: "2"},
-    {method: "index", selector: "#test li.two", args: [], exp: 1},
-    {method: "index", selector: "#test li.two", args: ["#test li.two"], exp: 0},
+    {method: "index", label: "no arg", selector: "#test li.two", args: [], exp: 1},
+    {method: "index", label: "with arg", selector: "#test li.two", args: ["#test li.two"], exp: 0},
     {method: "size", selector: "#test li", args: [], exp: 3},
     {method: "html", selector: "#test .html-test", args: [], exp: "<span>HTML</span>"}
 ], function(i, testcase) {
-    asyncTest(testcase.method + "()", function() {
+    var label = testcase.label ? " ["+ testcase.label +"]" : "";
+    asyncTest(testcase.method + "()" + label, function() {
         var remote = new jQluster.RemoteSelector({
             transport: alice, node_id: "bob",
             selector: testcase.selector
