@@ -84,6 +84,8 @@ var setupTest = function() {
             +   '<div id="hidden-box">hidden</div>'
             +   '<div id="visible-box">visible</div>'
             +   '<div class="html-test"><span>HTML</span></div>'
+            +   '<input class="val-test" type="checkbox" value="val1" />'
+            +   '<input class="val-test" type="checkbox" value="val2" />'
             + '</div>'
     );
 };
@@ -1010,18 +1012,28 @@ asyncTest("trigger()", function() {
 
 $.each([
     {method: "append", selector: "#test .two", args: ['<span class="appended">200</span>'],
-     validator: function(){ is($("#test .two .appended").text(), "200"); }},
-    {method: "attr"},
-    {method: "val"},
-    {method: "css"},
-    {method: "height"},
-    {method: "width"},
-    {method: "data"},
-    {method: "text"},
+     validator: function() { is($("#test .two .appended").text(), "200"); }},
+    {method: "attr", selector: "#test li", args: ['name', 'hogehoge'],
+     validator: function() { is($("#test .two").attr("name"), 'hogehoge'); }},
+    {method: "val", label: "text arg", selector: "#test_button", args: ['hoge button'],
+     validator: function() { is($("#test_button").val(), "hoge button"); }},
+    {method: "val", label: "array arg", selector: ".val-test", args: [['val1', 'val2']],
+     validator: function() { is($(".val-test:checked").size(), 2); }},
+    {method: "css", selector: "#test #sized-box", args: ['height', 10],
+     validator: function() { is($("#test #sized-box").height(), 10); }},
+    {method: "height", selector: "#test #sized-box", args: [10],
+     validator: function() { is($("#test #sized-box").height(), 10); }},
+    {method: "width", selector: "#test #sized-box", args: [30],
+     validator: function() { is($("#test #sized-box").width(), 30); }},
+    {method: "data", selector: "#test", args: ["hoge", {arbitrary: ["data", 10]}],
+     validator: function() { deepEqual($("#test").data("hoge"), {arbitrary: ["data", 10]}); }},
+    {method: "text", selector: "#test .two", args: ["TWO"],
+     validator: function() { is($("#test .two").text(), "TWO"); }},
     {method: "html", selector: "#test .html-test", args: ['<span>hoge</span>'],
      validator: function() { var $s = $("#test .html-test span"); is($s.size(), 1); is($s.text(), "hoge"); }},
 ], function(i, testcase) {
-    asyncTest(testcase.method + "()", function() {
+    var label = testcase.label ? " ["+ testcase.label +"]" : "";
+    asyncTest(testcase.method + "()" + label, function() {
         var remote = new jQluster.RemoteSelector({
             transport: alice, node_id: "bob", selector: testcase.selector
         });
