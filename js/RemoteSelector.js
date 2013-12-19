@@ -205,7 +205,7 @@ if(!jQluster) { var jQluster = {}; }
             var select_result = this.transport.selectAndGet({
                 node_id: this.node_id, eval_code: eval_code
             });
-            if(arguments.length <= max_arg_get) {
+            if(max_arg_get === null || arguments.length <= max_arg_get) {
                 return select_result;
             }else {
                 myclass._logPromiseError(select_result);
@@ -215,9 +215,17 @@ if(!jQluster) { var jQluster = {}; }
     };
     $.each([
         ["attr", 1, 1], ["hasClass", 1, 1], ["val", 0, 0], ["css", 1, 1],
-        ["height", 0, 0], ["innerHeight", 0, 0], ["innerWidth", 0, 0], ["outerHeight", 0, 1],
-        ["outerWidth", 0, 1], ["width", 0, 0], ["data", 1, 1], ["text", 0, 0],
-        ["index", 0, 1], ["size", 0, 0], ["append", 1, 0], ["trigger", 1, 0], ["html", 0, 0]
+        ["height", 0, 0], ["innerHeight", 0, null], ["innerWidth", 0, null], ["outerHeight", 0, null],
+        ["outerWidth", 0, null], ["width", 0, 0], ["data", 1, 1], ["text", 0, 0],
+        ["index", 0, null], ["size", 0, null], ["html", 0, 0],
+        ["position", 0, null], ["prop", 1, 1], ["scrollLeft", 0, 0], ["scrollTop", 0, 0],
+        ["offset", 0, 0],
+        ["addClass", 1, 0], ["after", 1, 0], ["append", 1, 0], ["appendTo", 1, 0],
+        ["before", 1, 0], ["detach", 0, -1], ["empty", 0, -1], ["insertAfter", 1, 0], ["insertBefore", 1, 0],
+        ["prepend", 1, 0], ["prependTo", 1, 0], ["remove", 0, -1], ["removeAttr", 1, 0], ["removeClass", 0, -1],
+        ["removeProp", 1, 0], ["replaceAll", 1, 0], ["replaceWith", 1, 0], ["toggleClass", 1, 0],
+        ["unwrap", 0, -1], ["wrap", 1, 0], ["wrapAll", 1, 0], ["wrapInner", 1, 0],
+        ["trigger", 1, 0], 
     ], function(i, method_spec) {
         accessorMethod.apply(null, method_spec);
     });

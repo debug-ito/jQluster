@@ -23,6 +23,27 @@
     opacity: 1;
 }
 
+#scroll-test {
+    overflow: auto;
+    width:10px;
+    height: 10px;
+}
+
+#scroll-test p {
+    width: 1000px;
+    height: 1000px;
+}
+
+#position-test {
+    padding: 10px 20px 30px 40px;
+    position: relative;
+}
+
+#position-test div {
+    padding: 0;
+    margin: 0;
+}
+
 </style>
 </head>
 <body>
@@ -86,8 +107,13 @@ var setupTest = function() {
             +   '<div class="html-test"><span>HTML</span></div>'
             +   '<input class="val-test" type="checkbox" value="val1" />'
             +   '<input class="val-test" type="checkbox" value="val2" />'
+            +   '<div id="custom-prop"></div>'
+            +   '<div id="scroll-test"><p>hoge</p></div>'
+            +   '<div id="position-test"><div></div><div>',
             + '</div>'
     );
+    $("#custom-prop").prop("custom_prop", "hoge");
+    $("#scroll-test").scrollLeft(100).scrollTop(200);
 };
 
 var setupAll = function() {
@@ -715,7 +741,11 @@ $.each([
     {method: "index", label: "no arg", selector: "#test li.two", args: [], exp: 1},
     {method: "index", label: "with arg", selector: "#test li.two", args: ["#test li.two"], exp: 0},
     {method: "size", selector: "#test li", args: [], exp: 3},
-    {method: "html", selector: "#test .html-test", args: [], exp: "<span>HTML</span>"}
+    {method: "html", selector: "#test .html-test", args: [], exp: "<span>HTML</span>"},
+    {method: "position", selector: "#position-test div", args: [], exp: {left: 40, top: 10}},
+    {method: "prop", selector: ".val-test", args: ['checked'], exp: false},
+    {method: "scrollLeft", selector: "#scroll-test", args: [], exp: 100},
+    {method: "scrollTop", selector: "#scroll-test", args: [], exp: 200}
 ], function(i, testcase) {
     var label = testcase.label ? " ["+ testcase.label +"]" : "";
     asyncTest(testcase.method + "()" + label, function() {
@@ -745,6 +775,21 @@ asyncTest("promise() with animation", function() {
         is(arg, remote, "arg of the promise is the remote object itself");
         is(this, remote, "this in the promise handler is the remote object itself");
         is($("#test li.two").css("display"), "none", "fadeOut animation is complete");
+    }, function(error) {
+        ok(false, "error: " + error);
+    }).always(function() {
+        start();
+    });
+});
+
+asyncTest("offset()", function() {
+    $("#test").offset({left: 50, top: 100});
+    var remote = new jQluster.RemoteSelector({
+        transport: alice, node_id: "bob",
+        selector: "#test"
+    });
+    remote.offset().then(function(result) {
+        deepEqual(result, {left: 50, top: 100});
     }, function(error) {
         ok(false, "error: " + error);
     }).always(function() {
@@ -1011,8 +1056,55 @@ asyncTest("trigger()", function() {
 });
 
 $.each([
+    {method: "addClass", selector: "#test", args: ['hoge_class'],
+     validator: function() { ok($("#test").hasClass('hoge_class')); }},
+    {method: "after", selector: "#test .two", args: ['<li>NEW THREE</li>'],
+     validator: function() { is($("#test li").eq(2).text(), "NEW THREE"); }},
     {method: "append", selector: "#test .two", args: ['<span class="appended">200</span>'],
      validator: function() { is($("#test .two .appended").text(), "200"); }},
+    {method: "appendTo", selector: "<li>4</li>", args: ['#test ul'],
+     validator: function() { is($("#test li").eq(3).text(), "4"); }},
+    {method: "before", selector: "#test .two", args: ['<li>NEW TWO</li>'],
+     validator: function() { is($("#test li").eq(1).text(), "NEW TWO"); }},
+    {method: "detach", label: "no arg", selector: "#test li", args: [],
+     validator: function() { is($("#test li").size(), 0); }},
+    {method: "detach", label: "with arg", selector: "#test li", args: [".two"],
+     validator: function() { is($("#test li").size(), 2); }},
+    {method: "empty", selector: "#test ul", args: [],
+     validator: function() { is($("#test ul").children().size(), 0); }},
+    {method: "insertAfter", selector: "<li>NEW THREE</li>", args: ['#test .two'],
+     validator: function() { is($("#test li").eq(2).text(), "NEW THREE"); }},
+    {method: "insertBefore", selector: "<li>NEW TWO</li>", args: ['#test .two'],
+     validator: function() { is($("#test li").eq(1).text(), "NEW TWO"); }},
+    {method: "prepend", selector: "#test ul", args: ['<li>NEW ONE</li>'],
+     validator: function() { is($("#test li").eq(0).text(), "NEW ONE"); }},
+    {method: "prependTo", selector: "<li>NEW ONE</li>", args: ['#test ul'],
+     validator: function() { is($("#test li").eq(0).text(), "NEW ONE"); }},
+    {method: "remove", label: "no arg", selector: "#test li", args: [],
+     validator: function() { is($("#test li").size(), 0); }},
+    {method: "remove", label: "with arg", selector: "#test li", args: [".two"],
+     validator: function() { is($("#test li").size(), 2); }},
+    {method: "removeAttr", selector: "#test .two", args: ["class"],
+     validator: function() { is($("#test li").eq(1).hasClass("two"), false); }},
+    {method: "removeClass", selector: "#test .two", args: ["two"],
+     validator: function() { is($("#test li").eq(1).hasClass("two"), false); }},
+    {method: "removeProp", selector: "#custom-prop", args: ["custom_prop"],
+     validator: function() { is($("#custom-prop").prop("custom_prop"), undefined); }},
+    {method: "replaceAll", selector: "<li>NEW TWO</li>", args: ["#test .two"],
+     validator: function() { is($("#test li").eq(1).text(), "NEW TWO"); }},
+    {method: "replaceWith", selector: "#test .two", args: ["<li>NEW TWO</li>"],
+     validator: function() { is($("#test li").eq(1).text(), "NEW TWO"); }},
+    {method: "toggleClass", selector: "#test .two", args: ["two"],
+     validator: function() { is($("#test li").eq(1).hasClass("two"), false); }},
+    {method: "unwrap", selector: "#test li", args: [],
+     validator: function() { is($("#test").children().eq(0).text(), "1"); }},
+    {method: "wrap", selector: "#test ul", args: ['<div id="wrapper"></div>'],
+     validator: function() { is($("#test > #wrapper > ul").size(), 1); }},
+    {method: "wrapAll", selector: "#test ul", args: ['<div id="wrapper"></div>'],
+     validator: function() { is($("#test > #wrapper > ul").size(), 1); }},
+    {method: "wrapInner", selector: "#test ul", args: ['<div id="wrapper"></div>'],
+     validator: function() { is($("#test > ul > #wrapper").size(), 1); }},
+    
     {method: "attr", selector: "#test li", args: ['name', 'hogehoge'],
      validator: function() { is($("#test .two").attr("name"), 'hogehoge'); }},
     {method: "val", label: "text arg", selector: "#test_button", args: ['hoge button'],
@@ -1031,6 +1123,14 @@ $.each([
      validator: function() { is($("#test .two").text(), "TWO"); }},
     {method: "html", selector: "#test .html-test", args: ['<span>hoge</span>'],
      validator: function() { var $s = $("#test .html-test span"); is($s.size(), 1); is($s.text(), "hoge"); }},
+    {method: "offset", selector: "#test ul", args: [{top: 10, left: 30}],
+     validator: function() { deepEqual($("#test ul").offset(), {top: 10, left: 30}); }},
+    {method: "prop", selector: ".val-test", args: ["checked", true],
+     validator: function() { is($(".val-test:checked").size(), 2); }},
+    {method: "scrollLeft", selector: "#scroll-test", args: [150],
+     validator: function() { is($("#scroll-test").scrollLeft(), 150); }},
+    {method: "scrollTop", selector: "#scroll-test", args: [250],
+     validator: function() { is($("#scroll-test").scrollTop(), 250); }}
 ], function(i, testcase) {
     var label = testcase.label ? " ["+ testcase.label +"]" : "";
     asyncTest(testcase.method + "()" + label, function() {
