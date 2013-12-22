@@ -8,5 +8,10 @@ SRC=$(addprefix js/, \
 jqluster.js: $(SRC)
 	/bin/cat $(SRC) > $@
 
+doc: doc/api/index.html
+
+doc/api/index.html: $(SRC)
+	mkdir -p doc/api/ && jsdoc -d doc/api $(SRC)
+
 clean:
-	/bin/rm -f jqluster.js
+	/bin/rm -rf jqluster.js doc/api

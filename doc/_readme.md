@@ -53,6 +53,8 @@ always manipulate Bob's DOM objects.
 
 (detailed API and limitations)
 
+(mention `make doc` command)
+
 
 ## Motivation
 
