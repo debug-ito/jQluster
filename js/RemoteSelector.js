@@ -230,7 +230,7 @@ if(!jQluster) { var jQluster = {}; }
         accessorMethod.apply(null, method_spec);
     });
 
-    var animationMethod = function(method_name) {
+    var effectsMethod = function(method_name) {
         myclass.prototype[method_name] = function() {
             var self = this;
             var args = my.argsToArray(arguments);
@@ -259,11 +259,11 @@ if(!jQluster) { var jQluster = {}; }
             return self;
         };
     };
-    $.each(["animate", "fadeIn", "fadeTo", "fadeOut", "hide", "show"], function(i, method_name) {
-        animationMethod(method_name);
+    $.each(["animate", "fadeIn", "fadeTo", "fadeOut", "fadeToggle",
+            "slideDown", "slideUp", "slideToggle",
+            "hide", "show", "toggle"], function(i, method_name) {
+        effectsMethod(method_name);
     });
 
 })(jQluster, jQuery);
 
-// We need another front-end library like "jQluster functional" or something??
-// or, it is rather "RemoteSelectorFactory".

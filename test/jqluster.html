@@ -1157,8 +1157,8 @@ module("jQluster.RemoteSelector - effects", {
 });
 
 (function() {
-    var ANIMATION_DURATION = 20;
-    var WAIT_TIME = 40;
+    var ANIMATION_DURATION = 10;
+    var WAIT_TIME = 20;
     $.each([
         {label: "animate() - simple form", target_box_id: "hidden-box", method: "animate", args: [{opacity: 1}, ANIMATION_DURATION],
          exp_style: "opacity", exp_value: "1" },
@@ -1168,7 +1168,17 @@ module("jQluster.RemoteSelector - effects", {
          exp_style: "opacity", exp_value: "0.25"},
         {label: "fadeOut()", target_box_id: "visible-box", method: "fadeOut", args: [ANIMATION_DURATION],
          exp_style: "display", exp_value: "none"},
+        {label: "fadeToggle()", target_box_id: "visible-box", method: "fadeToggle", args: [ANIMATION_DURATION],
+         exp_style: "display", exp_value: "none"},
+        {label: "slideDown()", target_box_id: "hidden-box", method: "slideDown", args: [ANIMATION_DURATION],
+         exp_style: "display", exp_value: "block"},
+        {label: "slideToggle()", target_box_id: "hidden-box", method: "slideToggle", args: [ANIMATION_DURATION],
+         exp_style: "display", exp_value: "block"},
+        {label: "slideUp()", target_box_id: "visible-box", method: "slideUp", args: [ANIMATION_DURATION],
+         exp_style: "display", exp_value: "none"},
         {label: "hide()", target_box_id: "visible-box", method: "hide", args: [],
+         exp_style: "display", exp_value: "none"},
+        {label: "toggle()", target_box_id: "visible-box", method: "toggle", args: [],
          exp_style: "display", exp_value: "none"},
         {label: "show()", target_box_id: "hidden-box", method: "show", args: [],
          exp_style: "display", exp_value: "block"}
