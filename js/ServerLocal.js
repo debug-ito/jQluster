@@ -1,7 +1,9 @@
 "use strict";
 
-// Local server implementation for testing and loopback transport.
-// requires: jquery, util.js, Connection.js
+/**
+ * @file
+ * @author Toshio Ito
+ */
 
 if(!jQluster) { var jQluster = {}; }
 
@@ -10,25 +12,43 @@ if(!jQluster) { var jQluster = {}; }
         select_and_get: "select_and_get_reply",
         select_and_listen: "select_and_listen_reply"
     };
+    /**
+     * @class
+     * @alias jQluster.ServerLocal
+     * @classdesc Local server implementation for testing and loopback transport.
+     * @requires jQuery
+     * @requires util.js
+     * @requires Connection.js
+     * @param {boolean} [args.debug=false] - if true, the server will emit debug messages.
+     */
     my.ServerLocal = function(args) {
-        // @params: args.debug = false
         if(!args) args = {};
         
-        // ** Cyclic reference between the server and connections, but
-        // ** it's (probably) ok.  JavaScript garbage collectors can
-        // ** release cyclic objects UNLESS THE CYCLE DOES NOT INVOLVE
-        // ** DOM NODES.
+        // Cyclic reference between the server and connections, but
+        // it's (probably) ok.  JavaScript garbage collectors can
+        // release cyclic objects UNLESS THE CYCLE DOES NOT INVOLVE
+        // DOM NODES.
         this.connections = {};
         this.register_log = [];
         this.debug = !!args.debug;
     };
+    /**
+     * @alias jQluster.ServerLocal.prototype
+     */
     my.ServerLocal.prototype = {
         _dlog: function(message, obj) {
             console.debug("ServerLocal: " + message);
             console.debug(obj);
         },
+        /**
+         * Register a Connection with the server.
+         * @returns nothing
+         * @param {jQluster.ConnectionLocal} connection - the connection.
+         * @param node_id - Node ID of the connection.
+         * @param {jQluster.Connection~Message} register_message_id -
+         * the message of the type "register".
+         */
         register: function(connection, node_id, register_message_id) {
-            // @return: nothing
             var self = this;
             if(self.debug) {
                 self._dlog("Got register from " + node_id);
@@ -59,8 +79,12 @@ if(!jQluster) { var jQluster = {}; }
             });
         },
 
+        /**
+         * Distribute the given message to all destination connections.
+         * @returns nothing.
+         * @param {jQluster.Connection~Message} message - message to distribute.
+         */
         distribute: function(message) {
-            // @return: nothing
             var self = this;
             if(self.debug) {
                 self._dlog("Send message: " + message.message_type, message);
@@ -76,7 +100,15 @@ if(!jQluster) { var jQluster = {}; }
             });
         },
 
+        /**
+         * @returns {Array} the registration log.
+         */
         getRegisterLog: function() { return this.register_log; },
+
+        /**
+         * Safely release the server's resource.
+         * @returns nothing
+         */
         release: function() {
             var self = this;
             $.each(self.connections, function(node_id, connection_list) {

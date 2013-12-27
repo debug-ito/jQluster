@@ -1,26 +1,66 @@
 "use strict";
 
-// jQluster Transport object
-// requires: jquery, jquery.xpath, util.js
+/**
+ * @file
+ * @author Toshio Ito
+ */
 
 if(!jQluster) { var jQluster = {}; }
 
 
 (function(my, $) {
-    var myclass;
-
-    // TODO: Design and implement some mechanism for node grouping. In
-    // the current implementation, it is possible for multiple nodes
-    // to have the same ID. However, in this case there is no way to
-    // distinguish individual nodes with that ID. With a proper
-    // grouping mechanism, the user would be able to multi-cast a
-    // message (e.g. a 'select_and_listen' message) and still
-    // distinguish individual node in the group (e.g. the exact node
-    // that sends a 'signal' message).
-    
-    myclass = my.Transport = function(args) {
+    /**
+     * @class
+     * @alias jQluster.Transport
+     * @classdesc jQluster.Transport represents a jQluster node. It
+     * abstracts jQluster messaging protocol.
+     *
+     * It uses a jQluster.Connection object to send and receive
+     * messages to/from other nodes. It handles messages it receives
+     * and executes what they demand (although maybe this function
+     * should be refactored into another class).
+     *
+     * @requires jQuery
+     * @requires jQuery.xpath
+     * @requires util.js
+     *
+     * @todo Design and implement some mechanism for node grouping. In
+     * the current implementation, it is possible for multiple nodes
+     * to have the same ID. However, in this case there is no way to
+     * distinguish individual nodes with that ID. With a proper
+     * grouping mechanism, the user would be able to multi-cast a
+     * message (e.g. a 'select_and_listen' message) and still
+     * distinguish individual node in the group (e.g. the exact node
+     * that sends a 'signal' message).
+     *
+     * @example
+     * var alice = new jQluster.Transport({
+     *     node_id: "Alice",
+     *     connection_object: new jQluster.ConnectionWebSocket("ws://example.com/jqluster/server")
+     * });
+     *
+     * console.log("I'm " + alice.getNodeID());   // => I'm Alice
+     * 
+     * alice.selectAndGet({node_id: "Bob", eval_code: "1 + 10"}).then(function(result) {
+     *     console.log("result: " + result);  // => result: 11
+     * }, function(error) {
+     *     console.error(error);
+     * });
+     * 
+     * alice.selectAndListen({
+     *     node_id: "Bob", eval_code: "$('#some-button')",
+     *     method: "on", options: ["click"],
+     *     callback: function() {
+     *         console.log("some-button is clicked.");
+     *         console.log(this); // => a RemoteDOMPointer object pointing #some-button
+     *     }
+     * });
+     *
+     * @param {string} args.node_id - Node ID of this transport.
+     * @param {jQluster.Connection} args.connection_object - the underlying Connection object.
+     */
+    var myclass = my.Transport = function(args) {
         var self = this;
-        // @params: args.node_id, args.connection_object
         if(!my.defined(args.node_id)) {
             throw "node_id param is mandatory";
         }
@@ -40,22 +80,29 @@ if(!jQluster) { var jQluster = {}; }
         });
     };
     myclass.prototype = {
+        /** @returns {string} Node ID of this transport. */
         getNodeID: function() { return this.node_id; },
-        selectAndGet: function(args) {
-            // @params: args.eval_code, args.node_id
-            // 
-            // @return: Promise. In success, it is resolved and it
-            // contains the obtained data. In failure it is rejected
-            // and it contains the cause of the error.
-            // 
-            // If the remote node does not exist, the returned Promise
-            // will be rejected.
-            // 
-            // If there are multiple remote nodes, the caller will
-            // receive the result returned by one of the remote nodes,
-            // but it is not defined exactly which remote node is
-            // used.
 
+        /**
+         * Execute the given code and get the result from a remote
+         * Node.
+         *
+         * @param {string} args.node_id - the Node ID of the remote Node.
+         * @param {string} args.eval_code - the JavaScript code that
+         * is evaluated on the remote node.
+         *
+         * @returns {jQuery.Promise} In success, the promise is
+         * resolved and it contains the obtained data. In failure it
+         * is rejected and it contains the cause of the error.
+         * 
+         * If the remote node does not exist, the returned Promise
+         * will be rejected.
+         * 
+         * If there are multiple remote nodes, the caller will receive
+         * the result returned by one of the remote nodes, but it is
+         * not defined exactly which remote node is used.
+         */
+        selectAndGet: function(args) {
             var self = this;
             var response_d = $.Deferred();
             try {
@@ -77,35 +124,56 @@ if(!jQluster) { var jQluster = {}; }
             }
             return response_d.promise();
         },
+
+        /**
+         * Select a jQuery object on a remote Node and register a
+         * callback on it. With this method you can listen to events
+         * that occur on the remote Node.
+         *
+         * @param {string} args.node_id - the remote Node ID.
+         *
+         * @param {string} args.eval_code - the JavaScript code that
+         * is executed on the remote Node. It must return jQuery
+         * object.
+         *
+         * @param {string} args.method - the name of the method called
+         * on the jQuery object that "args.eval_code" returns. The
+         * method must accept a callback function as its last
+         * argument.
+         *
+         * @param {Array} [args.options=[]] - arguments for the
+         * "args.method" other than the callback.
+         *
+         * @param {function} args.callback - the callback function
+         * that is called when an event on the remote Node occurs.
+         *
+         * Arguments for the args.callback is exact copy of the
+         * arguments for the remote callback, except that DOM elements
+         * are converted to {@link jQluster.Transport~RemoteDOMPointer}
+         * objects. 'this' object for args.callback is the copy of
+         * 'this' object for the remote callback. It may be a
+         * {@link jQluster.Transport~RemoteDOMPointer} object, too.
+         *
+         * @returns {jQuery.Promise} the promise will be resolved if
+         * the request is accepted by the remote node. The content of
+         * the promise is meaningless in this case. In failure, it
+         * will be rejected and it contains the cause of the error.
+         * 
+         * If the remote node does not exist, the resulting Promise
+         * will be rejected.
+         * 
+         * If there are multiple remote nodes, all of them receive the
+         * listen request. In this case, the resulting Promise
+         * reflects one of the responses from those remote nodes, but
+         * there is no guarantee on exactly which response is used to
+         * affect the Promise.
+         *
+         * @todo About remote signal handler: For now there is no way
+         * to REMOVE callbacks.  So, **calling selectAndListen() over
+         * and over can cause memory leak**.  We need a way to remove
+         * callbacks registered by this method.
+         */
         selectAndListen: function(args) {
-            // @params: args.eval_code (must return a jQuery object),
-            //          args.method, args.options = [],
-            //          args.callback, args.node_id
-            // 
-            // @return: Promise. It will be resolved if the request is
-            // accepted by the remote node. The content of the promise
-            // is meaningless in this case. In failure, it will be
-            // rejected and it contains the cause of the error.
-            // 
-            // If the remote node does not exist, the resulting
-            // Promise will be rejected.
-            // 
-            // If there are multiple remote nodes, all of them receive
-            // the listen request. In this case, the resulting Promise
-            // reflects one of the responses from those remote nodes,
-            // but there is no guarantee on exactly which response is
-            // used to affect the Promise.
-            //
-            // args.callback is called when the event occurs in the
-            // remote node. Arguments for the args.callback is exact
-            // copy of the arguments for the remote callback, except
-            // that DOM elements are converted to 'Pointer
-            // objects'. The structure of a Pointer object is:
-            // {"remote_type": "xpath", "remote_node_id": REMOTE_ID,
-            // "remote_xpath": XPATH_STR}. 'this' object for
-            // args.callback is the copy of 'this' object for the
-            // remote callback. It may be a Pointer object, too.
-            
             var self = this;
             var result_d = $.Deferred();
             var message, callback;
@@ -126,11 +194,6 @@ if(!jQluster) { var jQluster = {}; }
                     }
                 };
                 result_d.promise().then(function() {
-                    // TODO: about remote signal handler: For now there is
-                    // no way to REMOVE signal_callbacks. So, calling
-                    // selectAndListen() can cause serious memory leak. We
-                    // have to take care of releasing callbacks if we are
-                    // serious to do remote callbacks.
                     self.signal_callback_for[message.message_id] = function(callback_this, callback_args) {
                         callback.apply(callback_this, callback_args);
                     };
@@ -142,9 +205,14 @@ if(!jQluster) { var jQluster = {}; }
             }
             return result_d.promise();
         },
-        
+
+        /**
+         * Call this method when you receive a message.
+         * @private
+         * @param {jQluster.Connection~Message} message - the received message.
+         * @returns nothing
+         */
         _onReceive: function(message) {
-            // @return: nothing
             var self = this;
             if(message.to !== self.node_id) {
                 console.debug("A message whose 'to' field is "+ (defined(message.to) ? message.to : "[null]")
@@ -224,6 +292,12 @@ if(!jQluster) { var jQluster = {}; }
             callback(message.body.callback_this, message.body.callback_args);
         },
 
+        /**
+         * An object that points to a DOM object on a remote Node.
+         * @typedef {Object} jQluster.Transport~RemoteDOMPointer
+         * @see doc/protocol.md in jQluster package
+         */
+        
         _createRemoteDOMPointerIfDOM: function(obj) {
             if(my.isHTMLElement(obj)) {
                return {
@@ -276,7 +350,11 @@ if(!jQluster) { var jQluster = {}; }
                 try_send_reply("_processSelectAndListen error: " + e);
             }
         },
-        
+
+        /**
+         * Safely release the resource that this Transport has.
+         * @returns nothing
+         */
         release: function() {
             if(my.defined(this.connection_object)) {
                 this.connection_object.release();

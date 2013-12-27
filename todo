@@ -1,2 +1,4 @@
 
 - add tests to jQluster::Server::WebSocket that use jqluster.js
+
+- Transport: there are still some TODOs in the source code...

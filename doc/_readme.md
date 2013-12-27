@@ -53,7 +53,20 @@ always manipulate Bob's DOM objects.
 
 (detailed API and limitations)
 
-(mention `make doc` command)
+### jQluster internal APIs
+
+If you want to see internal APIs, you can generate the documentation by
+
+    $ make doc
+
+Note that you need [jsdoc](https://github.com/jsdoc3/jsdoc) to
+generate the API doc. To install jsdoc,
+
+1. Install [node.js](http://nodejs.org/).
+2. Install [npm](https://npmjs.org/).
+3. Install jsdoc by
+
+        # npm install -g jsdoc
 
 
 ## Motivation

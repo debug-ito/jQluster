@@ -5,7 +5,6 @@
  * @author Toshio Ito
  */
 
-/** @namespace jQluster */
 if(!jQluster) { var jQluster = {}; }
 
 

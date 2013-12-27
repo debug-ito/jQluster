@@ -11,7 +11,7 @@ jqluster.js: $(SRC)
 doc: doc/api/index.html
 
 doc/api/index.html: $(SRC)
-	mkdir -p doc/api/ && jsdoc -d doc/api $(SRC)
+	mkdir -p doc/api/ && jsdoc -c jsdoc.conf.json -d doc/api $(SRC)
 
 clean:
 	/bin/rm -rf jqluster.js doc/api

@@ -5,7 +5,6 @@
  * @author Toshio Ito
  */
 
-/** @namespace jQluster */
 if(!jQluster) { var jQluster = {}; }
 
 (function(my, $){
@@ -21,6 +20,10 @@ if(!jQluster) { var jQluster = {}; }
      * @requires util.js
      * @requires Connection.js
      *
+     * @example
+     * var server = new jQluster.ServerLocal();
+     * var conn = new jQluster.ConnectionLocal(server);
+     *
      * @param {jQluster.ServerLocal} server - local server object.
      */
     my.ConnectionLocal = function(server) {
@@ -32,6 +35,7 @@ if(!jQluster) { var jQluster = {}; }
         {}, superclass.prototype,
         /** @lends jQluster.ConnectionLocal.prototype */
         {
+            /** send a message to the local server. */
             send: function(message) {
                 this.log.push({ direction: "send",  message: my.clone(message)});
                 // console.log("send: type: " + message.message_type + ", from: " + message.from);
