@@ -92,20 +92,25 @@ if(!jQluster) { var jQluster = {}; }
         });
         return promise;
     };
+    /**
+     * @namespace
+     */
     myclass.prototype = {
         _getEvalCode: function() { return this.eval_code; },
 
-        // TODO: on() method: For now, the return value from
-        // user-given handler function is ignored. This means we
-        // cannot control whether the specified event should propagate
-        // to the upper elements or not. It is possible in theory to
-        // send the user-generated return value back to the remote
-        // node, but in this case the process of the remote node must
-        // be blocked waiting for the return value to come. If we
-        // could use a co-routine mechanism like task.js, waiting for
-        // the return value from the network would not block the
-        // entire process, but that's not a feature every browser
-        // supports now.
+        /**
+         * @todo on() method: For now, the return value from
+         * user-given handler function is ignored. This means we
+         * cannot control whether the specified event should propagate
+         * to the upper elements or not. It is possible in theory to
+         * send the user-generated return value back to the remote
+         * node, but in this case the process of the remote node must
+         * be blocked waiting for the return value to come. If we
+         * could use a co-routine mechanism like task.js, waiting for
+         * the return value from the network would not block the
+         * entire process, but that's not a feature every browser
+         * supports now.
+        */
         on: function() {
             var self = this;
             var args = my.argsToArray(arguments);
@@ -134,15 +139,18 @@ if(!jQluster) { var jQluster = {}; }
             myclass._logPromiseError(self.transport.selectAndListen(transport_args));
             return self;
         },
-        
-        // TODO: each() method: For now, there is no way to detect the
-        // end of the "each" loop. The end of the loop should be
-        // reported to the caller in some form of Promise. In
-        // addition, the remote signal handler should be removed from
-        // the Transport object at the end of the loop. This problem
-        // is more serious when we implement ".map()" method, because
-        // it would make no sense if it could not return any value at
-        // the end of the loop.
+
+        /**
+         * 
+         * @todo each() method: For now, there is no way to detect the
+         * end of the "each" loop. The end of the loop should be
+         * reported to the caller in some form of Promise. In
+         * addition, the remote signal handler should be removed from
+         * the Transport object at the end of the loop. This problem
+         * is more serious when we implement ".map()" method, because
+         * it would make no sense if it could not return any value at
+         * the end of the loop.
+         */
         each: function(handler) {
             var self = this;
             if(!my.defined(handler)) {
@@ -166,11 +174,14 @@ if(!jQluster) { var jQluster = {}; }
             return self;
         },
 
-        // TODO: off() method: this method removes the event handler
-        // attached to the DOM nodes in the remote page, but not the
-        // remote signal handler attached to the local Transport
-        // object. We must figure out how to release the remote signal
-        // handler.
+        /**
+         *
+         * @todo off() method: this method removes the event handler
+         * attached to the DOM objects in the remote node, but NOT the
+         * remote signal handler attached to the local {@link
+         * jQluster.Transport} object. We must figure out how to
+         * release the remote signal handler.
+         */
         off: function(events, selector) {
             var args_str = my.defined(selector) ? my.argumentsStringFor([events, selector])
                                                 : my.argumentsStringFor([events]);
@@ -181,6 +192,7 @@ if(!jQluster) { var jQluster = {}; }
             myclass._logPromiseError(result);
             return this;
         },
+        /** @method */
         promise: function(type, target) {
             var self = this;
             if (typeof type !== "string") {
@@ -218,6 +230,32 @@ if(!jQluster) { var jQluster = {}; }
     ], function(i, method_name) {
         selectionMethod(method_name);
     });
+
+/** @name jQluster.RemoteSelector#children @method */
+/** @name jQluster.RemoteSelector#closest @method */
+/** @name jQluster.RemoteSelector#contents @method */
+/** @name jQluster.RemoteSelector#eq @method */
+/** @name jQluster.RemoteSelector#end @method */
+/** @name jQluster.RemoteSelector#filter @method */
+/** @name jQluster.RemoteSelector#find @method */
+/** @name jQluster.RemoteSelector#first @method */
+/** @name jQluster.RemoteSelector#has @method */
+/** @name jQluster.RemoteSelector#is @method */
+/** @name jQluster.RemoteSelector#last @method */
+/** @name jQluster.RemoteSelector#next @method */
+/** @name jQluster.RemoteSelector#nextAll @method */
+/** @name jQluster.RemoteSelector#nextUntil @method */
+/** @name jQluster.RemoteSelector#not @method */
+/** @name jQluster.RemoteSelector#offsetParent @method */
+/** @name jQluster.RemoteSelector#parent @method */
+/** @name jQluster.RemoteSelector#parents @method */
+/** @name jQluster.RemoteSelector#parentsUntil @method */
+/** @name jQluster.RemoteSelector#prev @method */
+/** @name jQluster.RemoteSelector#prevAll @method */
+/** @name jQluster.RemoteSelector#prevUntil @method */
+/** @name jQluster.RemoteSelector#siblings @method */
+/** @name jQluster.RemoteSelector#slice @method */
+
 
     // TODO: getter methods: getter methods return their results as
     // Promises, which is not the same way as the original jQuery
