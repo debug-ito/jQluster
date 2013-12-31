@@ -1,15 +1,67 @@
 "use strict";
 
-// jQluster remote selector representation
-// requires: jquery, util.js, (Transport.js)
+/**
+ * @file
+ * @author Toshio Ito
+ */
 
 if(!jQluster) { var jQluster = {}; }
 
 (function(my, $) {
-    var myclass;
-    myclass = my.RemoteSelector = function(args) {
-        // @params: args.transport, node_id,
-        //          args.eval_code || args.selector || args.xpath
+    /**
+     * @class
+     * @alias jQluster.RemoteSelector
+     *
+     * @classdesc jQluster.RemoteSelector is an object that is similar
+     * to jQuery object (the one you get by `$(SOME_SELECTOR)`), but
+     * it is a selector of DOM objects in a remote node.
+     *
+     * It wraps a {@link jQluster.Transport} object and provides a lot
+     * of useful methods similar to jQuery's methods.
+     *
+     * @requires jQuery
+     * @requires util.js
+     * @requires Transport.js
+     *
+     * @example
+     * var alice = new jQluster.Transport({
+     *     node_id: "Alice",
+     *     connection_object: new jQluster.ConnectionWebSocket({
+     *         websocket_url: "ws://example.com/jqluster"
+     *     }),
+     * });
+     * var selector_alice_to_bob = new jQluster.RemoteSelector({
+     *     transport: alice,
+     *     node_id: "Bob",
+     *     selector: "#some-button"
+     * });
+     * 
+     * selector_alice_to_bob.val().then(function(value) {
+     *     console.log("button value: " + value);
+     * });
+     * 
+     * selector_alice_to_bob.on("click", function() {
+     *     console.log("Button clicked");
+     *     selector_alice_to_bob.val("Button clicked");
+     * });
+     * @param {jQluster.Transport} args.transport - the transport
+     * object representing the local node.
+
+     * @param {string} args.node_id - the Node ID of the target remote
+     * node.
+     *
+     * @param {string} args.eval_code - JavaScript code that is
+     * evaluated to get a jQuery object on the remote node. You must
+     * specify `args.eval_code`, `args.selector` or `args.xpath`.
+     *
+     * @param {string} args.selector - a jQuery selector string that
+     * is used to get a jQuery object on the remote node.
+     *
+     * @param {string} args.xpath - a XPath string that is used to get
+     * a jQuery object on the remote node.
+     *
+     */
+    var myclass = my.RemoteSelector = function(args) {
         if(!my.defined(args.transport)) {
             throw "transport parameter is mandatory";
         }
