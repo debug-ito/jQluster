@@ -23,6 +23,8 @@ if(!jQluster) { var jQluster = {}; }
      * @requires util.js
      * @requires Transport.js
      *
+     * @see {@link http://api.jquery.com} for explanation of methods.
+     *
      * @example
      * var alice = new jQluster.Transport({
      *     node_id: "Alice",
@@ -174,14 +176,6 @@ if(!jQluster) { var jQluster = {}; }
             return self;
         },
 
-        /**
-         *
-         * @todo off() method: this method removes the event handler
-         * attached to the DOM objects in the remote node, but NOT the
-         * remote signal handler attached to the local {@link
-         * jQluster.Transport} object. We must figure out how to
-         * release the remote signal handler.
-         */
         off: function(events, selector) {
             var args_str = my.defined(selector) ? my.argumentsStringFor([events, selector])
                                                 : my.argumentsStringFor([events]);
@@ -192,7 +186,7 @@ if(!jQluster) { var jQluster = {}; }
             myclass._logPromiseError(result);
             return this;
         },
-        /** @method */
+
         promise: function(type, target) {
             var self = this;
             if (typeof type !== "string") {
@@ -230,61 +224,6 @@ if(!jQluster) { var jQluster = {}; }
     ], function(i, method_name) {
         selectionMethod(method_name);
     });
-
-/** @name jQluster.RemoteSelector#children @method */
-/** @name jQluster.RemoteSelector#closest @method */
-/** @name jQluster.RemoteSelector#contents @method */
-/** @name jQluster.RemoteSelector#eq @method */
-/** @name jQluster.RemoteSelector#end @method */
-/** @name jQluster.RemoteSelector#filter @method */
-/** @name jQluster.RemoteSelector#find @method */
-/** @name jQluster.RemoteSelector#first @method */
-/** @name jQluster.RemoteSelector#has @method */
-/** @name jQluster.RemoteSelector#is @method */
-/** @name jQluster.RemoteSelector#last @method */
-/** @name jQluster.RemoteSelector#next @method */
-/** @name jQluster.RemoteSelector#nextAll @method */
-/** @name jQluster.RemoteSelector#nextUntil @method */
-/** @name jQluster.RemoteSelector#not @method */
-/** @name jQluster.RemoteSelector#offsetParent @method */
-/** @name jQluster.RemoteSelector#parent @method */
-/** @name jQluster.RemoteSelector#parents @method */
-/** @name jQluster.RemoteSelector#parentsUntil @method */
-/** @name jQluster.RemoteSelector#prev @method */
-/** @name jQluster.RemoteSelector#prevAll @method */
-/** @name jQluster.RemoteSelector#prevUntil @method */
-/** @name jQluster.RemoteSelector#siblings @method */
-/** @name jQluster.RemoteSelector#slice @method */
-
-
-    // TODO: getter methods: getter methods return their results as
-    // Promises, which is not the same way as the original jQuery
-    // returns values. This is inevitable because getting values from
-    // remote nodes involves communication over the network, with
-    // potential delay and communication error. If we could use a
-    // co-routine mechanism like task.js, we could provide a
-    // synchronous API just as the original jQuery does and still
-    // prevent blocking the entire process during network
-    // communication.
-
-    // TODO: setter methods return the context object ('this' remote
-    // selector), but this behavior is not completely the same as the
-    // original jQuery. If further methods are chained from a setter
-    // method, e.g. $_(".foobar").height(100).find(".hoge").width(50),
-    // it will be translated as two sentences on the remote node;
-    // $(".foobar").height(100) and
-    // $(".foobar").find(".hoge").width(50); The two sentences may do
-    // what you mean, but may not sometimes especially if the
-    // intermediate setter method manipulates DOM structure (because
-    // $(".foobar") is evaluated again in the second sentence). If we
-    // were able to detect method chaining and its termination, we
-    // could send a single sentence in the above mentioned scenario,
-    // but it's not possible, right? Or it would help to have actual
-    // jQuery objects on the remote node that correspond to all
-    // RemoteSelector objects on the local node. However, how can we
-    // release the jQuery objects on the remote node that are no
-    // longer used? Perhaps we should just make setter methods return
-    // nothing to prevent confusion.
 
     var accessorMethod = function(method_name, min_arg, max_arg_get) {
         myclass.prototype[method_name] = function() {
@@ -357,3 +296,147 @@ if(!jQluster) { var jQluster = {}; }
 
 })(jQluster, jQuery);
 
+/**
+ * @name jQluster.RemoteSelector#Selection Methods
+ * @method
+ *
+ * @desc This class has the following jQuery methods for DOM selection
+ * on the remote node.
+ *
+ * - `children`
+ * - `closest`
+ * - `contents`
+ * - `end`
+ * - `eq`
+ * - `filter`
+ * - `find`
+ * - `first`
+ * - `has`
+ * - `is`
+ * - `last`
+ * - `nextAll`
+ * - `nextUntil`
+ * - `next`
+ * - `not`
+ * - `offsetParent`
+ * - `parent`
+ * - `parentsUntil`
+ * - `parents`
+ * - `prevAll`
+ * - `prevUntil`
+ * - `prev`
+ * - `siblings`
+ * - `slice`
+ *
+ * @todo Only string arguments (such as ".some-class") are currently
+ * supported. HTML elements or jQuery objects are not supported as
+ * arguments.
+ *
+ */
+
+/**
+ * @name jQluster.RemoteSelector#Accessor Methods
+ * @method
+ *
+ * @desc This class has the following jQuery methods for
+ * getting/setting various data on the remote node.
+ *
+ * Note that getter methods return their results as a jQuery.Promise,
+ * which is not the same way as the original jQuery. This is
+ * inevitable because getting values from remote nodes involves
+ * communication over the network, with potential delay and
+ * communication error.
+ *
+ * - `addClass`
+ * - `after`
+ * - `appendTo`
+ * - `append`
+ * - `attr`
+ * - `before`
+ * - `css`
+ * - `data`
+ * - `detach`
+ * - `empty`
+ * - `hasClass`
+ * - `height`
+ * - `html`
+ * - `index`
+ * - `innerHeight`
+ * - `innerWidth`
+ * - `insertAfter`
+ * - `insertBefore`
+ * - `off`
+ * - `offset`
+ * - `outerHeight`
+ * - `outerWidth`
+ * - `position`
+ * - `prependTo`
+ * - `prepend`
+ * - `promise`
+ * - `prop`
+ * - `removeAttr`
+ * - `removeClass`
+ * - `removeProp`
+ * - `remove`
+ * - `replaceAll`
+ * - `replaceWith`
+ * - `scrollLeft`
+ * - `scrollTop`
+ * - `size`
+ * - `text`
+ * - `toggleClass`
+ * - `trigger`
+ * - `unwrap`
+ * - `val`
+ * - `width`
+ * - `wrapAll`
+ * - `wrapInner`
+ * - `wrap`
+ *
+ * @todo Only string arguments (such as ".some-class") are currently
+ * supported. HTML elements or jQuery objects are not supported as
+ * arguments.
+ *
+ * @todo **off() method**: this method removes the event handler attached
+ * to the DOM objects in the remote node, but NOT the remote signal
+ * handler attached to the local {@link jQluster.Transport} object. We
+ * must figure out how to release the remote signal handler.
+ *
+ * @todo **setter methods**: they return the context object ('this'
+ * remote selector), but this behavior is not completely the same as
+ * the original jQuery. If further methods are chained from a setter
+ * method, e.g. `$_(".foobar").height(100).find(".hoge").width(50)`,
+ * it will be translated as two sentences on the remote node;
+ * `$(".foobar").height(100)` and
+ * `$(".foobar").find(".hoge").width(50);` The two sentences may do
+ * what you mean, but may not sometimes especially if the intermediate
+ * setter method manipulates DOM structure (because `$(".foobar")` is
+ * evaluated again in the second sentence). If we were able to detect
+ * method chaining and its termination, we could send a single
+ * sentence in the above mentioned scenario, but it's not possible,
+ * right? Or it would help to have actual jQuery objects on the remote
+ * node that correspond to all RemoteSelector objects on the local
+ * node. However, how can we release the jQuery objects on the remote
+ * node that are no longer used? Perhaps we should just make setter
+ * methods return nothing to prevent confusion.
+ */
+
+/**
+ * @name jQluster.RemoteSelector#Effect Methods
+ * @method
+ *
+ * @desc This class has the following methods for visual effects.
+ *
+ * - `animate`
+ * - `fadeIn`
+ * - `fadeOut`
+ * - `fadeTo`
+ * - `fadeToggle`
+ * - `hide`
+ * - `show`
+ * - `slideDown`
+ * - `slideToggle`
+ * - `slideUp`
+ * - `toggle`
+ *
+ */
