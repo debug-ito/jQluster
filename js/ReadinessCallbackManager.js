@@ -1,13 +1,38 @@
 "use strict";
 
-// jQluster readiness callback manager
-// requires: jquery, util
+/**
+ * @file
+ * @author Toshio Ito
+ */
 
 if(!jQluster) { jQluster = {}; }
 
 (function(my, $) {
+    /**
+     * @class
+     * @alias jQluster.ReadinessCallbackManager
+     *
+     * @classdesc This class manages "readiness callbacks", callback
+     * functions that are called when certain remote nodes are ready
+     * for jQluster operations.
+     *
+     * You cannot listen to arbitrary remote nodes. If you want to
+     * know a remote node's readiness, the remote node must notify
+     * you. This is done by setting `notify` constructor argument of
+     * the remote node's ReadinessCallbackManager.
+     *
+     * @requires jQuery
+     * @requires util.js
+     * @requires Transport.js
+     *
+     * @param {jQluster.Transport} args.transport - the Transport
+     * object for the local node.
+     *
+     * @param {string[]} [args.notify=[]] - the list of remote
+     * Node IDs that this manager notifies of its readiness.
+     *
+     */
     var myclass = my.ReadinessCallbackManager = function(args) {
-        // @params: args.transport, args.notify = []
         var self = this;
         var doc_factories;
         if(!my.defined(args.transport)) {
@@ -41,8 +66,11 @@ if(!jQluster) { jQluster = {}; }
                 });
             });
         },
+        /**
+         * @private
+         * @returns true if this manager notifies its readiness to notified_node_id. false otherwise.
+         */
         _isNotifying: function(notified_node_id) {
-            // @return: true if this Factory notifies its readiness to notified_node_id. false otherwise.
             return this.notified_dict[notified_node_id] || false;
         },
         _beNotified: function(from_node_id) {
@@ -53,8 +81,11 @@ if(!jQluster) { jQluster = {}; }
                 callback();
             });
         },
+        /**
+         * @private
+         * @returns a promise, resolved if the remote node is available, rejected if not.
+         */
         _checkIfRemoteNodeAvailable: function(node_id) {
-            // @return: promise, resolved if the remote node is available, rejected if not.
             var self = this;
             var result_d = $.Deferred();
             self.transport.selectAndGet({
@@ -72,8 +103,19 @@ if(!jQluster) { jQluster = {}; }
             });
             return result_d.promise();
         },
+        /**
+         * Listen to a remote node for its readiness.
+         *
+         * Note that the `callback` is called immediately if the
+         * remote node is already ready. After that, the `callback`
+         * will be called every time the remote node gets ready (this
+         * happens more than once if the remote node page is reloaded)
+         *
+         * @param {string} node_id - Node ID of the remote node.
+         * @param {function} callback - the readiness callback function.
+         * @returns nothing
+         */
         listenToRemoteReadiness: function(node_id, callback) {
-            // @return nothing
             var self = this;
             if(!self.notify_listeners_for[node_id]) {
                 self.notify_listeners_for[node_id] = [];
