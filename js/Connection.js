@@ -33,15 +33,15 @@ if(!jQluster) { var jQluster = {}; }
         send: function() { throw "send() must be implemented"; },
 
         /**
-         * A message object that is exchanged via Connection.
          * @typedef {Object} jQluster.Connection~Message
+         * @desc A message object that is exchanged via Connection.
          * @see doc/protocol.md in jQluster package.
          */
         
         /** 
-         * A callback that is called when some data is received via this Connection.
          * @callback jQluster.Connection~ReceiveCallback
          * @param {jQluster.Connection~Message} message
+         * @desc A callback that is called when some data is received via this Connection.
          */
         
         /**
