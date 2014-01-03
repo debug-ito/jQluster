@@ -59,6 +59,8 @@ If you want to see internal APIs, you can generate the documentation by
 
     $ make doc
 
+Then open `doc/api/index.html`.
+
 Note that you need [jsdoc](https://github.com/jsdoc3/jsdoc) to
 generate the API doc. To install jsdoc,
 
