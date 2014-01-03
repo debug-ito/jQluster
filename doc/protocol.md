@@ -16,8 +16,6 @@ TODO. (common message fields including `body.in_reply_to`)
      "from": "Alice", "to": null,
      "body": { "node_id": "Alice" } }
 
-**TODO: body.node_id is not necessary. Modify the server implementation, too.**
-
 `register` message is sent from a node to the server. It's a request to register the node with the server. As such, the `to` field is `null`, meaning it's to the server.
 
 ### register_reply
@@ -35,8 +33,6 @@ If the registration succeeds, `body.error` field is `null`. Otherwise it contain
     {"message_id": ID, "message_type": "select_and_get",
      "from": "Alice", "to": "Bob",
      "body": { "eval_code": CODE, "node_id": "Bob" }}
-
-**TODO: body.node_id is not necessary**
 
 `select_and_get` message tells a remote node ("Bob") to execute some operation and report back its result.
 
@@ -63,8 +59,6 @@ If the operation fails, `body.error` is the reason of the error.
      "from": "Alice", "to": "Bob",
      "body": { "eval_code": CODE, "node_id": "Bob",
                "method": METHOD_NAME, "options": [OPT1, OPT2] }}
-
-**TODO: body.node_id is not necessary.**
 
 `select_and_listen` message tells a remote node ("Bob") to execute a method that requires a callback function.
 
