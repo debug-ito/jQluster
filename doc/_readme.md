@@ -25,9 +25,9 @@ Are you wondering why you need this, or why I created this? See the
 This plugin is very much **experimental**, and as you can imagine from
 the above description, this plugin is **potentially dangerous**.
 
-When you use it, always try to isolate remote node IDs. Remember that
-if a jQluster node "Alice" knows another node's ID "Bob", Alice can
-always manipulate Bob's DOM objects.
+When you use it, always try to isolate Node IDs. Remember that if a
+jQluster node "Alice" knows another node's ID "Bob", Alice can always
+manipulate Bob's DOM objects.
 
 
 ## Demo
@@ -35,19 +35,168 @@ always manipulate Bob's DOM objects.
 
 ## Getting Started
 
-(how to build jQluster, how to set up jQluster server)
+Before start using jQluster in your Web site, you have to do the
+following steps to prepare jQluster.
 
-## jQluster Tutorial
 
-(how to use jQluster in JavaScript code. Prerequisites.
- - init
- - remote jQuery
- - remote selector
- - setters
- - getters (returning promise)
- - remote event handlers
- - readiness notification
- - loopback transport )
+### Prepare the Server
+
+Currently jQluster needs a server that accepts/delivers messages
+from/to Web browsers.
+
+A server implementation is available as a Perl module called
+[jQluster::Server::WebSocket](https://metacpan.org/release/jQluster-Server-WebSocket). You
+can install it by
+
+    # wget http://cpanmin.us/ -O- | perl - jQluster::Server::WebSocket
+
+or if you already have `cpanm` installed, you can use
+
+    # cpanm jQluster::Server::WebSocket
+
+Installation may take a few minutes because it may install some other
+Perl modules.
+
+After that, start the server by
+
+    $ jqluster_server_websocket
+
+It listens to TCP port 5000 by default.
+
+
+### Get jqluster.js
+
+Get the source code and build jqluster.js
+
+**TODO: use a tag instead of master branch**
+
+    $ git clone https://github.com/debug-ito/jQluster.git
+    $ cd jQluster
+    $ make
+
+The `make` command generates the file `jqluster.js`.
+
+### Load jqluster.js with Prerequisites
+
+jQluster depends on the following external packages.
+
+- [jQuery](http://jquery.com/)
+- [jQuery XPath plugin](https://github.com/ilinsky/jquery-xpath)
+- [ellocate.js](https://github.com/bimech/ellocate.js)
+
+To use jQluster in your Web page, the page HTML must load
+`jqluster.js` followed by the above prerequisites.
+
+    <script type="text/javascript" src="jquery.js"></script>
+    <script type="text/javascript" src="jquery.xpath.js"></script>
+    <script type="text/javascript" src="ellocate.js"></script>
+    <script type="text/javascript" src="jqluster.js"></script>
+
+After that, you are ready to write jQluster code.
+
+
+## Using jQluster
+
+Below is the step-by-step guide to use jQluster in JavaScript code.
+
+### Initialization
+
+To use jQluster in your code, you have to initialize it first.
+
+    $.jqluster.init("Alice", "ws://localhost:5000/");
+
+The first argument, `"Alice"`, is the **Node ID** of this page. The
+second argument is the WebSocket URL to the jQluster server you
+prepared.
+
+Web pages that use jQluster are called "nodes", and they are
+identified by **Node IDs**. You can access other Web pages (that are
+possibly on other browsers on other machines) by specifying their Node
+IDs.
+
+The above code declares that the current node can be referred to as
+the Node ID `"Alice"` by other jQluster nodes. You can use any string
+for a Node ID.
+
+It's a bit tricky to have more than one Web pages share the same Node
+ID. Maybe you should avoid that.
+
+
+### Remote jQuery
+
+To access another jQluster node, obtain its **remote jQuery** object
+first.
+
+    var $bob = $.jqluster("Bob");
+
+The above code obtains the remote jQuery object for the node named
+`"Bob"`.
+
+A **remote jQuery** is similar to the `jQuery` object except that it
+operates on a remote node. You can use `$bob` just like you use `$`:
+
+    $bob("ul.hoge").children("li.foo").find("span").css("color", "red");
+
+The above code is equivalent to running the following code on the node "Bob".
+
+    $("ul.hoge").children("li.foo").find("span").css("color", "red");
+
+Easy, isn't it? See below for the full list of jQuery methods
+supported.
+
+Note that in the above example the node "Bob" must already be
+initialized. You can ensure that using readiness callbacks (see
+below).
+
+
+### Getter Methods
+
+Some jQuery methods return values associated with the selected DOM
+objects. For example,
+
+    var box_width = $("#some-box").width();
+
+this fetches the width of the specified box.
+
+jQluster supports this kind of getter methods, but it returns a
+[jQuery.Promise](http://api.jquery.com/Types/#Promise) object instead
+of the actual value.
+
+    var box_width_promise = $bob("#some-box").width();
+
+To obtain the actual width of the box, you have to call `then()`
+method on the promise.
+
+    box_width_promise.then(function(box_width) {
+        console.log("Width is " + box_width);
+    });
+
+This is because the operation on `$bob` may involve communication over
+the network that takes some time.
+
+Communication over the network may fail in some unfortunate
+situations, so you should get ready for it.
+
+    box_width_promise.then(function(box_width) {
+        console.log("Width is " + box_width);
+    }, function(error) {
+        console.error("jQluster getter method error: " + error);
+    });
+
+To use getter methods, you should be familiar with the concept of
+Promises. Sometimes they are called "Deferreds" or "Futures" in other
+contexts.
+
+
+### Remote Event Listeners
+
+
+### Readiness Notification and Callbacks
+
+
+### Loopback jQluster
+
+
 
 ## jQluster API Reference
 
