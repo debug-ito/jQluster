@@ -33,20 +33,20 @@ if(!jQluster) { var jQluster = {}; }
      *     notify: ["Bob"]
      * });
      * 
-     * var generator_for_bob = factory_on_alice.forRemoteNode("Bob");
+     * var jquery_for_bob = factory_on_alice.forRemoteNode("Bob");
      * 
-     * var remote_selector = generator_for_bob("#some-button");
+     * var remote_selector = jquery_for_bob("#some-button");
      * 
-     * generator_for_bob(function(arg) {
+     * jquery_for_bob(function(arg) {
      *     // The callback called when Bob is ready.
-     *     // arg === generator_for_bob
+     *     // arg === jquery_for_bob
      *     console.log("Bob is ready. I know it.");
      *     remote_selector.addClass("activated");
      * });
      * 
-     * factory_on_alice.forRemoteNode("Charlie", function(generator_for_charlie) {
+     * factory_on_alice.forRemoteNode("Charlie", function(jquery_for_charlie) {
      *     // The callback called when Charlie is ready.
-     *     generator_for_charlie("#some-box").text("Now Charlie is ready.");
+     *     jquery_for_charlie("#some-box").text("Now Charlie is ready.");
      * });
      *
      * @requires jQuery
@@ -149,7 +149,7 @@ if(!jQluster) { var jQluster = {}; }
          * remote node is ready for jQluster.
          */
         /**
-         * @typedef {function} jQluster.RemoteSelectorFactory~Generator
+         * @typedef {function} jQluster.RemoteSelectorFactory~RemoteJQuery
          *
          * @param
          * {string|jQluster.RemoteSelectorFactory~ReadinessCallback}
@@ -162,7 +162,8 @@ if(!jQluster) { var jQluster = {}; }
          * if the `target` is a selector string. Nothing otherwise.
          *
          * @desc A generator of {@link jQluster.RemoteSelector}s that
-         * is tied to a specific node.
+         * is tied to a specific node. This is similar to `jQuery`
+         * object.
          */
         /**
          * Create a function that generates {@link
@@ -175,7 +176,7 @@ if(!jQluster) { var jQluster = {}; }
          * [immediate_target=undefined] - If set, it is equivalent to
          * `forRemoteNode(remote_node_id)(immediate_target)`.
          *
-         * @returns {jQluster.RemoteSelectorFactory~Generator|any} If
+         * @returns {jQluster.RemoteSelectorFactory~RemoteJQuery|any} If
          * `immediate_target` is not specified, it returns a generator
          * function of RemoteSelectors.
          */

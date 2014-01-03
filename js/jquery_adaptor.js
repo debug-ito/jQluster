@@ -30,7 +30,7 @@
      * // Initialize the local node as "Alice".
      * $.jqluster.init("Alice", "ws://example.com/jqluster");
      * 
-     * // Get the generator on the node Bob.
+     * // Get the remote jQuery on the node Bob.
      * var $bob = $.jqluster("Bob");
      * 
      * $bob(function() {
