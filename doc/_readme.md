@@ -88,10 +88,12 @@ jQluster depends on the following external packages.
 To use jQluster in your Web page, the page HTML must load
 `jqluster.js` followed by the above prerequisites.
 
-    <script type="text/javascript" src="jquery.js"></script>
-    <script type="text/javascript" src="jquery.xpath.js"></script>
-    <script type="text/javascript" src="ellocate.js"></script>
-    <script type="text/javascript" src="jqluster.js"></script>
+```html
+<script type="text/javascript" src="jquery.js"></script>
+<script type="text/javascript" src="jquery.xpath.js"></script>
+<script type="text/javascript" src="ellocate.js"></script>
+<script type="text/javascript" src="jqluster.js"></script>
+```
 
 After that, you are ready to write jQluster code.
 
@@ -104,7 +106,9 @@ Below is the step-by-step guide to use jQluster in JavaScript code.
 
 To use jQluster in your code, you have to initialize it first.
 
-    $.jqluster.init("Alice", "ws://localhost:5000/");
+```javascript
+$.jqluster.init("Alice", "ws://localhost:5000/");
+```
 
 The first argument, `"Alice"`, is the **Node ID** of this page. The
 second argument is the WebSocket URL to the jQluster server you
@@ -128,7 +132,9 @@ ID. Maybe you should avoid that.
 To access another jQluster node, obtain its **remote jQuery** object
 first.
 
-    var $bob = $.jqluster("Bob");
+```javascript
+var $bob = $.jqluster("Bob");
+```
 
 The above code obtains the remote jQuery object for the node named
 `"Bob"`.
@@ -136,11 +142,15 @@ The above code obtains the remote jQuery object for the node named
 A **remote jQuery** is similar to the `jQuery` object except that it
 operates on a remote node. You can use `$bob` just like you use `$`:
 
-    $bob("ul.hoge").children("li.foo").find("span").css("color", "red");
+```javascript
+$bob("ul.hoge").children("li.foo").find("span").css("color", "red");
+```
 
 The above code is equivalent to running the following code on the node "Bob".
 
-    $("ul.hoge").children("li.foo").find("span").css("color", "red");
+```javascript
+$("ul.hoge").children("li.foo").find("span").css("color", "red");
+```
 
 Easy, isn't it? See below for the full list of jQuery methods
 supported.
@@ -155,7 +165,9 @@ below).
 Some jQuery methods return values associated with the selected DOM
 objects. For example,
 
-    var box_width = $("#some-box").width();
+```javascript
+var box_width = $("#some-box").width();
+```
 
 this fetches the width of the specified box.
 
@@ -163,14 +175,18 @@ jQluster supports this kind of getter methods, but it returns a
 [jQuery.Promise](http://api.jquery.com/Types/#Promise) object instead
 of the actual value.
 
-    var box_width_promise = $bob("#some-box").width();
+```javascript
+var box_width_promise = $bob("#some-box").width();
+```
 
 To obtain the actual width of the box, you have to call `then()`
 method on the promise.
 
-    box_width_promise.then(function(box_width) {
-        console.log("Width is " + box_width);
-    });
+```javascript
+box_width_promise.then(function(box_width) {
+    console.log("Width is " + box_width);
+});
+```
 
 This is because the operation on `$bob` may involve communication over
 the network that takes some time.
@@ -178,11 +194,13 @@ the network that takes some time.
 Communication over the network may fail in some unfortunate
 situations, so you should get ready for it.
 
-    box_width_promise.then(function(box_width) {
-        console.log("Width is " + box_width);
-    }, function(error) {
-        console.error("jQluster getter method error: " + error);
-    });
+```javascript
+box_width_promise.then(function(box_width) {
+    console.log("Width is " + box_width);
+}, function(error) {
+    console.error("jQluster getter method error: " + error);
+});
+```
 
 To use getter methods, you should be familiar with the concept of
 Promises. Sometimes they are called "Deferreds" or "Futures" in other
@@ -193,9 +211,11 @@ contexts.
 
 jQluster supports `on()` method.
 
-    $bob(".some-button").on("click", function(event) {
-        $bob(this).val("Clicked!");
-    });
+```javascript
+$bob(".some-button").on("click", function(event) {
+    $bob(this).val("Clicked!");
+});
+```
 
 Like jQuery's `on()` method, you can wrap the context object (`this`)
 with the remote jQuery (`$bob`) to access the remote DOM object on
@@ -211,24 +231,30 @@ is a limitation of jQluster.
 With jQuery, you can register a callback function that is called when
 the page is ready.
 
-    $(function() {
-        console.log("This page is ready.");
-    });
+```javascript
+$(function() {
+    console.log("This page is ready.");
+});
+```
 
 Similarly jQluster supports a callback that is called when a remote
 node is ready for jQluster operations.
 
-    // In Alice
-    $bob(function() {
-        console.log("This is executed when the node Bob is ready.");
-    });
+```javascript
+// In Alice
+$bob(function() {
+    console.log("This is executed when the node Bob is ready.");
+});
+```
 
 However, to have the callback actually executed, **the node Bob must
 explicitly notify the node Alice of its readiness.** This is done by
 passing an option to `$.jqluster.init()` method.
 
-    // In Bob
-    $.jqluster.init("Bob", "ws://localhost:5000/", { notify: ["Alice"] });
+```javascript
+// In Bob
+$.jqluster.init("Bob", "ws://localhost:5000/", { notify: ["Alice"] });
+```
 
 The `notify` option tells jQluster to notify the node Alice when it's
 ready for jQluster.
@@ -247,19 +273,23 @@ be used with a single screen.
 To ease creating such a flexible application, jQluster supports a
 "loopback" mode.
 
-    $.jqluster.init("Alice", "loopback");
+```javascript
+$.jqluster.init("Alice", "loopback");
+```
 
 Instead of a WebSocket URL, give `"loopback"` as the second argument
 for `$.jqluster.init()`. If jQluster is initialized that way, **every
 jQluster operation is targeted to itself.**
 
-    $.jqluster.init(
-        "Alice",
-        is_multi_screen_mode ? "ws://localhost:5000/" : "loopback"
-    );
-    
-    var $bob = $.jqluster("Bob");
-    $bob("#some-button").trigger("click");
+```javascript
+$.jqluster.init(
+    "Alice",
+    is_multi_screen_mode ? "ws://localhost:5000/" : "loopback"
+);
+
+var $bob = $.jqluster("Bob");
+$bob("#some-button").trigger("click");
+```
 
 If `is_multi_screen_mode === false` in the above example, the
 operation to `$bob` is actually targeted to Alice.
