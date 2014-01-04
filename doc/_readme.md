@@ -32,10 +32,11 @@ manipulate Bob's DOM objects.
 
 ## Demo
 
+TODO
 
 ## Getting Started
 
-Before start using jQluster in your Web site, you have to do the
+Before you start using jQluster in your Web site, you have to do the
 following steps to prepare jQluster.
 
 
@@ -144,7 +145,7 @@ The above code is equivalent to running the following code on the node "Bob".
 Easy, isn't it? See below for the full list of jQuery methods
 supported.
 
-Note that in the above example the node "Bob" must already be
+Note that in the above example the jQluster node "Bob" must already be
 initialized. You can ensure that using readiness callbacks (see
 below).
 
@@ -190,11 +191,82 @@ contexts.
 
 ### Remote Event Listeners
 
+jQluster supports `on()` method.
+
+    $bob(".some-button").on("click", function(event) {
+        $bob(this).val("Clicked!");
+    });
+
+Like jQuery's `on()` method, you can wrap the context object (`this`)
+with the remote jQuery (`$bob`) to access the remote DOM object on
+which the event occurred.
+
+Note that **the return value from the callback function is currently
+ignored.** So the event is always propagated to upper elements. This
+is a limitation of jQluster.
+
 
 ### Readiness Notification and Callbacks
 
+With jQuery, you can register a callback function that is called when
+the page is ready.
+
+    $(function() {
+        console.log("This page is ready.");
+    });
+
+Similarly jQluster supports a callback that is called when a remote
+node is ready for jQluster operations.
+
+    // In Alice
+    $bob(function() {
+        console.log("This is executed when the node Bob is ready.");
+    });
+
+However, to have the callback actually executed, **the node Bob must
+explicitly notify the node Alice of its readiness.** This is done by
+passing an option to `$.jqluster.init()` method.
+
+    // In Bob
+    $.jqluster.init("Bob", "ws://localhost:5000/", { notify: ["Alice"] });
+
+The `notify` option tells jQluster to notify the node Alice when it's
+ready for jQluster.
+
+Note that the readiness callback registered in Alice can be executed
+more than once. This happens when the node Bob is loaded by more than
+one browsers, or it is reloaded.
+
 
 ### Loopback jQluster
+
+jQluster makes it easy to create a Web application that is spread over
+multiple screens. However it'd be great if the application could also
+be used with a single screen.
+
+To ease creating such a flexible application, jQluster supports a
+"loopback" mode.
+
+    $.jqluster.init("Alice", "loopback");
+
+Instead of a WebSocket URL, give `"loopback"` as the second argument
+for `$.jqluster.init()`. If jQluster is initialized that way, **every
+jQluster operation is targeted to itself.**
+
+    $.jqluster.init(
+        "Alice",
+        is_multi_screen_mode ? "ws://localhost:5000/" : "loopback"
+    );
+    
+    var $bob = $.jqluster("Bob");
+    $bob("#some-button").trigger("click");
+
+If `is_multi_screen_mode === false` in the above example, the
+operation to `$bob` is actually targeted to Alice.
+
+So if you organize your Web application carefully, you can quickly
+switch between the multi-screen and single-screen modes by simply
+modifying invocation of `$.jqluster.init()` method.
 
 
 
