@@ -12,7 +12,7 @@ With jQluster, you can
 - Set data to DOM objects in other browsers.
 - Listen to events at DOM objects in other browsers.
 - Trigger events at DOM objects in other browsers.
-- Perform above operations via almost the same API as jQuery's.
+- Perform the above operations via almost the same API as jQuery's.
 
 Are you wondering why you need this, or why I created this? See the
 "Motivation" section below.
@@ -86,7 +86,7 @@ jQluster depends on the following external packages.
 - [ellocate.js](https://github.com/bimech/ellocate.js)
 
 To use jQluster in your Web page, the page HTML must load
-`jqluster.js` followed by the above prerequisites.
+`jqluster.js` after the above prerequisites.
 
 ```html
 <script type="text/javascript" src="jquery.js"></script>
@@ -221,9 +221,9 @@ Like jQuery's `on()` method, you can wrap the context object (`this`)
 with the remote jQuery (`$bob`) to access the remote DOM object on
 which the event occurred.
 
-Note that **the return value from the callback function is currently
-ignored.** So the event is always propagated to upper elements. This
-is a limitation of jQluster.
+Note that **the return value from the callback function is ignored.**
+So the event is always propagated to upper elements. This is a
+limitation of jQluster.
 
 
 ### Readiness Notification and Callbacks
@@ -291,7 +291,7 @@ var $bob = $.jqluster("Bob");
 $bob("#some-button").trigger("click");
 ```
 
-If `is_multi_screen_mode === false` in the above example, the
+If `is_multi_screen_mode == false` in the above example, the
 operation to `$bob` is actually targeted to Alice.
 
 So if you organize your Web application carefully, you can quickly
@@ -324,7 +324,7 @@ generate the API doc. To install jsdoc,
 
 ## Motivation
 
-Because Web browsers are everywhere, in every form.
+I wrote jQluster because Web browsers are everywhere, in every form.
 
 Web browsers are so everywhere that it's not unusual that we have more
 than one of them at hand. They are in your PCs, smart phones and
