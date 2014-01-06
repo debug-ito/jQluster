@@ -321,6 +321,9 @@ generate the API doc. To install jsdoc,
 
         # npm install -g jsdoc
 
+## Behind the Scene
+
+(how jQluster works. pointer to protocol.md)
 
 ## Motivation
 
