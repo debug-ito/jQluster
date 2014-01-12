@@ -75,7 +75,8 @@ Get the source code and build jqluster.js
     $ cd jQluster
     $ make
 
-The `make` command generates the file `jqluster.js`.
+The `make` command generates the file `jqluster-VERSION.js`. `VERSION`
+is the version number.
 
 ### Load jqluster.js with Prerequisites
 
@@ -92,7 +93,7 @@ To use jQluster in your Web page, the page HTML must load
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="jquery.xpath.js"></script>
 <script type="text/javascript" src="ellocate.js"></script>
-<script type="text/javascript" src="jqluster.js"></script>
+<script type="text/javascript" src="jqluster-VERSION.js"></script>
 ```
 
 After that, you are ready to write jQluster code.

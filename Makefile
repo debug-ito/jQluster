@@ -1,3 +1,5 @@
+VERSION=1.00
+PRODUCT=jqluster-$(VERSION).js
 
 SRC=$(addprefix js/, \
       util.js Connection.js ConnectionWebSocket.js ServerLocal.js ConnectionLocal.js \
@@ -5,7 +7,7 @@ SRC=$(addprefix js/, \
       RemoteSelector.js ReadinessCallbackManager.js ReadinessCallbackManagerLoopback.js \
       RemoteSelectorFactory.js jquery_adaptor.js)
 
-jqluster.js: $(SRC)
+$(PRODUCT): $(SRC)
 	/bin/cat $(SRC) > $@
 
 doc: doc/api/index.html
@@ -14,4 +16,4 @@ doc/api/index.html: $(SRC) doc/jsdoc_readme.md
 	mkdir -p doc/api/ && jsdoc -c jsdoc.conf.json -d doc/api $^
 
 clean:
-	/bin/rm -rf jqluster.js doc/api
+	/bin/rm -rf $(PRODUCT) doc/api
