@@ -125,7 +125,7 @@ the Node ID `"Alice"` by other jQluster nodes. You can use any string
 for a Node ID.
 
 It's a bit tricky to have more than one Web pages share the same Node
-ID. Maybe you should avoid that.
+ID. See below for details.
 
 
 ### Remote jQuery
@@ -264,6 +264,9 @@ Note that the readiness callback registered in Alice can be executed
 more than once. This happens when the node Bob is loaded by more than
 one browsers, or it is reloaded.
 
+### Sharing a Node ID with More than One Nodes
+
+TODO. it's experimental. basic rules only.
 
 ### Loopback jQluster
 
