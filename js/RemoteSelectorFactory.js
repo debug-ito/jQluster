@@ -67,6 +67,12 @@ if(!jQluster) { var jQluster = {}; }
      * @param {string[]} [args.notify=[]] - A list of Node ID strings
      * that it notifies of its readiness.
      * @see {@link jQluster.ReadinessCallbackManager}
+     *
+     * @todo What are supposed to do if the initialization fails? Like
+     * when the WebSocket server is down? In this case, the error is
+     * delayed so we need a promise to report it. Maybe we should
+     * create a factory method for RemoteSelectorFactory instead of
+     * the plain constructor.
      */
     var myclass = my.RemoteSelectorFactory = function(args) {
         if(!my.defined(args.node_id)) {

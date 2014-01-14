@@ -20,6 +20,9 @@ if(!jQluster) { var jQluster = {}; }
      * @requires Connection.js
      *
      * @param websocket_url - WebSocket URL ("ws://...") that it connects to.
+     *
+     * @todo WebSockets may be closed from the server side. What
+     * should we do in this case?
      */
     var myclass = my.ConnectionWebSocket = function(websocket_url) {
         superclass.apply(this);
