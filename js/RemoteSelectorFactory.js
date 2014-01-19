@@ -158,14 +158,21 @@ if(!jQluster) { var jQluster = {}; }
          * @typedef {function} jQluster.RemoteSelectorFactory~RemoteJQuery
          *
          * @param
-         * {string|jQluster.RemoteSelectorFactory~ReadinessCallback}
-         * target - If string, it is interpreted as a jQuery selector
-         * string. If function, it is interpreted as a callback
+         * {string|window|document|jQluster.Transport~RemoteDOMPointer|jQluster.RemoteSelectorFactory~ReadinessCallback}
+         * target - If function, it is interpreted as a callback
          * function that is called when the remote node is ready for
-         * jQluster.
+         * jQluster. Otherwise, it is interpreted as a selector.
          *
-         * @returns {jQluster.RemoteSelector|nothing} A RemoteSelector
-         * if the `target` is a selector string. Nothing otherwise.
+         * @returns {jQluster.RemoteSelector|nothing} If `target` is a
+         * function, it returns nothing.  Otherwise it returns a
+         * RemoteSelector following the rule below.
+         *
+         * - If `target` is a string: `target` is interpreted as
+         *   jQuery selector string. It returns the RemoteSelector for
+         *   that selector.
+         * - If `target` is a RemoteDOMPointer: It returns the RemoteSelector specified by the pointer.
+         * - If `target` is the `window`: It returns the RemoteSelector for `$(window)`.
+         * - If `target` is the `document`: It returns the RemoteSelector for `$(document)`.
          *
          * @desc A generator of {@link jQluster.RemoteSelector}s that
          * is tied to a specific node. This is similar to `jQuery`
