@@ -327,7 +327,8 @@ modifying invocation of `$.jqluster.init()` method.
 $.jqluster.init(my_node_id, transport_id, options);
 ```
 
-Initialize jQluster. You must call this once before doing any jQluster operation.
+Initialize jQluster. You must call this before doing any jQluster
+operation. You must not call this more than once in the same Web page.
 
 - `my_node_id`: Node ID for this Web page.
 - `transport_id`: Either a WebSocket URL to the jQluster server or the string `"loopback"`.
@@ -364,8 +365,9 @@ Argument `target` accepts the following types.
 - A string. It is interpreted as a jQuery CSS selector string.
 - The `window` object. Then it returns `$(window)` for the remote node.
 - The `document` object. Then it returns `$(document)` for the remote node.
-- The `this` object in a remote event listener. Then it returns the remote DOM object
-  on which the event occurred. See `on()` method below.
+- The `this` object in a remote event listener. Then it returns the
+  remote DOM object on which the event occurred. Can be used with
+  effects methods, `on()` method and `each()` method of Remote Selector.
 
 Return value `remote_selector` defines some jQuery methods to
 operatate on the remote node. See below for detail.
@@ -509,6 +511,9 @@ Set an event handler to the remote node.
 In the callback function, you can access the event source by wrapping
 `this` object with the remote jQuery, i.e., `$remote_jquery(this)`.
 
+Note that **the return value from the callback function is ignored.**
+This means the event is always propagated to the upper elements.
+
 
 ```javascript
 remote_selector.each(function(index, elem) { ... })
@@ -543,7 +548,22 @@ generate the API doc. To install jsdoc,
 
 ## Behind the Scene
 
-(how jQluster works. pointer to protocol.md)
+To access data in a remote node, jQluster nodes communicates with each
+other over the network.
+
+Currently jQluster uses WebSocket for comminication between nodes. The
+communication forms a star topology with a jQluster server being
+center.
+
+    [Node "Alice"] --WebSocket-- [Server] --WebSocket-- [Node "Bob"]
+                                     |
+                                     +-- other nodes...
+
+Over the WebSocket network, jQluster nodes exchange messages with each
+other. The messages conform to the jQluster messaging protocol. See
+`doc/protocol.md` for details about the protocol.
+
+
 
 ## Motivation
 
