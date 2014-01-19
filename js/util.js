@@ -16,7 +16,11 @@ if(!jQluster) { var jQluster = {}; }
      * @lends jQluster
      */
     var utils = {
-        /** Create a UUID string */
+        /**
+         * Create a UUID string. UUIDs are mainly used for message IDs.
+         *
+         * @todo Is this REALLY global unique???
+         */
         uuid: function() {
             // http://stackoverflow.com/questions/105034/how-to-create-a-guid-uuid-in-javascript
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
