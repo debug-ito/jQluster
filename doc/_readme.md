@@ -63,6 +63,7 @@ After that, start the server by
     $ jqluster_server_websocket
 
 It listens to TCP port 5000 by default.
+Set `--help` option to see options.
 
 
 ### Get jqluster.js
@@ -113,11 +114,12 @@ $.jqluster.init("Alice", "ws://localhost:5000/");
 
 The first argument, `"Alice"`, is the **Node ID** of this page. The
 second argument is the WebSocket URL to the jQluster server you
-prepared.
+prepared. To initialize jQluster in this way, the browser must support
+WebSocket.
 
 Web pages that use jQluster are called "nodes", and they are
 identified by **Node IDs**. You can access other Web pages (that are
-possibly on other browsers on other machines) by specifying their Node
+possibly in other browsers on other machines) by specifying their Node
 IDs.
 
 The above code declares that the current node can be referred to as
@@ -222,9 +224,9 @@ Like jQuery's `on()` method, you can wrap the context object (`this`)
 with the remote jQuery (`$bob`) to access the remote DOM object on
 which the event occurred.
 
-Note that **the return value from the callback function is ignored.**
-So the event is always propagated to upper elements. This is a
-limitation of jQluster.
+Note that **the return value of the callback function is ignored.** So
+the event is always propagated to upper elements. This is a limitation
+of jQluster.
 
 
 ### Readiness Notification and Callbacks
@@ -264,9 +266,22 @@ Note that the readiness callback registered in Alice can be executed
 more than once. This happens when the node Bob is loaded by more than
 one browsers, or it is reloaded.
 
-### Sharing a Node ID with More than One Nodes
+### Sharing a Node ID by More than One Pages
 
-TODO. it's experimental. basic rules only.
+It is possible for more than one Web pages to share the same Node ID,
+but you should be aware that jQluster cannot distinguish those
+individual pages.
+
+Suppose Web pages `a1` and `a2` have the same Node ID `a`. Then, the
+basic rules are:
+
+- Setter methods and effect methods to the node `a` affect both `a1` and `a2`.
+- Getter methods to the node `a` retrieve a value from either `a1` or `a2`.
+- `on()` method to the node `a` sets a callback to both `a1` and `a2`.
+  The callback is executed when an event occurs in either `a1` or `a2`.
+- A readiness callback for the node `a` is executed every time either
+  `a1` or `a2` gets ready.
+
 
 ### Loopback jQluster
 
@@ -281,8 +296,8 @@ To ease creating such a flexible application, jQluster supports a
 $.jqluster.init("Alice", "loopback");
 ```
 
-Instead of a WebSocket URL, give `"loopback"` as the second argument
-for `$.jqluster.init()`. If jQluster is initialized that way, **every
+Instead of a WebSocket URL, give `"loopback"` to `$.jqluster.init()`
+as the second argument. If jQluster is initialized that way, **every
 jQluster operation is targeted to itself.**
 
 ```javascript
@@ -306,7 +321,208 @@ modifying invocation of `$.jqluster.init()` method.
 
 ## jQluster API Reference
 
-(detailed API and limitations)
+### $.jqluster namespace
+
+```javascript
+$.jqluster.init(my_node_id, transport_id, options);
+```
+
+Initialize jQluster. You must call this once before doing any jQluster operation.
+
+- `my_node_id`: Node ID for this Web page.
+- `transport_id`: Either a WebSocket URL to the jQluster server or the string `"loopback"`.
+- `options`: Optional. An object that keeps options.
+
+If `transport_id` is `"loopback"`, jQluster goes into the loopback
+mode. Every jQluster operation will be targeted to the page itself.
+
+Currently there is one possible field in `options` object.
+
+- `options.notify`: an array of Node IDs that this node notifies of its readiness.
+
+
+```javascript
+$remote_jquery = $.jqluster(node_id);
+```
+
+Obtain a remote jQuery object for the given remote node specified by `node_id`.
+
+Return value `$remote_jquery` is a remote jQuery object, which is
+similar to `jQuery` but it operates on the remote node.
+
+
+### Remote jQuery object
+
+```javascript
+remote_selector = $remote_jquery(target)
+```
+
+Select a set of DOM objects in the remote node by `target`.
+
+Argument `target` accepts the following types.
+
+- A string. It is interpreted as a jQuery CSS selector string.
+- The `window` object. Then it returns `$(window)` for the remote node.
+- The `document` object. Then it returns `$(document)` for the remote node.
+- The `this` object in a remote event listener. Then it returns the remote DOM object
+  on which the event occurred. See `on()` method below.
+
+Return value `remote_selector` defines some jQuery methods to
+operatate on the remote node. See below for detail.
+
+
+```javascript
+$remote_jquery(function($r) { ... });
+```
+
+Register a readiness callback function for the remote node.
+
+If the remote node notifies its readiness to this node, the callback
+is called when the remote node gets ready.
+
+The argument for the callback is the same object as `$remote_jquery`.
+
+### Remote Selector - Selection Methods
+
+jQuery methods to select/filter DOM objects further.
+
+Some methods (such as `filter`) accepts arguments, but **only string-type arguments are supported.**
+
+- `children`
+- `closest`
+- `contents`
+- `end`
+- `eq`
+- `filter`
+- `find`
+- `first`
+- `has`
+- `is`
+- `last`
+- `nextAll`
+- `nextUntil`
+- `next`
+- `not`
+- `offsetParent`
+- `parent`
+- `parentsUntil`
+- `parents`
+- `prevAll`
+- `prevUntil`
+- `prev`
+- `siblings`
+- `slice`
+
+### Remote Selector - Accessor Methods
+
+jQuery methods to get/set attributes and properties from/to DOM
+objects. It also includes methods for DOM manipulation.
+
+Note that **only strings or plain objects are supported as arguments.**
+Functions, HTMLElements or jQuery objects are not supported.
+
+Note also that getter methods return a
+[jQuery.Promise](http://api.jquery.com/Types/#Promise) object instead
+of the actual value. To get the actual value, you must use `then()`
+method on the promise.
+
+- `addClass`
+- `after`
+- `appendTo`
+- `append`
+- `attr`
+- `before`
+- `css`
+- `data`
+- `detach`
+- `empty`
+- `hasClass`
+- `height`
+- `html`
+- `index`
+- `innerHeight`
+- `innerWidth`
+- `insertAfter`
+- `insertBefore`
+- `off`
+- `offset`
+- `outerHeight`
+- `outerWidth`
+- `position`
+- `prependTo`
+- `prepend`
+- `promise`
+- `prop`
+- `removeAttr`
+- `removeClass`
+- `removeProp`
+- `remove`
+- `replaceAll`
+- `replaceWith`
+- `scrollLeft`
+- `scrollTop`
+- `size`
+- `text`
+- `toggleClass`
+- `trigger`
+- `unwrap`
+- `val`
+- `width`
+- `wrapAll`
+- `wrapInner`
+- `wrap`
+
+### Remote Selector - Effects Methods
+
+jQuery methods for visual effects.
+
+You can pass the callback function as the last argument to these
+methods. The callback function is executed every time the effect is
+completed for an element.
+
+jQuery supports named arguments
+(e.g. `fadeIn({duration: 100, step: function() { ... }})`),
+but **it's not supported in jQluster.**
+
+- `animate`
+- `fadeIn`
+- `fadeOut`
+- `fadeTo`
+- `fadeToggle`
+- `hide`
+- `show`
+- `slideDown`
+- `slideToggle`
+- `slideUp`
+- `toggle`
+
+### Remote Selector - Other Methods
+
+```javascript
+remote_selector.on(events, function(event) { ... });
+remote_selector.on(events, selector, function(event) { ... });
+remote_selector.on(events, selector, data, function(event) { ... });
+```
+
+Set an event handler to the remote node.
+
+In the callback function, you can access the event source by wrapping
+`this` object with the remote jQuery, i.e., `$remote_jquery(this)`.
+
+
+```javascript
+remote_selector.each(function(index, elem) { ... })
+```
+
+Iterate over the `remote_selector` and executes the given function for
+each element in it.
+
+In the callback function, you can access the matched element by wrapping
+`this` object with the remote jQuery, i.e., `$remote_jquery(this)`.
+
+This method is more experimental than others. I think it won't work as
+you expect when there are more than one pages with the same Node ID.
+
 
 ### jQluster internal APIs
 
@@ -356,7 +572,6 @@ That is where jQluster comes in handy. jQluster hides those stuff
 under high-level API that is very similar to jQuery's. I guess you are
 familiar with jQuery API, right? If you are, it's a piece of cake to
 create multi-screen Web applications with jQluster.
-
 
 
 ## Author
