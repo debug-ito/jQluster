@@ -552,7 +552,7 @@ To access data in a remote node, jQluster nodes communicates with each
 other over the network.
 
 Currently jQluster uses WebSocket for comminication between nodes. The
-communication forms a star topology with a jQluster server being
+communication forms the star topology with a jQluster server being
 center.
 
     [Node "Alice"] --WebSocket-- [Server] --WebSocket-- [Node "Bob"]

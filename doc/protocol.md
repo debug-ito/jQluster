@@ -1,12 +1,54 @@
 # jQluster Messaging Protocol
 
-Introduction. TODO.
+This document describes how jQluster nodes communicate with each other.
 
 ## Basics
 
-TODO. (common message fields including `body.in_reply_to`)
+- Any jQluster node can send messages to any other node.
+- Messages are categorized into three categories
+    - Request. Messages that tell other nodes to do something.
+    - Reply. Messages in reply to a request.
+    - Signal. Messages that tell other nodes that something just happened.
+- A message is an object that can be represented by JSON.
+
+
+## Message Structure
+
+Messages are structured as follows.
+
+    { "message_id": ID, "message_type": TYPE,
+      "from": FROM, "to": TO, "body": BODY }
+
+- `message_id` (string): The global unique ID of the message.
+- `message_type` (string): The type of the message. See below for possible message types.
+- `from` (string): The jQluster node ID of the sender. If `null`, the message is sent by the server.
+- `to` (string): The jQluster node ID of the destination node. If `null`, the message is to the server.
+- `body` (object): The message body.
+
+Messages whose type is `*_reply` have `body.in_reply_to` field. It is the `message_id` of the request message it replies to.
+
 
 ## Server's Role
+
+The server is a hub of jQluster nodes. It accepts connections from jQluster nodes, receives messages from them and delivers the messages to appropriate destination nodes. So it forms a star topology network.
+
+To join the server's network, a jQluster node has to send `register` message to the server. The server accepts the registration request and sends back a `register_reply` message. After that the server starts delivering messages to the new node. The new node can pass messages to the server, which then delivers them.
+
+Currently there is no "unregister" message. A node is unregistered when its underlying connection to the server is lost.
+
+Note that jQluster as such would not need any server if the nodes could exchange messages directly. The server is necessary mostly because of limitation of Web browsers.
+
+## WebSocket Implementation
+
+Currently a WebSocket implementation of this protocol is available in jQluster package. Its server implementation is available [here](https://metacpan.org/pod/jQluster::Server::WebSocket).
+
+- When a node sends a jQluster message, it encodes the message in JSON and sends to the server as a text WebSocket message.
+- Registration is done by the following sequence.
+    1. A node establishes a WebSocket connection to the server.
+    2. A node sends `register` message to the server.
+    3. The server replies to the `register` message.
+- A node is unregistered from the server if the WebSocket connection between them is lost.
+
 
 ## Message Types
 
@@ -16,7 +58,7 @@ TODO. (common message fields including `body.in_reply_to`)
      "from": "Alice", "to": null,
      "body": { "node_id": "Alice" } }
 
-`register` message is sent from a node to the server. It's a request to register the node with the server. As such, the `to` field is `null`, meaning it's to the server.
+`register` message is sent from a node to the server. It's a request to register the node with the server. Thus the `to` field is `null`, meaning it's to the server.
 
 ### register_reply
 
@@ -24,7 +66,7 @@ TODO. (common message fields including `body.in_reply_to`)
      "from": null, "to": "Alice",
      "body": { "error": null, "in_reply_to": REGISTER_ID }}
 
-`register_reply` message is sent as a response to `register`. As such, `to` field is `null`, meaning it's from the server.
+`register_reply` message is sent as a response to `register`. Thus `to` field is `null`, meaning it's from the server.
 
 If the registration succeeds, `body.error` field is `null`. Otherwise it contains the reason of the error.
 
