@@ -578,7 +578,6 @@ other. The messages conform to the jQluster messaging protocol. See
 `doc/protocol.md` for details about the protocol.
 
 
-
 ## Motivation
 
 I wrote jQluster because Web browsers are everywhere, in every form.
@@ -606,6 +605,10 @@ That is where jQluster comes in handy. jQluster hides those stuff
 under high-level API that is very similar to jQuery's. I guess you are
 familiar with jQuery API, right? If you are, it's a piece of cake to
 create multi-screen Web applications with jQluster.
+
+## License
+
+jQluster is provided under the [MIT license](http://opensource.org/licenses/MIT).
 
 
 ## Author
