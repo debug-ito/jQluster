@@ -4,6 +4,8 @@ This document describes how jQluster nodes communicate with each other.
 
 ## Basics
 
+    [Node A] <---> [Server (if necessary)] <---> [Node B]
+
 - Any jQluster node can send messages to any other node.
 - Messages are categorized into three categories
     - Request. Messages that tell other nodes to do something.
@@ -32,7 +34,7 @@ Messages whose type is `*_reply` have `body.in_reply_to` field. It is the `messa
 
 The server is a hub of jQluster nodes. It accepts connections from jQluster nodes, receives messages from them and delivers the messages to appropriate destination nodes. So it forms a star topology network.
 
-To join the server's network, a jQluster node has to send `register` message to the server. The server accepts the registration request and sends back a `register_reply` message. After that the server starts delivering messages to the new node. The new node can pass messages to the server, which then delivers them.
+To join the server's network, a jQluster node has to send `register` message to the server. The server accepts the registration request and sends back a `register_reply` message. After that, the server starts delivering messages to the new node. The new node can pass messages to the server, which then delivers them.
 
 Currently there is no "unregister" message. A node is unregistered when its underlying connection to the server is lost.
 
@@ -46,11 +48,13 @@ Currently a WebSocket implementation of this protocol is available in jQluster p
 - Registration is done by the following sequence.
     1. A node establishes a WebSocket connection to the server.
     2. A node sends `register` message to the server.
-    3. The server replies to the `register` message.
+    3. The server replies to the `register_reply` message.
 - A node is unregistered from the server if the WebSocket connection between them is lost.
 
 
 ## Message Types
+
+Below is the full list of possible values for `message_type` field.
 
 ### register
 
@@ -66,7 +70,7 @@ Currently a WebSocket implementation of this protocol is available in jQluster p
      "from": null, "to": "Alice",
      "body": { "error": null, "in_reply_to": REGISTER_ID }}
 
-`register_reply` message is sent as a response to `register`. Thus `to` field is `null`, meaning it's from the server.
+`register_reply` message is sent as a response to `register`. Thus `from` field is `null`, meaning it's from the server.
 
 If the registration succeeds, `body.error` field is `null`. Otherwise it contains the reason of the error.
 
@@ -78,7 +82,7 @@ If the registration succeeds, `body.error` field is `null`. Otherwise it contain
 
 `select_and_get` message tells a remote node ("Bob") to execute some operation and report back its result.
 
-Currently `body.eval_code` is a JavaScript string that is evaluated by the remote node.
+`body.eval_code` is a JavaScript string that is evaluated by the remote node. The remote node then replies with the result of the code.
 
 Note that this message type may be deprecated in the future because evaluating arbitrary code (`body.eval_code`) is dangerous.
 
@@ -141,7 +145,7 @@ If the `select_and_listen` operation succeeds, `body.error` field is `null`. Oth
 
 `body.callback_this` field is the context object of the callback function for the event. It is the object you refer to as `this` in the callback function.
 
-`body.callback_args` field. is an array of argument objects supplied to the callback function for the event.
+`body.callback_args` field is an array of argument objects supplied to the callback function for the event.
 
 Note that `body.callback_this` and `body.callback_args` can contain "remote DOM pointers". See below for detail.
 
@@ -158,9 +162,8 @@ To do that, jQluster protocol defines a remote DOM pointer object that is struct
       "remote_xpath": XPATH_TO_THE_DOM
     }
 
-`remote_node_id` field is the jQluster node ID where the remote DOM exists.
-
-`remote_xpath` field is the XPath string pointing to the DOM object.
+- `remote_node_id` (string): The jQluster node ID where the remote DOM exists.
+- `remote_xpath` (string): The XPath string pointing to the DOM object.
 
 
 ## Author
