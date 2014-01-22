@@ -126,8 +126,6 @@ Note that this message type may be deprecated in the future because evaluating a
      "from": "Bob", "to": "Alice",
      "body": { "error": null, "result": "OK", "in_reply_to": REQUEST_ID }}
 
-**TODO: test the order of select_and_listen_reply and signal messages**
-
 `select_and_listen_reply` message is a response to a `select_and_listen` message.  It is sent before any `signal` message is sent.
 
 If the `select_and_listen` operation succeeds, `body.error` field is `null`. Otherwise, `body.error` is the reason of the error.
