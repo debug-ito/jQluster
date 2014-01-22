@@ -69,7 +69,9 @@ if(!jQluster) { var jQluster = {}; }
                     myclass.error("WebSocket error: " + e);
                 };
             },
-            /** send a message via the WebSocket connection. */
+            /**
+             * send a message via the WebSocket connection.
+             */
             send: function(message) {
                 var self = this;
                 if(!my.defined(self.websocket) || !self.is_socket_ready) {

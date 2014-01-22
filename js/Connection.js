@@ -28,7 +28,12 @@ if(!jQluster) { var jQluster = {}; }
         /**
          * Send data via this Connection.
          * @param {jQluster.Connection~Message} message
+         * @returns nothing
          * @abstract
+         *
+         * @todo send() may fail, for example when the connection is
+         * lost. What should we do in this case? Maybe it should
+         * return a promise indicating whether it succeeds or not.
          */
         send: function() { throw "send() must be implemented"; },
 
