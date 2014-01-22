@@ -1,4 +1,4 @@
-VERSION=1.00
+VERSION=0.01
 PRODUCT=jqluster-$(VERSION).js
 
 SRC=$(addprefix js/, \
