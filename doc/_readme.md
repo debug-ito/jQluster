@@ -266,9 +266,9 @@ Note that the readiness callback registered in Alice can be executed
 more than once. This happens when the node Bob is loaded by more than
 one browsers, or it is reloaded.
 
-### Sharing a Node ID by More than One Pages
+### Sharing a Node ID with More than One Pages
 
-It is possible for more than one Web pages to share the same Node ID,
+    It is possible for more than one Web pages to share the same Node ID,
 but you should be aware that jQluster cannot distinguish those
 individual pages.
 
@@ -330,16 +330,16 @@ $.jqluster.init(my_node_id, transport_id, options);
 Initialize jQluster. You must call this before doing any jQluster
 operation. You must not call this more than once in the same Web page.
 
-- `my_node_id`: Node ID for this Web page.
-- `transport_id`: Either a WebSocket URL to the jQluster server or the string `"loopback"`.
-- `options`: Optional. An object that keeps options.
+- `my_node_id` (string): Node ID for this Web page.
+- `transport_id` (string): Either a WebSocket URL to the jQluster server or the string `"loopback"`.
+- `options` (object): Optional. An object that keeps options.
 
 If `transport_id` is `"loopback"`, jQluster goes into the loopback
 mode. Every jQluster operation will be targeted to the page itself.
 
 Currently there is one possible field in `options` object.
 
-- `options.notify`: an array of Node IDs that this node notifies of its readiness.
+- `options.notify` (array): an array of Node IDs that this node notifies of its readiness.
 
 
 ```javascript
@@ -386,7 +386,12 @@ The argument for the callback is the same object as `$remote_jquery`.
 
 ### Remote Selector - Selection Methods
 
-jQuery methods to select/filter DOM objects further.
+```javascript
+new_remote_selector = remote_selector.children();
+```
+
+
+jQuery methods to select/filter DOM objects further. These methods return a new remote selector object.
 
 Some methods (such as `filter`) accepts arguments, but **only string-type arguments are supported.**
 
@@ -416,6 +421,11 @@ Some methods (such as `filter`) accepts arguments, but **only string-type argume
 - `slice`
 
 ### Remote Selector - Accessor Methods
+
+```javascript
+remote_selector = remote_selector.css("color", "red");
+promise = remote_selector.css("color");
+```
 
 jQuery methods to get/set attributes and properties from/to DOM
 objects. It also includes methods for DOM manipulation.
@@ -475,6 +485,10 @@ method on the promise.
 - `wrap`
 
 ### Remote Selector - Effects Methods
+
+```javascript
+remote_selector.fadeIn(100, function() { ... });
+```
 
 jQuery methods for visual effects.
 
