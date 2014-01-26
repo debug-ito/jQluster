@@ -81,9 +81,8 @@ Set `--help` option to see options.
 
 Get the source code and build jqluster.js
 
-**TODO: use a tag instead of master branch**
-
-    $ git clone https://github.com/debug-ito/jQluster.git
+    $ wget https://github.com/debug-ito/jQluster/archive/0.01.tar.gz -O jQluster.tar.gz
+    $ tar xzf jQluster.tar.gz
     $ cd jQluster
     $ make
 
