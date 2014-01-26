@@ -268,7 +268,7 @@ one browsers, or it is reloaded.
 
 ### Sharing a Node ID with More than One Pages
 
-    It is possible for more than one Web pages to share the same Node ID,
+It is possible for more than one Web pages to share the same Node ID,
 but you should be aware that jQluster cannot distinguish those
 individual pages.
 
