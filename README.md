@@ -78,9 +78,9 @@ Set `--help` option to see options.
 
 Get the source code and build jqluster.js
 
-    $ wget https://github.com/debug-ito/jQluster/archive/0.01.tar.gz -O jQluster.tar.gz
-    $ tar xzf jQluster.tar.gz
-    $ cd jQluster
+    $ wget https://github.com/debug-ito/jQluster/archive/0.01.tar.gz -O jQluster-0.01.tar.gz
+    $ tar xzf jQluster-0.01.tar.gz
+    $ cd jQluster-0.01
     $ make
 
 The `make` command generates the file `jqluster-VERSION.js`. `VERSION`
