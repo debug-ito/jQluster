@@ -32,7 +32,18 @@ manipulate Bob's DOM objects.
 
 ## Demo
 
-TODO
+- http://jqlusterdemo-debugito.rhcloud.com/
+
+This is a demonstration of what can be done with jQluster.
+
+The demo is a **multi-browser YouTube player** application.  In this
+demo, the top page serves as a YouTube player screen while another
+page serves as a controller of the player.
+
+The "player" and "control" pages cooperate with each other using
+jQluster. You can use different browsers or even **different
+machines** (like a PC and a tablet) to open the two pages.
+
 
 ## Getting Started
 
