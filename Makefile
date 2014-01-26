@@ -8,7 +8,7 @@ SRC=$(addprefix js/, \
       RemoteSelectorFactory.js jquery_adaptor.js)
 
 $(PRODUCT): $(SRC)
-	/bin/cat $(SRC) > $@
+	/bin/echo "// jQluster version" $(VERSION) |  /bin/cat - $(SRC) > $@
 
 doc: doc/api/index.html
 
